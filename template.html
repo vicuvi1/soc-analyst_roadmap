@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOC Analyst in 12 Weeks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* layout: case-file workspace. top bar, one 880px reading column, evidence in mono blocks */
+  --bg:#eef1f4; --surface:#ffffff; --ink:#15202b; --muted:#566777; --line:#d3dae1;
+  --accent:#0a6c8f; --accent-ink:#ffffff; --tint:#e3f0f5;
+  --good:#1b7548; --warn:#955600; --bad:#b3261e; --code:#f3f6f8;
+  --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f151b; --surface:#172029; --ink:#e4ebf1; --muted:#95a5b5; --line:#2b3743;
+    --accent:#5bbbdd; --accent-ink:#06222d; --tint:#1a2f3a;
+    --good:#5fc391; --warn:#e2a650; --bad:#f28b84; --code:#111a22; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f151b; --surface:#172029; --ink:#e4ebf1; --muted:#95a5b5; --line:#2b3743;
+  --accent:#5bbbdd; --accent-ink:#06222d; --tint:#1a2f3a;
+  --good:#5fc391; --warn:#e2a650; --bad:#f28b84; --code:#111a22; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
+a{color:var(--accent)}
+h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.15;margin:0;text-wrap:balance}
+h1{font-size:2rem} h2{font-size:1.35rem} h3{font-size:1.1rem}
+h4{font:600 .8rem/1.2 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:1.2em 0 .4em}
+p{margin:.5em 0} ul{margin:.4em 0;padding-left:1.2em} li{margin:.25em 0}
+code,pre{font-family:var(--mono);font-size:.84rem}
+code{background:var(--code);padding:.08em .3em;border-radius:3px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:.6em 0;line-height:1.5;white-space:pre}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.bar{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar-in{max-width:920px;margin:0 auto;padding:10px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.brand{font:600 1.05rem var(--display);letter-spacing:.02em;margin-right:auto;text-decoration:none;color:var(--ink)}
+.brand span{color:var(--accent)}
+nav{display:flex;gap:4px}
+nav a{padding:6px 12px;border-radius:6px;text-decoration:none;color:var(--muted);font-weight:500;font-size:.95rem}
+nav a[aria-current="page"]{background:var(--tint);color:var(--accent)}
+.badge{display:inline-block;min-width:1.4em;padding:0 .4em;margin-left:4px;border-radius:9px;background:var(--warn);color:var(--surface);font-size:.75rem;text-align:center;font-weight:600}
+.sync{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
+.sync.cloud i{background:var(--good)} .sync.local i{background:var(--warn)}
+
+main{max-width:920px;margin:0 auto;padding:28px 20px 80px;display:flex;flex-direction:column;gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+.card>h2{margin-bottom:10px}
+.eyebrow{font:500 .8rem var(--mono);color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.lead{color:var(--muted);max-width:65ch}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.stat b{display:block;font:600 1.6rem var(--display);font-variant-numeric:tabular-nums}
+.stat span{font-size:.82rem;color:var(--muted)}
+.stat.due b{color:var(--warn)}
+.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:6px;padding:9px 16px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--line)}
+.btn.small{padding:5px 10px;font-size:.85rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.chip{display:inline-block;font:500 .72rem var(--mono);padding:2px 8px;border-radius:4px;border:1px solid var(--line);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.chip.good{color:var(--good);border-color:var(--good)} .chip.warn{color:var(--warn);border-color:var(--warn)}
+.chip.bad{color:var(--bad);border-color:var(--bad)} .chip.acc{color:var(--accent);border-color:var(--accent)}
+.meter{height:6px;background:var(--line);border-radius:3px;overflow:hidden;min-width:80px;flex:1}
+.meter i{display:block;height:100%;background:var(--accent)}
+.next{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.next li{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin:0;flex-wrap:wrap}
+.strip{display:grid;grid-template-columns:repeat(12,1fr);gap:6px}
+.strip a{display:block;text-align:center;padding:8px 0;border-radius:6px;border:1px solid var(--line);text-decoration:none;color:var(--muted);font:500 .85rem var(--mono);position:relative;overflow:hidden}
+.strip a i{position:absolute;left:0;bottom:0;height:4px;background:var(--accent)}
+.strip a.cur{border-color:var(--accent);color:var(--accent)} .strip a.done{background:var(--tint);color:var(--accent)}
+.strip a.lock{opacity:.45}
+@media(max-width:560px){.strip{grid-template-columns:repeat(6,1fr)}}
+
+.stage{display:flex;flex-direction:column;gap:8px}
+.stage.locked .wk{opacity:.5}
+.wk{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink)}
+.wk .n{font:600 1.3rem var(--display);color:var(--accent);font-variant-numeric:tabular-nums}
+.wk small{color:var(--muted);display:block}
+.wk.exam{border-style:dashed}
+.wk .side{display:flex;gap:10px;align-items:center;min-width:150px;justify-content:flex-end}
+@media(max-width:560px){.wk{grid-template-columns:36px 1fr}.wk .side{grid-column:2;justify-content:flex-start}}
+
+.tasks{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+.tasks label{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.tasks input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.tasks .done{color:var(--muted);text-decoration:line-through}
+.note{border-left:3px solid var(--accent);background:var(--tint);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.95rem}
+.lesson{max-width:70ch}
+.opts{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.opt{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:11px 14px;cursor:pointer;overflow-wrap:anywhere}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,var(--surface))}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,var(--surface))}
+.why{font-size:.95rem;color:var(--muted);margin:8px 0 14px}
+.qtext{font-weight:500;font-size:1.05rem;overflow-wrap:anywhere}
+.cq{display:grid;grid-template-columns:1fr;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+.cq .in{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cq input{flex:1;min-width:180px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);font-family:var(--mono);font-size:.9rem}
+.cq.ok input{border-color:var(--good)} .cq.no input{border-color:var(--bad)}
+.hint{font-size:.8rem;color:var(--muted)}
+.ev{position:relative}
+.ev .btn{position:absolute;top:8px;right:8px}
+.ev pre{padding-top:40px;max-height:420px;overflow:auto}
+.timer{position:sticky;top:58px;z-index:4;background:var(--surface);border:1px solid var(--accent);border-radius:8px;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono)}
+.eq{padding:16px 0;border-top:1px solid var(--line)}
+.eq label{display:flex;gap:10px;padding:7px 10px;border-radius:6px;cursor:pointer;align-items:flex-start;overflow-wrap:anywhere}
+.eq label:hover{background:var(--tint)}
+.eq input{margin-top:5px;accent-color:var(--accent)}
+.eq .r{color:var(--good);font-weight:600} .eq .w{color:var(--bad);text-decoration:line-through}
+.big{font:600 3rem var(--display);font-variant-numeric:tabular-nums}
+.boxes{display:flex;gap:8px;align-items:flex-end;height:90px}
+.boxes div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;font:500 .75rem var(--mono);color:var(--muted);height:100%}
+.boxes i{display:block;width:100%;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px}
+footer{font-size:.82rem;color:var(--muted);display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;align-items:center}
+@media (prefers-reduced-motion:no-preference){.meter i,.strip a i{transition:width .3s}}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <a class="brand" href="#today">SOC Analyst <span>in 12 Weeks</span></a>
+  <nav id="nav"></nav>
+  <div class="sync" id="sync"><i></i><span>Saved in this browser</span></div>
+</div></div>
+<main id="view"></main>
+<script>
+const D = /*DATA*/null;
+const DAY = 864e5, IV = [0, 1, 3, 7, 14, 30], KEY = 'soc12-state-v1', PASS = 0.8, QPASS = 0.7, COOLDOWN = 12 * 36e5;
+const TYPE = { thm: 'TryHackMe', pwn: 'pwn.college', own: 'Own work' };
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = s => String(s).toLowerCase().replace(/\s+/g, '');
+function hash(str) { let h1 = 0xdeadbeef ^ 77, h2 = 0x41c6ce57 ^ 77; for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36); }
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const fmtDate = t => new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+
+/* question registry */
+const Q = {};
+D.weeks.forEach((w, wi) => w.quiz.forEach((q, qi) => Q['w' + (wi + 1) + 'q' + (qi + 1)] = Object.assign({ week: wi + 1 }, q)));
+D.stages.forEach((s, si) => s.extra.forEach((q, qi) => Q['s' + (si + 1) + 'x' + (qi + 1)] = Object.assign({ stage: si + 1 }, q)));
+const weekQids = w => D.weeks[w - 1].quiz.map((_, i) => 'w' + w + 'q' + (i + 1));
+
+/* state */
+const fresh = () => ({ v: 1, updatedAt: 0, start: null, tasks: {}, q: {}, wq: {}, ch: {}, ex: {} });
+let S = fresh();
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
+let remote = null, writing = false, dirty = false, saveTimer = null;
+function setSync(mode) { const el = $('#sync'); el.className = 'sync ' + mode; el.lastElementChild.textContent = mode === 'cloud' ? 'Progress saved to your account' : 'Progress saved in this browser'; }
+function save() {
+  S.updatedAt = Date.now();
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+  if (remote) { dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(pushRemote, 1200); }
+}
+async function pushRemote() {
+  if (!remote || writing || !dirty) return;
+  writing = true; dirty = false;
+  try { await remote.set({ json: JSON.stringify(S), updatedAt: S.updatedAt }); setSync('cloud'); }
+  catch (e) { if (e && (e.code === 'invalid_argument' || e.code === 'revoked' || e.code === 'not_granted')) { remote = null; setSync('local'); } else dirty = true; }
+  writing = false;
+  if (dirty && remote) { clearTimeout(saveTimer); saveTimer = setTimeout(pushRemote, 3000); }
+}
+async function initRemote() {
+  try {
+    if (!window.claude || typeof window.claude.use !== 'function') return;
+    const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+    if (!db || !user) return;
+    const id = await user.id(); if (!id) return;
+    const ref = db.doc('data/users/' + id + '/progress');
+    const snap = await Promise.race([ref.get(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))]);
+    remote = ref;
+    if (snap && snap.exists) {
+      const body = snap.data();
+      let R = null; try { R = JSON.parse(body.json); } catch (e) {}
+      if (R && (R.updatedAt || 0) > (S.updatedAt || 0)) {
+        S = Object.assign(fresh(), R);
+        try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+        if (!ES && !QS) render();
+      } else if ((S.updatedAt || 0) > ((R && R.updatedAt) || 0)) { dirty = true; pushRemote(); }
+    } else if (S.updatedAt) { dirty = true; pushRemote(); }
+    setSync('cloud');
+  } catch (e) { setSync('local'); }
+}
+
+/* derived */
+const stageOf = w => Math.floor((w - 1) / 3) + 1;
+const unlocked = st => st === 1 || !!(S.ex[st - 1] && S.ex[st - 1].passed);
+const tasksDone = w => D.weeks[w - 1].tasks.filter((_, i) => S.tasks[w + '-' + i]).length;
+const quizPassed = w => !!(S.wq[w] && S.wq[w].best >= QPASS);
+const chalSolved = w => { const c = S.ch[w]; return c ? c.ok.filter(Boolean).length : 0; };
+const chalDone = w => chalSolved(w) === D.weeks[w - 1].chal.qs.length;
+function weekPct(w) { const W = D.weeks[w - 1]; return Math.round(100 * (0.5 * tasksDone(w) / W.tasks.length + 0.25 * (quizPassed(w) ? 1 : 0) + 0.25 * chalSolved(w) / W.chal.qs.length)); }
+const weekDone = w => weekPct(w) === 100;
+const hours = w => D.weeks[w - 1].tasks.reduce((a, t) => a + t[2], 0);
+const dueIds = () => { const now = Date.now(); return Object.keys(S.q).filter(id => Q[id] && S.q[id].d <= now).sort((a, b) => S.q[a].d - S.q[b].d); };
+function workingWeek() { for (let w = 1; w <= 12; w++) if (!weekDone(w)) return w; return 12; }
+function planWeek() { if (!S.start) return null; return Math.max(1, Math.min(12, Math.floor((Date.now() - S.start) / (7 * DAY)) + 1)); }
+const allDone = () => !!(S.ex[4] && S.ex[4].passed) && chalDone(12);
+
+/* spaced repetition */
+function grade(id, ok) {
+  const r = S.q[id] || { b: 0, d: 0, n: 0, c: 0 };
+  r.n++; if (ok) { r.c++; r.b = Math.min(5, r.b + 1); } else r.b = 1;
+  r.d = Date.now() + IV[r.b] * DAY - 6 * 36e5;
+  S.q[id] = r;
+}
+
+/* sessions */
+let QS = null, ES = null, esTimer = null;
+
+/* ---------- views ---------- */
+function nav(route) {
+  const due = dueIds().length;
+  $('#nav').innerHTML = [['today', 'Today'], ['roadmap', 'Roadmap'], ['review', 'Review' + (due ? '<span class="badge">' + due + '</span>' : '')]]
+    .map(([h, t]) => `<a href="#${h}"${route === h ? ' aria-current="page"' : ''}>${t}</a>`).join('');
+}
+const meter = p => `<span class="meter" role="img" aria-label="${p}% complete"><i style="width:${p}%"></i></span>`;
+function weekChip(w) {
+  if (!unlocked(stageOf(w))) return '<span class="chip">Locked</span>';
+  if (weekDone(w)) return '<span class="chip good">Done</span>';
+  if (weekPct(w) > 0) return '<span class="chip acc">In progress</span>';
+  return '<span class="chip">Not started</span>';
+}
+function examChip(st) {
+  const e = S.ex[st];
+  if (e && e.passed) return `<span class="chip good">Passed ${Math.round(e.best * 100)}%</span>`;
+  if (!unlocked(st)) return '<span class="chip">Locked</span>';
+  if (e) return `<span class="chip bad">Best ${Math.round(e.best * 100)}%</span>`;
+  return '<span class="chip warn">Not taken</span>';
+}
+
+function viewToday() {
+  const w = workingWeek(), W = D.weeks[w - 1], st = stageOf(w), pw = planWeek();
+  const totTasks = D.weeks.reduce((a, x) => a + x.tasks.length, 0), doneTasks = D.weeks.reduce((a, _, i) => a + tasksDone(i + 1), 0);
+  const qp = D.weeks.filter((_, i) => quizPassed(i + 1)).length, cp = D.weeks.filter((_, i) => chalDone(i + 1)).length;
+  const ep = [1, 2, 3, 4].filter(s => S.ex[s] && S.ex[s].passed).length, due = dueIds().length;
+  const overall = Math.round(D.weeks.reduce((a, _, i) => a + weekPct(i + 1), 0) / 12 * 0.8 + ep / 4 * 20);
+  let sched;
+  if (!S.start) sched = `<div class="row"><label for="startDate">Start date</label><input type="date" id="startDate" value="${new Date().toISOString().slice(0, 10)}"><button class="btn small" data-act="setStart">Start the 12 weeks</button></div>`;
+  else { const diff = pw - w; sched = `<p class="lead">Started ${fmtDate(S.start)}. Calendar week ${pw} of 12. ${allDone() ? '' : diff > 0 ? `You are ${diff} week${diff > 1 ? 's' : ''} behind the calendar.` : diff < 0 ? `You are ${-diff} week${diff < -1 ? 's' : ''} ahead.` : 'You are on schedule.'} <button class="btn ghost small" data-act="clearStart">Change start date</button></p>`; }
+  const next = [];
+  if (due) next.push([`Review ${due} due question${due > 1 ? 's' : ''} (about ${Math.max(2, Math.round(due * 0.5))} min). Always do this first.`, '#review', 'Review']);
+  if (unlocked(st)) {
+    const ti = W.tasks.findIndex((_, i) => !S.tasks[w + '-' + i]);
+    if (ti >= 0) next.push([W.tasks[ti][1], '#week-' + w, 'Open week ' + w]);
+    if (!quizPassed(w)) next.push([`Pass the week ${w} quiz (${Math.round(QPASS * 100)}% or more)`, '#week-' + w, 'Quiz']);
+    if (!chalDone(w)) next.push([`Solve the challenge: ${W.chal.title}`, '#week-' + w, 'Challenge']);
+  }
+  const sx = [1, 2, 3, 4].find(s => unlocked(s) && !(S.ex[s] && S.ex[s].passed));
+  if (sx && D.stages[sx - 1].weeks.every(weekDone)) next.unshift([`Sit the ${sx === 4 ? 'final exam' : 'stage ' + sx + ' exam'}. Passing ${sx === 4 ? 'completes the programme' : 'unlocks stage ' + (sx + 1)}.`, '#exam-' + sx, 'Exam']);
+  else if (sx && !unlocked(st)) next.push([`Pass the stage ${sx} exam to unlock week ${w}`, '#exam-' + sx, 'Exam']);
+  return `
+  <div><div class="eyebrow">Stage ${st} of 4 &middot; ${esc(D.stages[st - 1].name)}</div>
+  <h1>${allDone() ? 'Programme complete' : 'Week ' + w + ': ' + esc(W.title)}</h1>
+  <p class="lead">${allDone() ? 'You passed all four exams and the capstone. Next steps: book SAL1, start SOC Level 2, keep clearing reviews so it stays.' : esc(W.goal)}</p>${sched}</div>
+  <div class="stats">
+    <div class="stat"><b>${overall}%</b><span>Overall</span></div>
+    <div class="stat"><b>${doneTasks}/${totTasks}</b><span>Lab tasks</span></div>
+    <div class="stat"><b>${qp}/12</b><span>Quizzes passed</span></div>
+    <div class="stat"><b>${cp}/12</b><span>Challenges solved</span></div>
+    <div class="stat"><b>${ep}/4</b><span>Exams passed</span></div>
+    <div class="stat${due ? ' due' : ''}"><b>${due}</b><span>Reviews due</span></div>
+  </div>
+  <div class="card"><h2>Do next</h2>${next.length ? `<ul class="next">${next.slice(0, 4).map(n => `<li><span>${esc(n[0])}</span><a class="btn small" href="${n[1]}">${n[2]}</a></li>`).join('')}</ul>` : '<p>Nothing open. Check the Review tab tomorrow.</p>'}</div>
+  <div class="card"><h2>All 12 weeks</h2><div class="strip">${D.weeks.map((_, i) => { const n = i + 1; return `<a href="#week-${n}" class="${n === w ? 'cur ' : ''}${weekDone(n) ? 'done ' : ''}${unlocked(stageOf(n)) ? '' : 'lock'}" title="Week ${n}: ${esc(D.weeks[i].title)}">${n}<i style="width:${weekPct(n)}%"></i></a>`; }).join('')}</div></div>
+  <div class="card"><h2>How to spend 8 hours a week</h2>
+    <ul><li><b>Two lab sessions, 2.5 h each.</b> TryHackMe rooms for the week. Type every command yourself; no walkthrough until you have been stuck for 20 minutes.</li>
+    <li><b>One depth session, 1.5 to 2 h.</b> pwn.college and the "own work" task. This is where weak areas get fixed.</li>
+    <li><b>One proof session, 1 h.</b> Read the coach notes, pass the quiz, solve the challenge here.</li>
+    <li><b>Every session starts with due reviews.</b> Five minutes. This is what moves knowledge from "seen it" to "know it".</li></ul>
+    <p class="lead">Short week? Skip the pwn.college task, never the quiz and challenge.</p></div>
+  <footer><span>Quiz pass mark ${Math.round(QPASS * 100)}%. Exam pass mark ${Math.round(PASS * 100)}%. Review intervals 1, 3, 7, 14, 30 days.</span><span id="resetBox"><button class="btn ghost small" data-act="reset1">Reset all progress</button></span></footer>`;
+}
+
+function viewRoadmap() {
+  return `<div><h1>Roadmap</h1><p class="lead">Four stages of three weeks. Each stage ends with a timed exam; passing it unlocks the next stage. About 8 hours a week, 12 weeks.</p></div>` +
+    D.stages.map((s, si) => { const st = si + 1, open = unlocked(st), fin = s.final;
+      const mins = fin ? 40 : 25, n = fin ? 30 : 20;
+      return `<section class="stage${open ? '' : ' locked'}"><div class="row" style="justify-content:space-between"><div><div class="eyebrow">Stage ${st}${open ? '' : ' &middot; locked until the stage ' + (st - 1) + ' exam is passed'}</div><h2>${esc(s.name)}</h2></div><span class="lead">${esc(s.blurb)}</span></div>
+      ${s.weeks.map(w => { const W = D.weeks[w - 1]; return `<a class="wk" href="#week-${w}"><span class="n">${String(w).padStart(2, '0')}</span><span><b>${esc(W.title)}</b><small>${esc(W.module)} &middot; ${hours(w)} h</small></span><span class="side">${meter(weekPct(w))}${weekChip(w)}</span></a>`; }).join('')}
+      <a class="wk exam" href="#exam-${st}"><span class="n">${fin ? 'F' : 'E' + st}</span><span><b>${fin ? 'Final exam' : 'Stage ' + st + ' exam'}</b><small>${n} questions &middot; ${mins} minutes &middot; pass at ${Math.round(PASS * 100)}%${fin ? ' &middot; covers all 12 weeks' : ''}</small></span><span class="side">${examChip(st)}</span></a></section>`; }).join('');
+}
+
+function viewWeek(w) {
+  const W = D.weeks[w - 1], st = stageOf(w);
+  const head = `<div><div class="eyebrow"><a href="#roadmap">Roadmap</a> &middot; Stage ${st} &middot; Week ${w} of 12</div><h1>${esc(W.title)}</h1><p class="lead">${esc(W.goal)}</p><div class="row">${meter(weekPct(w))}${weekChip(w)}</div></div>`;
+  if (!unlocked(st)) return head + `<div class="card"><h2>Locked</h2><p>Pass the stage ${st - 1} exam to open this week.</p><a class="btn" href="#exam-${st - 1}">Go to the stage ${st - 1} exam</a></div>`;
+  const tasks = W.tasks.map((t, i) => { const on = !!S.tasks[w + '-' + i]; return `<li><label><input type="checkbox" id="t-${w}-${i}" data-act="task" data-k="${w}-${i}"${on ? ' checked' : ''}><span class="${on ? 'done' : ''}">${esc(t[1])}</span><span class="chip">${TYPE[t[0]]} &middot; ${t[2]} h</span></label></li>`; }).join('');
+  const wq = S.wq[w];
+  return head + `
+  <div class="card"><h2>1. Labs</h2>${W.note ? `<p class="note">${esc(W.note)}</p>` : ''}<ul class="tasks">${tasks}</ul>
+    <p class="hint">Module names follow the current SOC Level 1 path. If TryHackMe shows them in a different order, follow this page's order. Already completed a module? Tick it.</p></div>
+  <div class="card"><h2>2. Coach notes</h2><div class="lesson">${W.lesson}</div></div>
+  <div class="card" id="quizCard"><h2>3. Quiz</h2><div id="quiz">${quizIntro(w, wq)}</div></div>
+  <div class="card"><h2>4. Challenge: ${esc(W.chal.title)}</h2>${chalHtml(w)}</div>
+  <div class="row" style="justify-content:space-between">${w > 1 ? `<a class="btn ghost" href="#week-${w - 1}">Week ${w - 1}</a>` : '<span></span>'}${w % 3 === 0 ? `<a class="btn" href="#exam-${st}">${st === 4 ? 'Final exam' : 'Stage ' + st + ' exam'}</a>` : `<a class="btn ghost" href="#week-${w + 1}">Week ${w + 1}</a>`}</div>`;
+}
+function quizIntro(w, wq) {
+  return `<p>${D.weeks[w - 1].quiz.length} questions, feedback after each. Pass at ${Math.round(QPASS * 100)}%. Every question then enters your review schedule; wrong answers come back tomorrow.</p>
+  <div class="row"><button class="btn" data-act="startQuiz" data-w="${w}">${wq ? 'Retake quiz' : 'Start quiz'}</button>${wq ? `<span class="chip ${wq.best >= QPASS ? 'good' : 'bad'}">Best ${Math.round(wq.best * 100)}%</span><span class="hint">${wq.n} attempt${wq.n > 1 ? 's' : ''}</span>` : ''}</div>`;
+}
+function chalHtml(w) {
+  const C = D.weeks[w - 1].chal, c = S.ch[w] || { ok: [], tries: 0 };
+  return `<p>${esc(C.brief)}</p>
+  <div class="ev"><button class="btn ghost small" data-act="copy" data-w="${w}">Copy evidence</button><pre id="ev-${w}" tabindex="0">${esc(C.evidence)}</pre></div>
+  ${C.qs.map((q, i) => `<div class="cq${c.ok[i] ? ' ok' : ''}" id="cq-${w}-${i}"><label for="ci-${w}-${i}"><b>${i + 1}.</b> ${esc(q.p)}</label>
+    <div class="in"><input id="ci-${w}-${i}" autocomplete="off" spellcheck="false" data-w="${w}" data-i="${i}"${c.ok[i] ? ' value="Solved" disabled' : ''}>${c.ok[i] ? '<span class="chip good">Correct</span>' : `<button class="btn small" data-act="check" data-w="${w}" data-i="${i}">Check</button>`}<span class="hint" id="cm-${w}-${i}">${c.ok[i] ? '' : esc(q.hint || '')}</span></div></div>`).join('')}
+  <p class="hint">${chalSolved(w)} of ${C.qs.length} solved &middot; ${c.tries} check${c.tries === 1 ? '' : 's'} used. Answers are not stored in readable form on this page, so the only way through is the evidence.</p>`;
+}
+
+/* quiz and review share one runner */
+function startRun(ids, mode, w) {
+  QS = { ids, mode, w, i: 0, right: 0, picked: null, order: {} };
+  ids.forEach(id => QS.order[id] = shuffle(Q[id].o.map((_, i) => i)));
+  drawRun();
+}
+function drawRun() {
+  const box = $('#quiz'); if (!box || !QS) return;
+  if (QS.i >= QS.ids.length) {
+    const score = QS.right / QS.ids.length;
+    let msg;
+    if (QS.mode === 'week') {
+      const p = S.wq[QS.w] || { best: 0, n: 0 }; p.best = Math.max(p.best, score); p.last = score; p.n++; S.wq[QS.w] = p; save();
+      msg = `<p class="big">${QS.right}/${QS.ids.length}</p><p>${score >= QPASS ? 'Passed.' : 'Not passed yet. Re-read the coach notes and try again.'} These questions return in the Review tab on a 1, 3, 7, 14, 30 day schedule.</p><button class="btn" data-act="startQuiz" data-w="${QS.w}">Retake quiz</button>`;
+    } else { save(); const left = dueIds().length; msg = `<p class="big">${QS.right}/${QS.ids.length}</p><p>${left ? left + ' more due.' : 'All caught up.'}</p>${left ? '<button class="btn" data-act="startReview">Continue</button>' : '<a class="btn" href="#today">Back to today</a>'}`; }
+    QS = null; box.innerHTML = msg; nav(route().name); return;
+  }
+  const id = QS.ids[QS.i], q = Q[id], done = QS.picked !== null;
+  box.innerHTML = `<div class="eyebrow">Question ${QS.i + 1} of ${QS.ids.length}${QS.mode === 'review' ? ' &middot; from week ' + q.week : ''}</div>
+  <p class="qtext">${esc(q.q)}</p>
+  <div class="opts">${QS.order[id].map(oi => `<button class="opt${done ? (oi === q.a ? ' right' : oi === QS.picked ? ' wrong' : '') : ''}" data-act="pick" data-o="${oi}"${done ? ' disabled' : ''}>${esc(q.o[oi])}</button>`).join('')}</div>
+  ${done ? `<p class="why"><b>${QS.picked === q.a ? 'Correct.' : 'Not this time.'}</b> ${esc(q.why)}</p><button class="btn" data-act="nextQ">${QS.i + 1 < QS.ids.length ? 'Next question' : 'See result'}</button>` : ''}`;
+}
+
+function viewReview() {
+  const due = dueIds(), all = Object.keys(S.q).filter(id => Q[id]);
+  const boxes = [1, 2, 3, 4, 5].map(b => all.filter(id => S.q[id].b === b).length), mx = Math.max(1, ...boxes);
+  const nextDue = all.length ? Math.min(...all.map(id => S.q[id].d)) : null;
+  return `<div><h1>Review</h1><p class="lead">Questions you have answered come back just before you would forget them. A correct answer moves a question up one box and doubles the wait. A wrong one sends it back to box 1.</p></div>
+  <div class="card" id="quizCard"><h2>${due.length} due now</h2><div id="quiz">${due.length ? `<button class="btn" data-act="startReview">Start review (${Math.min(20, due.length)} questions)</button>` : all.length ? `<p>Nothing due. Next review on ${fmtDate(nextDue)}.</p>` : '<p>Take a week quiz first. Its questions will appear here on schedule.</p>'}</div></div>
+  <div class="card"><h2>Memory boxes</h2><p class="lead">${all.length} questions in rotation. Box 5 means you answered correctly five times in a row over about two months.</p>
+  <div class="boxes">${boxes.map((n, i) => `<div><span>${n}</span><i style="height:${Math.round(n / mx * 60)}px"></i><span>Box ${i + 1}<br>${IV[i + 1]} d</span></div>`).join('')}</div></div>`;
+}
+
+/* exams */
+function examSpec(st) { const fin = !!D.stages[st - 1].final; return { fin, mins: fin ? 40 : 25, n: fin ? 30 : 20 }; }
+function buildExam(st) {
+  const sp = examSpec(st), extra = D.stages[st - 1].extra.map((_, i) => 's' + st + 'x' + (i + 1));
+  let pool = [];
+  if (sp.fin) for (let w = 1; w <= 12; w++) pool = pool.concat(shuffle(weekQids(w)).slice(0, 2));
+  else pool = shuffle(D.stages[st - 1].weeks.flatMap(weekQids)).slice(0, sp.n - extra.length);
+  return shuffle(extra.concat(pool));
+}
+function viewExam(st) {
+  const s = D.stages[st - 1], sp = examSpec(st), e = S.ex[st], name = sp.fin ? 'Final exam' : 'Stage ' + st + ' exam';
+  const head = `<div><div class="eyebrow"><a href="#roadmap">Roadmap</a> &middot; Stage ${st}</div><h1>${name}</h1><p class="lead">${esc(s.name)}${sp.fin ? '. Covers all 12 weeks.' : ''}</p></div>`;
+  if (!unlocked(st)) return head + `<div class="card"><h2>Locked</h2><p>Pass the stage ${st - 1} exam first.</p><a class="btn" href="#exam-${st - 1}">Go to the stage ${st - 1} exam</a></div>`;
+  if (ES && ES.stage === st && !ES.result) return head + examRunHtml();
+  if (ES && ES.stage === st && ES.result) return head + examResultHtml();
+  const wait = e && !e.passed && e.at ? e.at + COOLDOWN - Date.now() : 0;
+  const ready = s.weeks.every(weekDone);
+  return head + `<div class="card"><h2>Rules</h2>
+  <ul><li>${sp.n} questions in ${sp.mins} minutes. It submits itself when time runs out.</li>
+  <li>Pass mark ${Math.round(PASS * 100)}%. No feedback until you submit.</li>
+  <li>${extraCount(st)} scenario questions appear only in this exam. The rest are drawn at random from ${sp.fin ? 'every week' : 'this stage'}.</li>
+  <li>After a failed attempt you wait 12 hours. Use them to review what you missed.</li>
+  <li>Closed book: no notes, no search, no AI. Leaving this page cancels the attempt.</li></ul>
+  ${ready ? '' : `<p class="note">You have not finished every week in this stage. You may still sit the exam. If you already know the material, passing is the proof.</p>`}
+  <div class="row"><button class="btn" data-act="startExam" data-s="${st}"${wait > 0 ? ' disabled' : ''}>${e ? 'Start new attempt' : 'Start exam'}</button>
+  ${e ? examChip(st) + `<span class="hint">${e.n} attempt${e.n > 1 ? 's' : ''}</span>` : ''}${wait > 0 ? `<span class="hint">Next attempt possible in ${Math.ceil(wait / 36e5)} h</span>` : ''}</div></div>
+  ${sp.fin ? `<div class="card"><h2>Practical half</h2><p>The final test has two halves. This exam checks knowledge. The week 12 capstone challenge checks that you can investigate. ${chalDone(12) ? '<span class="chip good">Capstone solved</span>' : '<a href="#week-12">Open the capstone</a>'}</p></div>` : ''}`;
+}
+const extraCount = st => D.stages[st - 1].extra.length;
+function examRunHtml() {
+  return `<div class="timer"><span>${Object.keys(ES.ans).length}/${ES.ids.length} answered</span><b id="clock">${clock()}</b></div>
+  <div class="card">${ES.ids.map((id, n) => { const q = Q[id]; return `<div class="eq"><p class="qtext">${n + 1}. ${esc(q.q)}</p>${ES.order[id].map(oi => `<label><input type="radio" name="e-${id}" id="e-${id}-${oi}" data-act="ans" data-id="${id}" value="${oi}"${ES.ans[id] === oi ? ' checked' : ''}><span>${esc(q.o[oi])}</span></label>`).join('')}</div>`; }).join('')}
+  <div class="row" style="margin-top:16px"><button class="btn" data-act="submitExam">Submit exam</button><span class="hint">Unanswered questions count as wrong.</span></div></div>`;
+}
+function clock() { const s = Math.max(0, Math.round((ES.ends - Date.now()) / 1000)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
+function startExam(st) {
+  const ids = buildExam(st), sp = examSpec(st);
+  ES = { stage: st, ids, ans: {}, order: {}, ends: Date.now() + sp.mins * 6e4, result: null };
+  ids.forEach(id => ES.order[id] = shuffle(Q[id].o.map((_, i) => i)));
+  clearInterval(esTimer);
+  esTimer = setInterval(() => { if (!ES || ES.result) return clearInterval(esTimer); const c = $('#clock'); if (c) c.textContent = clock(); if (Date.now() >= ES.ends) submitExam(); }, 1000);
+  render(); window.scrollTo(0, 0);
+}
+function submitExam() {
+  if (!ES || ES.result) return;
+  clearInterval(esTimer);
+  const right = ES.ids.filter(id => ES.ans[id] === Q[id].a).length, score = right / ES.ids.length, pass = score >= PASS;
+  ES.ids.forEach(id => { if (Q[id].week && ES.ans[id] !== Q[id].a) { const r = S.q[id] || { b: 0, d: 0, n: 0, c: 0 }; r.b = 1; r.d = Date.now(); r.n++; S.q[id] = r; } });
+  const e = S.ex[ES.stage] || { best: 0, passed: false, n: 0 };
+  e.best = Math.max(e.best, score); e.passed = e.passed || pass; e.n++; e.at = Date.now(); S.ex[ES.stage] = e;
+  ES.result = { right, score, pass }; save(); render(); window.scrollTo(0, 0);
+}
+function examResultHtml() {
+  const r = ES.result, st = ES.stage, fin = examSpec(st).fin;
+  const byWeek = {}; ES.ids.forEach(id => { const k = Q[id].week ? 'Week ' + Q[id].week : 'Scenarios'; byWeek[k] = byWeek[k] || [0, 0]; byWeek[k][1]++; if (ES.ans[id] === Q[id].a) byWeek[k][0]++; });
+  return `<div class="card"><div class="row" style="justify-content:space-between"><div><p class="big">${Math.round(r.score * 100)}%</p><p>${r.right} of ${ES.ids.length} correct. ${r.pass ? (fin ? 'You passed the final exam.' : 'Passed. Stage ' + (st + 1) + ' is open.') : 'Below the ' + Math.round(PASS * 100) + '% pass mark. Missed questions are now due in Review. You can try again in 12 hours.'}</p></div><span class="chip ${r.pass ? 'good' : 'bad'}">${r.pass ? 'Passed' : 'Not passed'}</span></div>
+  <div class="row">${Object.entries(byWeek).map(([k, v]) => `<span class="chip ${v[0] === v[1] ? 'good' : v[0] / v[1] < 0.6 ? 'bad' : ''}">${k} ${v[0]}/${v[1]}</span>`).join('')}</div>
+  <div class="row" style="margin-top:14px">${r.pass ? (fin ? '<a class="btn" href="#today">Finish</a>' : `<a class="btn" href="#week-${st * 3 + 1}">Start week ${st * 3 + 1}</a>`) : '<a class="btn" href="#review">Review missed questions</a>'}<button class="btn ghost" data-act="closeExam">Close</button></div></div>
+  <div class="card"><h2>Answers</h2>${ES.ids.map((id, n) => { const q = Q[id], a = ES.ans[id]; return `<div class="eq"><p class="qtext">${n + 1}. ${esc(q.q)}</p><p>${a === q.a ? `<span class="r">${esc(q.o[a])}</span>` : `${a === undefined ? '<span class="w">No answer</span>' : `<span class="w">${esc(q.o[a])}</span>`}<br><span class="r">${esc(q.o[q.a])}</span>`}</p><p class="why">${esc(q.why)}</p></div>`; }).join('')}</div>`;
+}
+
+/* ---------- router and events ---------- */
+function route() {
+  const h = (location.hash || '#today').slice(1); let m;
+  if ((m = /^week-(\d+)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 12) return { name: 'week', n: +m[1] };
+  if ((m = /^exam-(\d)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 4) return { name: 'exam', n: +m[1] };
+  if (h === 'roadmap' || h === 'review') return { name: h };
+  return { name: 'today' };
+}
+function render() {
+  const r = route();
+  if (ES && !(r.name === 'exam' && r.n === ES.stage)) { clearInterval(esTimer); ES = null; }
+  QS = null; nav(r.name);
+  $('#view').innerHTML = r.name === 'week' ? viewWeek(r.n) : r.name === 'exam' ? viewExam(r.n) : r.name === 'roadmap' ? viewRoadmap() : r.name === 'review' ? viewReview() : viewToday();
+}
+window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
+
+function checkAnswer(w, i) {
+  const inp = $('#ci-' + w + '-' + i), val = inp.value; if (!norm(val)) return;
+  const q = D.weeks[w - 1].chal.qs[i], c = S.ch[w] || { ok: [], tries: 0 };
+  c.tries++; const ok = q.h.includes(hash(norm(val)));
+  if (ok) c.ok[i] = true;
+  S.ch[w] = c; save();
+  if (ok) { const y = window.scrollY; render(); window.scrollTo(0, y); }
+  else { $('#cq-' + w + '-' + i).classList.add('no'); $('#cm-' + w + '-' + i).textContent = 'Not correct. Go back to the evidence.' + (q.hint ? ' Hint: ' + q.hint : ''); }
+}
+document.addEventListener('click', ev => {
+  const el = ev.target.closest('[data-act]'); if (!el) return;
+  const a = el.dataset.act;
+  if (a === 'task' || a === 'ans') return;
+  if (a === 'setStart') { const v = $('#startDate').value; S.start = v ? new Date(v + 'T00:00:00').getTime() : Date.now(); save(); render(); }
+  else if (a === 'clearStart') { S.start = null; save(); render(); }
+  else if (a === 'reset1') { $('#resetBox').innerHTML = 'Delete all progress? <button class="btn small" data-act="reset2">Yes, delete</button> <button class="btn ghost small" data-act="reset0">Cancel</button>'; }
+  else if (a === 'reset0') render();
+  else if (a === 'reset2') { S = fresh(); save(); render(); }
+  else if (a === 'startQuiz') startRun(shuffle(weekQids(+el.dataset.w)), 'week', +el.dataset.w);
+  else if (a === 'startReview') startRun(dueIds().slice(0, 20), 'review');
+  else if (a === 'pick' && QS && QS.picked === null) { const id = QS.ids[QS.i]; QS.picked = +el.dataset.o; const ok = QS.picked === Q[id].a; if (ok) QS.right++; grade(id, ok); save(); drawRun(); }
+  else if (a === 'nextQ' && QS) { QS.i++; QS.picked = null; drawRun(); }
+  else if (a === 'check') checkAnswer(+el.dataset.w, +el.dataset.i);
+  else if (a === 'copy') { const t = D.weeks[+el.dataset.w - 1].chal.evidence; const done = () => { el.textContent = 'Copied'; setTimeout(() => el.textContent = 'Copy evidence', 1500); }; const fail = () => { const r = document.createRange(); r.selectNodeContents($('#ev-' + el.dataset.w)); const s = getSelection(); s.removeAllRanges(); s.addRange(r); el.textContent = 'Selected: press Ctrl+C'; }; try { navigator.clipboard.writeText(t).then(done, fail); } catch (e) { fail(); } }
+  else if (a === 'startExam') startExam(+el.dataset.s);
+  else if (a === 'submitExam') submitExam();
+  else if (a === 'closeExam') { ES = null; render(); }
+});
+document.addEventListener('change', ev => {
+  const el = ev.target, a = el.dataset && el.dataset.act;
+  if (a === 'task') { if (el.checked) S.tasks[el.dataset.k] = 1; else delete S.tasks[el.dataset.k]; save(); const y = window.scrollY; render(); window.scrollTo(0, y); }
+  else if (a === 'ans' && ES && !ES.result) { ES.ans[el.dataset.id] = +el.value; const t = document.querySelector('.timer span'); if (t) t.textContent = Object.keys(ES.ans).length + '/' + ES.ids.length + ' answered'; }
+});
+document.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches && ev.target.matches('.cq input')) checkAnswer(+ev.target.dataset.w, +ev.target.dataset.i); });
+
+render();
+initRemote();
+</script>
+</body>
+</html>
