@@ -9,94 +9,172 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* layout: case-file workspace. top bar, one 880px reading column, evidence in mono blocks */
-  --bg:#eef1f4; --surface:#ffffff; --ink:#15202b; --muted:#566777; --line:#d3dae1;
-  --accent:#0a6c8f; --accent-ink:#ffffff; --tint:#e3f0f5;
+  /* layout: top bar, 940px column. dark navy hero panel anchors each page; work happens in a numbered step rail */
+  --bg:#edf0f3; --surface:#ffffff; --ink:#14202b; --muted:#566777; --line:#d4dbe2;
+  --accent:#0a6c8f; --accent-ink:#ffffff; --tint:#e2eff4;
+  --hero:#0e2a3b; --hero-ink:#eaf3f7; --hero-muted:#9dbccb; --hero-accent:#6cc8ea;
   --good:#1b7548; --warn:#955600; --bad:#b3261e; --code:#f3f6f8;
   --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --shadow:0 1px 2px rgba(16,32,44,.06),0 4px 14px rgba(16,32,44,.05);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#0f151b; --surface:#172029; --ink:#e4ebf1; --muted:#95a5b5; --line:#2b3743;
-    --accent:#5bbbdd; --accent-ink:#06222d; --tint:#1a2f3a;
-    --good:#5fc391; --warn:#e2a650; --bad:#f28b84; --code:#111a22; color-scheme:dark;
+    --bg:#0c1217; --surface:#151e26; --ink:#e4ebf1; --muted:#95a5b5; --line:#293541;
+    --accent:#5bbbdd; --accent-ink:#06222d; --tint:#17303c;
+    --hero:#12303f; --hero-ink:#eaf3f7; --hero-muted:#9dbccb; --hero-accent:#6cc8ea;
+    --good:#5fc391; --warn:#e2a650; --bad:#f28b84; --code:#0f181f; --shadow:none; color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#0f151b; --surface:#172029; --ink:#e4ebf1; --muted:#95a5b5; --line:#2b3743;
-  --accent:#5bbbdd; --accent-ink:#06222d; --tint:#1a2f3a;
-  --good:#5fc391; --warn:#e2a650; --bad:#f28b84; --code:#111a22; color-scheme:dark;
+  --bg:#0c1217; --surface:#151e26; --ink:#e4ebf1; --muted:#95a5b5; --line:#293541;
+  --accent:#5bbbdd; --accent-ink:#06222d; --tint:#17303c;
+  --hero:#12303f; --hero-ink:#eaf3f7; --hero-muted:#9dbccb; --hero-accent:#6cc8ea;
+  --good:#5fc391; --warn:#e2a650; --bad:#f28b84; --code:#0f181f; --shadow:none; color-scheme:dark;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--body)}
 a{color:var(--accent)}
 h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.15;margin:0;text-wrap:balance}
-h1{font-size:2rem} h2{font-size:1.35rem} h3{font-size:1.1rem}
-h4{font:600 .8rem/1.2 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:1.2em 0 .4em}
+h1{font-size:2.2rem} h2{font-size:1.4rem} h3{font-size:1.1rem}
+h4{font:600 .78rem/1.2 var(--body);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:1.3em 0 .45em}
 p{margin:.5em 0} ul{margin:.4em 0;padding-left:1.2em} li{margin:.25em 0}
 code,pre{font-family:var(--mono);font-size:.84rem}
 code{background:var(--code);padding:.08em .3em;border-radius:3px}
-pre{background:var(--code);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;margin:.6em 0;line-height:1.5;white-space:pre}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;margin:.6em 0;line-height:1.5;white-space:pre}
 button,input{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 .bar{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
-.bar-in{max-width:920px;margin:0 auto;padding:10px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
-.brand{font:600 1.05rem var(--display);letter-spacing:.02em;margin-right:auto;text-decoration:none;color:var(--ink)}
+.bar-in{max-width:980px;margin:0 auto;padding:10px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.brand{font:600 1.05rem var(--display);letter-spacing:.02em;margin-right:auto;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:9px}
+.brand svg{width:22px;height:22px;color:var(--accent)}
 .brand span{color:var(--accent)}
-nav{display:flex;gap:4px}
+nav{display:flex;gap:2px;flex-wrap:wrap}
 nav a{padding:6px 12px;border-radius:6px;text-decoration:none;color:var(--muted);font-weight:500;font-size:.95rem}
+nav a:hover{color:var(--ink)}
 nav a[aria-current="page"]{background:var(--tint);color:var(--accent)}
-.badge{display:inline-block;min-width:1.4em;padding:0 .4em;margin-left:4px;border-radius:9px;background:var(--warn);color:var(--surface);font-size:.75rem;text-align:center;font-weight:600}
+.badge{display:inline-block;min-width:1.4em;padding:0 .4em;margin-left:5px;border-radius:9px;background:var(--warn);color:var(--surface);font-size:.75rem;text-align:center;font-weight:600}
 .sync{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:6px}
 .sync i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
 .sync.cloud i{background:var(--good)} .sync.local i{background:var(--warn)}
 
-main{max-width:920px;margin:0 auto;padding:28px 20px 80px;display:flex;flex-direction:column;gap:20px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px}
+main{max-width:980px;margin:0 auto;padding:24px 20px 80px;display:flex;flex-direction:column;gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px;box-shadow:var(--shadow)}
 .card>h2{margin-bottom:10px}
-.eyebrow{font:500 .8rem var(--mono);color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+.eyebrow{font:500 .78rem var(--mono);color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
 .lead{color:var(--muted);max-width:65ch}
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
-.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.between{justify-content:space-between}
+
+.hero{background:var(--hero) linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px) 0 0/100% 28px;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px),radial-gradient(120% 140% at 100% 0,rgba(108,200,234,.18),transparent 55%);background-size:28px 28px,28px 28px,100% 100%;color:var(--hero-ink);border-radius:14px;padding:26px 28px;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;box-shadow:var(--shadow)}
+.hero .eyebrow{color:var(--hero-accent)} .hero .eyebrow a{color:inherit}
+.hero h1{margin:6px 0 8px}
+.hero p{color:var(--hero-muted);max-width:58ch;margin:0}
+.hero .row{margin-top:16px}
+.hero .btn{background:var(--hero-accent);color:#06222d}
+.hero .btn.ghost{background:transparent;color:var(--hero-ink);border-color:rgba(255,255,255,.28)}
+.hero input[type=date]{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.28);border-radius:6px;padding:6px 8px;color:var(--hero-ink);color-scheme:dark}
+.hero .sched{font-size:.9rem;color:var(--hero-muted)}
+.ring{position:relative;width:128px;height:128px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:9}
+.ring .t{stroke:rgba(255,255,255,.14)} .ring .v{stroke:var(--hero-accent);stroke-linecap:round}
+.ring div{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font:600 1.9rem var(--display);font-variant-numeric:tabular-nums}
+.ring small{font:400 .72rem var(--body);color:var(--hero-muted)}
+.pips{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.pip{font:500 .72rem var(--mono);padding:3px 9px;border-radius:20px;border:1px solid rgba(255,255,255,.25);color:var(--hero-muted);text-transform:uppercase;letter-spacing:.04em}
+.pip.on{background:var(--hero-accent);border-color:var(--hero-accent);color:#06222d}
+.pip.now{border-color:var(--hero-accent);color:var(--hero-accent)}
+@media(max-width:640px){.hero{grid-template-columns:1fr;padding:22px}.ring{width:96px;height:96px}h1{font-size:1.8rem}}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
 .stat b{display:block;font:600 1.6rem var(--display);font-variant-numeric:tabular-nums}
 .stat span{font-size:.82rem;color:var(--muted)}
 .stat.due b{color:var(--warn)}
-.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:6px;padding:9px 16px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
-.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--line)}
-.btn.small{padding:5px 10px;font-size:.85rem}
+.btn{background:var(--accent);color:var(--accent-ink);border:1px solid transparent;border-radius:7px;padding:9px 16px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;line-height:1.3}
+.btn.ghost{background:transparent;color:var(--accent);border-color:var(--line)}
+.btn.small{padding:5px 11px;font-size:.85rem}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-.chip{display:inline-block;font:500 .72rem var(--mono);padding:2px 8px;border-radius:4px;border:1px solid var(--line);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.chip{display:inline-block;font:500 .7rem var(--mono);padding:2px 8px;border-radius:4px;border:1px solid var(--line);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
 .chip.good{color:var(--good);border-color:var(--good)} .chip.warn{color:var(--warn);border-color:var(--warn)}
 .chip.bad{color:var(--bad);border-color:var(--bad)} .chip.acc{color:var(--accent);border-color:var(--accent)}
+.chip.fill{background:var(--tint);border-color:transparent;color:var(--accent)}
 .meter{height:6px;background:var(--line);border-radius:3px;overflow:hidden;min-width:80px;flex:1}
 .meter i{display:block;height:100%;background:var(--accent)}
 .next{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
-.next li{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin:0;flex-wrap:wrap}
+.next li{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:11px 14px;border:1px solid var(--line);border-radius:9px;margin:0}
+.next li b{width:26px;height:26px;border-radius:50%;background:var(--tint);color:var(--accent);display:grid;place-items:center;font:600 .85rem var(--mono)}
+.next li:first-child{border-color:var(--accent)}
 .strip{display:grid;grid-template-columns:repeat(12,1fr);gap:6px}
-.strip a{display:block;text-align:center;padding:8px 0;border-radius:6px;border:1px solid var(--line);text-decoration:none;color:var(--muted);font:500 .85rem var(--mono);position:relative;overflow:hidden}
+.strip a{display:block;text-align:center;padding:9px 0;border-radius:7px;border:1px solid var(--line);text-decoration:none;color:var(--muted);font:500 .85rem var(--mono);position:relative;overflow:hidden}
 .strip a i{position:absolute;left:0;bottom:0;height:4px;background:var(--accent)}
-.strip a.cur{border-color:var(--accent);color:var(--accent)} .strip a.done{background:var(--tint);color:var(--accent)}
+.strip a.cur{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent)} .strip a.done{background:var(--tint);color:var(--accent)}
 .strip a.lock{opacity:.45}
-@media(max-width:560px){.strip{grid-template-columns:repeat(6,1fr)}}
+@media(max-width:560px){.strip{grid-template-columns:repeat(6,1fr)}.next li{grid-template-columns:28px 1fr}.next li .btn{grid-column:2;justify-self:start}}
 
-.stage{display:flex;flex-direction:column;gap:8px}
-.stage.locked .wk{opacity:.5}
-.wk{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink)}
-.wk .n{font:600 1.3rem var(--display);color:var(--accent);font-variant-numeric:tabular-nums}
+/* roadmap */
+.path{display:flex;align-items:center;gap:0;overflow-x:auto;padding:4px 0}
+.path a{flex:1;min-width:120px;text-decoration:none;color:var(--ink);padding:10px 12px;border:1px solid var(--line);background:var(--surface);border-radius:9px;font-size:.85rem}
+.path a b{display:block;font:600 .95rem var(--display)} .path a small{color:var(--muted)}
+.path a.done{border-color:var(--good)} .path a.now{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)} .path a.lock{opacity:.55}
+.path span{flex:none;width:18px;height:2px;background:var(--line)}
+.tl{position:relative;display:flex;flex-direction:column;gap:10px;padding-left:34px}
+.tl::before{content:"";position:absolute;left:11px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tl .node{position:relative}
+.tl .node::before{content:"";position:absolute;left:-29px;top:20px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--line)}
+.tl .node.done::before{background:var(--good);border-color:var(--good)}
+.tl .node.cur::before{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 4px var(--tint)}
+.tl .stagehead{margin:14px 0 2px}
+.tl .stagehead::before{left:-34px;top:6px;width:22px;height:22px;border-radius:6px;background:var(--hero);border:0;content:attr(data-n);color:var(--hero-ink);font:600 .8rem var(--mono);display:grid;place-items:center}
+.stage-locked .wk{opacity:.55}
+.wk{display:grid;grid-template-columns:1fr auto;gap:8px 16px;align-items:center;padding:14px 18px;background:var(--surface);border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow)}
+.wk:hover{border-color:var(--accent)}
 .wk small{color:var(--muted);display:block}
-.wk.exam{border-style:dashed}
-.wk .side{display:flex;gap:10px;align-items:center;min-width:150px;justify-content:flex-end}
-@media(max-width:560px){.wk{grid-template-columns:36px 1fr}.wk .side{grid-column:2;justify-content:flex-start}}
+.wk.exam{border-style:dashed;box-shadow:none}
+.wk .side{display:flex;gap:10px;align-items:center}
+.mini{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+.mini i{font:500 .66rem var(--mono);font-style:normal;padding:1px 7px;border-radius:10px;border:1px solid var(--line);color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+.mini i.on{background:var(--tint);border-color:transparent;color:var(--accent)}
+@media(max-width:560px){.wk{grid-template-columns:1fr}}
 
-.tasks{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
+/* week steps */
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;counter-reset:s}
+.step{display:grid;grid-template-columns:40px 1fr;gap:14px;margin:0;position:relative}
+.step::before{content:"";position:absolute;left:19px;top:44px;bottom:-12px;width:2px;background:var(--line)}
+.step:last-child::before{display:none}
+.step>.dot{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font:600 1rem var(--mono);background:var(--surface);border:2px solid var(--line);color:var(--muted);z-index:1;margin-top:8px}
+.step.cur>.dot{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 4px var(--tint)}
+.step.done>.dot{background:var(--good);border-color:var(--good);color:var(--surface)}
+.step.done::before{background:var(--good)}
+.step>details{scroll-margin-top:70px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);min-width:0}
+.step.cur>details{border-color:var(--accent)}
+.step>details>summary{list-style:none;cursor:pointer;padding:14px 18px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+.step>details>summary::-webkit-details-marker{display:none}
+.step>details>summary h2{font-size:1.2rem}
+.step>details>summary small{color:var(--muted);display:block;font-size:.85rem}
+.step>details>summary .caret{flex:none;width:10px;height:10px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:0 4px 4px 8px}
+.step>details[open]>summary .caret{transform:rotate(-135deg);margin-bottom:-4px}
+.step .body{padding:2px 18px 18px;border-top:1px solid var(--line);padding-top:14px}
+@media(max-width:560px){.step{grid-template-columns:30px 1fr;gap:10px}.step>.dot{width:30px;height:30px;font-size:.85rem}.step::before{left:14px;top:38px}}
+
+.tasks,.reslist{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px}
 .tasks label{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
-.tasks input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
+.tasks input,.reslist input,.selfc input{width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
 .tasks .done{color:var(--muted);text-decoration:line-through}
+.reslist li{display:grid;grid-template-columns:22px 34px 1fr auto;gap:10px;align-items:start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin:0}
+.reslist li.core{border-left:3px solid var(--accent)}
+.reslist a{font-weight:500;text-decoration:none;overflow-wrap:anywhere} .reslist a:hover{text-decoration:underline}
+.reslist small{display:block;color:var(--muted)}
+.reslist li.seen a{color:var(--muted)}
+.ico{width:34px;height:34px;border-radius:8px;background:var(--tint);color:var(--accent);display:grid;place-items:center}
+.ico svg{width:18px;height:18px}
+.meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:560px){.reslist li{grid-template-columns:22px 1fr}.ico{display:none}.meta{grid-column:2;justify-content:flex-start}.tasks label{grid-template-columns:22px 1fr}.tasks label .chip{grid-column:2;justify-self:start}}
+.selfc{display:grid;grid-template-columns:22px 1fr;gap:10px;padding:12px 14px;border:1px dashed var(--accent);border-radius:8px;cursor:pointer;margin-top:14px;background:var(--tint)}
 .note{border-left:3px solid var(--accent);background:var(--tint);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.95rem}
 .lesson{max-width:70ch}
 .opts{display:flex;flex-direction:column;gap:8px;margin:14px 0}
@@ -112,30 +190,62 @@ main{max-width:920px;margin:0 auto;padding:28px 20px 80px;display:flex;flex-dire
 .cq.ok input{border-color:var(--good)} .cq.no input{border-color:var(--bad)}
 .hint{font-size:.8rem;color:var(--muted)}
 .ev{position:relative}
-.ev .btn{position:absolute;top:8px;right:8px}
-.ev pre{padding-top:40px;max-height:420px;overflow:auto}
+.ev .btn{position:absolute;top:8px;right:8px;background:var(--surface)}
+.ev pre{padding-top:42px;max-height:420px;overflow:auto}
 .timer{position:sticky;top:58px;z-index:4;background:var(--surface);border:1px solid var(--accent);border-radius:8px;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono)}
 .eq{padding:16px 0;border-top:1px solid var(--line)}
 .eq label{display:flex;gap:10px;padding:7px 10px;border-radius:6px;cursor:pointer;align-items:flex-start;overflow-wrap:anywhere}
 .eq label:hover{background:var(--tint)}
 .eq input{margin-top:5px;accent-color:var(--accent)}
 .eq .r{color:var(--good);font-weight:600} .eq .w{color:var(--bad);text-decoration:line-through}
-.big{font:600 3rem var(--display);font-variant-numeric:tabular-nums}
-.boxes{display:flex;gap:8px;align-items:flex-end;height:90px}
-.boxes div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;font:500 .75rem var(--mono);color:var(--muted);height:100%}
+.big{font:600 3rem var(--display);font-variant-numeric:tabular-nums;margin:0}
+.boxes{display:flex;gap:8px;align-items:flex-end;height:96px}
+.boxes div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;font:500 .75rem var(--mono);color:var(--muted);height:100%;text-align:center}
 .boxes i{display:block;width:100%;background:var(--accent);border-radius:3px 3px 0 0;min-height:2px}
+.lib h3{margin:18px 0 8px}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:5px 13px;cursor:pointer;font-size:.88rem;color:var(--muted)}
+.filters button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+main.wide{max-width:1200px}
+.wkgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
+.aside{display:none}
+@media(min-width:1060px){.wkgrid{grid-template-columns:minmax(0,1fr) 260px;align-items:start}.aside{display:flex;flex-direction:column;gap:14px;position:sticky;top:74px}}
+.snav{list-style:none;margin:10px 0 14px;padding:0;display:flex;flex-direction:column;gap:4px}
+.snav li{margin:0}
+.snav button{width:100%;display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:center;text-align:left;background:none;border:1px solid transparent;border-radius:8px;padding:7px 8px;cursor:pointer}
+.snav button:hover{background:var(--tint)}
+.snav b{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font:600 .75rem var(--mono);color:var(--muted)}
+.snav .done b{background:var(--good);border-color:var(--good);color:var(--surface)}
+.snav .cur b{border-color:var(--accent);color:var(--accent)} .snav .cur button{border-color:var(--line)}
+.snav small{display:block;color:var(--muted);font-size:.78rem}
+.kv{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:.9rem;margin-top:8px} .kv span{color:var(--muted)} .kv b{font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:minmax(0,1fr);gap:20px}
+@media(min-width:900px){.two{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);align-items:start}}
+.ivq{display:flex;flex-direction:column;gap:6px}
+.ivq details{border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.ivq summary{cursor:pointer;font-weight:500}
+.ivq p{color:var(--muted);margin:.6em 0 .2em;max-width:68ch}
+.sheet{display:grid;grid-template-columns:minmax(0,1fr);gap:4px 20px}
+@media(min-width:900px){.sheet{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sheet>div{min-width:0}
+.themebtn{background:none;border:1px solid var(--line);border-radius:7px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+.themebtn svg{width:16px;height:16px}
+@media print{.bar,footer,.filters,.btn{display:none!important}body{background:#fff}.card{box-shadow:none;break-inside:avoid}}
 footer{font-size:.82rem;color:var(--muted);display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;align-items:center}
-@media (prefers-reduced-motion:no-preference){.meter i,.strip a i{transition:width .3s}}
+@media (prefers-reduced-motion:no-preference){.meter i,.strip a i{transition:width .3s}.ring .v{transition:stroke-dashoffset .5s}}
 </style>
+
 </head>
 <body>
 <div class="bar"><div class="bar-in">
-  <a class="brand" href="#today">SOC Analyst <span>in 12 Weeks</span></a>
+  <a class="brand" href="#today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5" stroke-linecap="round"/></svg>SOC Analyst <span>in 12 Weeks</span></a>
   <nav id="nav"></nav>
+  <button class="themebtn" data-act="theme" aria-label="Switch between light and dark theme" title="Light or dark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
   <div class="sync" id="sync"><i></i><span>Saved in this browser</span></div>
 </div></div>
 <main id="view"></main>
 <script>
+try { const t = localStorage.getItem('soc12-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
 const D = /*DATA*/null;
 const DAY = 864e5, IV = [0, 1, 3, 7, 14, 30], KEY = 'soc12-state-v1', PASS = 0.8, QPASS = 0.7, COOLDOWN = 12 * 36e5;
 const TYPE = { thm: 'TryHackMe', pwn: 'pwn.college', own: 'Own work' };
@@ -153,7 +263,7 @@ D.stages.forEach((s, si) => s.extra.forEach((q, qi) => Q['s' + (si + 1) + 'x' + 
 const weekQids = w => D.weeks[w - 1].quiz.map((_, i) => 'w' + w + 'q' + (i + 1));
 
 /* state */
-const fresh = () => ({ v: 1, updatedAt: 0, start: null, tasks: {}, q: {}, wq: {}, ch: {}, ex: {} });
+const fresh = () => ({ v: 2, updatedAt: 0, start: null, tasks: {}, res: {}, rec: {}, q: {}, wq: {}, ch: {}, ex: {} });
 let S = fresh();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
 let remote = null, writing = false, dirty = false, saveTimer = null;
@@ -194,19 +304,26 @@ async function initRemote() {
 }
 
 /* derived */
+const STEPS = ['Learn', 'Labs', 'Recap', 'Quiz', 'Challenge'];
 const stageOf = w => Math.floor((w - 1) / 3) + 1;
 const unlocked = st => st === 1 || !!(S.ex[st - 1] && S.ex[st - 1].passed);
 const tasksDone = w => D.weeks[w - 1].tasks.filter((_, i) => S.tasks[w + '-' + i]).length;
+const coreIdx = w => D.weeks[w - 1].res.map((r, i) => r[5] ? i : -1).filter(i => i >= 0);
+const coreDone = w => coreIdx(w).filter(i => S.res[w + '-' + i]).length;
 const quizPassed = w => !!(S.wq[w] && S.wq[w].best >= QPASS);
 const chalSolved = w => { const c = S.ch[w]; return c ? c.ok.filter(Boolean).length : 0; };
 const chalDone = w => chalSolved(w) === D.weeks[w - 1].chal.qs.length;
-function weekPct(w) { const W = D.weeks[w - 1]; return Math.round(100 * (0.5 * tasksDone(w) / W.tasks.length + 0.25 * (quizPassed(w) ? 1 : 0) + 0.25 * chalSolved(w) / W.chal.qs.length)); }
-const weekDone = w => weekPct(w) === 100;
+function stepState(w) { const W = D.weeks[w - 1]; return [coreDone(w) === coreIdx(w).length, tasksDone(w) === W.tasks.length, !!S.rec[w], quizPassed(w), chalDone(w)]; }
+const curStep = w => { const i = stepState(w).indexOf(false); return i < 0 ? 5 : i; };
+function weekPct(w) { const W = D.weeks[w - 1]; return Math.round(100 * (0.10 * coreDone(w) / coreIdx(w).length + 0.40 * tasksDone(w) / W.tasks.length + 0.05 * (S.rec[w] ? 1 : 0) + 0.20 * (quizPassed(w) ? 1 : 0) + 0.25 * chalSolved(w) / W.chal.qs.length)); }
+const weekDone = w => stepState(w).every(Boolean);
 const hours = w => D.weeks[w - 1].tasks.reduce((a, t) => a + t[2], 0);
+const coreMins = w => coreIdx(w).reduce((a, i) => a + D.weeks[w - 1].res[i][4], 0);
 const dueIds = () => { const now = Date.now(); return Object.keys(S.q).filter(id => Q[id] && S.q[id].d <= now).sort((a, b) => S.q[a].d - S.q[b].d); };
 function workingWeek() { for (let w = 1; w <= 12; w++) if (!weekDone(w)) return w; return 12; }
 function planWeek() { if (!S.start) return null; return Math.max(1, Math.min(12, Math.floor((Date.now() - S.start) / (7 * DAY)) + 1)); }
 const allDone = () => !!(S.ex[4] && S.ex[4].passed) && chalDone(12);
+const overallPct = () => Math.round(D.weeks.reduce((a, _, i) => a + weekPct(i + 1), 0) / 12 * 0.8 + [1, 2, 3, 4].filter(s => S.ex[s] && S.ex[s].passed).length / 4 * 20);
 
 /* spaced repetition */
 function grade(id, ok) {
@@ -220,12 +337,22 @@ function grade(id, ok) {
 let QS = null, ES = null, esTimer = null;
 
 /* ---------- views ---------- */
+const ICON = {
+  video: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>',
+  read: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 4h9l3 3v13H6z"/><path d="M9 11h6M9 15h6"/></svg>',
+  tool: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M14 6a4 4 0 0 0 5 5l-8 8a2.1 2.1 0 0 1-3-3z"/></svg>',
+  practice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 7l4 4-4 4M12 16h7"/></svg>',
+};
+const RTYPE = { video: 'Video', read: 'Read', tool: 'Tool', practice: 'Practice' };
+const mins = m => m >= 60 ? (m / 60).toFixed(m % 60 ? 1 : 0) + ' h' : m + ' min';
+let OPEN = {}, LIBF = 'all';
 function nav(route) {
   const due = dueIds().length;
-  $('#nav').innerHTML = [['today', 'Today'], ['roadmap', 'Roadmap'], ['review', 'Review' + (due ? '<span class="badge">' + due + '</span>' : '')]]
+  $('#nav').innerHTML = [['today', 'Today'], ['roadmap', 'Roadmap'], ['library', 'Library'], ['cheatsheets', 'Cheat sheets'], ['review', 'Review' + (due ? '<span class="badge">' + due + '</span>' : '')]]
     .map(([h, t]) => `<a href="#${h}"${route === h ? ' aria-current="page"' : ''}>${t}</a>`).join('');
 }
 const meter = p => `<span class="meter" role="img" aria-label="${p}% complete"><i style="width:${p}%"></i></span>`;
+const ring = (p, label) => `<div class="ring" role="img" aria-label="${p}% ${label}"><svg viewBox="0 0 80 80"><circle class="t" cx="40" cy="40" r="34"/><circle class="v" cx="40" cy="40" r="34" stroke-dasharray="${(2 * Math.PI * 34).toFixed(1)}" stroke-dashoffset="${(2 * Math.PI * 34 * (1 - p / 100)).toFixed(1)}"/></svg><div>${p}%<small>${label}</small></div></div>`;
 function weekChip(w) {
   if (!unlocked(stageOf(w))) return '<span class="chip">Locked</span>';
   if (weekDone(w)) return '<span class="chip good">Done</span>';
@@ -239,72 +366,109 @@ function examChip(st) {
   if (e) return `<span class="chip bad">Best ${Math.round(e.best * 100)}%</span>`;
   return '<span class="chip warn">Not taken</span>';
 }
+function resRow(w, i) {
+  const r = D.weeks[w - 1].res[i], on = !!S.res[w + '-' + i];
+  return `<li class="${r[5] ? 'core ' : ''}${on ? 'seen' : ''}"><input type="checkbox" id="r-${w}-${i}" data-act="res" data-k="${w}-${i}"${on ? ' checked' : ''} aria-label="Mark as done: ${esc(r[1])}"><span class="ico">${ICON[r[0]]}</span><span><a href="${esc(r[2])}" target="_blank" rel="noopener">${esc(r[1])}</a><small>${esc(r[3])}</small></span><span class="meta"><span class="chip">${RTYPE[r[0]]} &middot; ${mins(r[4])}</span>${r[5] ? '<span class="chip fill">Core</span>' : ''}</span></li>`;
+}
+function stepHint(w, i) {
+  const W = D.weeks[w - 1];
+  return [`Watch and read the 2 core resources (${mins(coreMins(w))})`, W.tasks[Math.max(0, W.tasks.findIndex((_, t) => !S.tasks[w + '-' + t]))][1], 'Read the coach notes and tick the self-check', `Pass the quiz at ${Math.round(QPASS * 100)}% or more`, W.chal.title][i];
+}
 
 function viewToday() {
-  const w = workingWeek(), W = D.weeks[w - 1], st = stageOf(w), pw = planWeek();
+  const w = workingWeek(), W = D.weeks[w - 1], st = stageOf(w), pw = planWeek(), ss = stepState(w), cs = curStep(w);
   const totTasks = D.weeks.reduce((a, x) => a + x.tasks.length, 0), doneTasks = D.weeks.reduce((a, _, i) => a + tasksDone(i + 1), 0);
   const qp = D.weeks.filter((_, i) => quizPassed(i + 1)).length, cp = D.weeks.filter((_, i) => chalDone(i + 1)).length;
-  const ep = [1, 2, 3, 4].filter(s => S.ex[s] && S.ex[s].passed).length, due = dueIds().length;
-  const overall = Math.round(D.weeks.reduce((a, _, i) => a + weekPct(i + 1), 0) / 12 * 0.8 + ep / 4 * 20);
+  const ep = [1, 2, 3, 4].filter(s => S.ex[s] && S.ex[s].passed).length, due = dueIds().length, fin = allDone();
   let sched;
-  if (!S.start) sched = `<div class="row"><label for="startDate">Start date</label><input type="date" id="startDate" value="${new Date().toISOString().slice(0, 10)}"><button class="btn small" data-act="setStart">Start the 12 weeks</button></div>`;
-  else { const diff = pw - w; sched = `<p class="lead">Started ${fmtDate(S.start)}. Calendar week ${pw} of 12. ${allDone() ? '' : diff > 0 ? `You are ${diff} week${diff > 1 ? 's' : ''} behind the calendar.` : diff < 0 ? `You are ${-diff} week${diff < -1 ? 's' : ''} ahead.` : 'You are on schedule.'} <button class="btn ghost small" data-act="clearStart">Change start date</button></p>`; }
+  if (!S.start) sched = `<div class="row"><label for="startDate" class="sched">Start date</label><input type="date" id="startDate" value="${new Date().toISOString().slice(0, 10)}"><button class="btn" data-act="setStart">Start the 12 weeks</button><a class="btn ghost" href="#roadmap">See the roadmap</a></div>`;
+  else { const diff = pw - w; sched = `<div class="row"><a class="btn" href="${fin ? '#roadmap' : unlocked(st) ? '#week-' + w : '#exam-' + (st - 1)}">${fin ? 'Open roadmap' : unlocked(st) ? (cs < 5 ? 'Continue: step ' + (cs + 1) + ', ' + STEPS[cs] : 'Open week ' + w) : 'Sit the stage ' + (st - 1) + ' exam'}</a><span class="sched">Started ${fmtDate(S.start)} &middot; calendar week ${pw} of 12 &middot; ${fin ? 'finished' : diff > 0 ? diff + ' week' + (diff > 1 ? 's' : '') + ' behind' : diff < 0 ? -diff + ' week' + (diff < -1 ? 's' : '') + ' ahead' : 'on schedule'}</span><button class="btn ghost small" data-act="clearStart">Change start date</button></div>`; }
   const next = [];
-  if (due) next.push([`Review ${due} due question${due > 1 ? 's' : ''} (about ${Math.max(2, Math.round(due * 0.5))} min). Always do this first.`, '#review', 'Review']);
-  if (unlocked(st)) {
-    const ti = W.tasks.findIndex((_, i) => !S.tasks[w + '-' + i]);
-    if (ti >= 0) next.push([W.tasks[ti][1], '#week-' + w, 'Open week ' + w]);
-    if (!quizPassed(w)) next.push([`Pass the week ${w} quiz (${Math.round(QPASS * 100)}% or more)`, '#week-' + w, 'Quiz']);
-    if (!chalDone(w)) next.push([`Solve the challenge: ${W.chal.title}`, '#week-' + w, 'Challenge']);
-  }
   const sx = [1, 2, 3, 4].find(s => unlocked(s) && !(S.ex[s] && S.ex[s].passed));
-  if (sx && D.stages[sx - 1].weeks.every(weekDone)) next.unshift([`Sit the ${sx === 4 ? 'final exam' : 'stage ' + sx + ' exam'}. Passing ${sx === 4 ? 'completes the programme' : 'unlocks stage ' + (sx + 1)}.`, '#exam-' + sx, 'Exam']);
-  else if (sx && !unlocked(st)) next.push([`Pass the stage ${sx} exam to unlock week ${w}`, '#exam-' + sx, 'Exam']);
+  if (due) next.push([`Review ${due} due question${due > 1 ? 's' : ''} (about ${Math.max(2, Math.round(due * 0.5))} min). Always first.`, '#review', 'Review']);
+  if (sx && D.stages[sx - 1].weeks.every(weekDone)) next.push([`Sit the ${sx === 4 ? 'final exam' : 'stage ' + sx + ' exam'}. Passing ${sx === 4 ? 'completes the programme' : 'unlocks stage ' + (sx + 1)}.`, '#exam-' + sx, 'Exam']);
+  if (unlocked(st)) ss.forEach((d, i) => { if (!d) next.push([`${STEPS[i]}: ${stepHint(w, i)}`, '#week-' + w, 'Step ' + (i + 1)]); });
+  else if (sx) next.push([`Pass the stage ${sx} exam to unlock week ${w}`, '#exam-' + sx, 'Exam']);
   return `
-  <div><div class="eyebrow">Stage ${st} of 4 &middot; ${esc(D.stages[st - 1].name)}</div>
-  <h1>${allDone() ? 'Programme complete' : 'Week ' + w + ': ' + esc(W.title)}</h1>
-  <p class="lead">${allDone() ? 'You passed all four exams and the capstone. Next steps: book SAL1, start SOC Level 2, keep clearing reviews so it stays.' : esc(W.goal)}</p>${sched}</div>
+  <section class="hero"><div><div class="eyebrow">Stage ${st} of 4 &middot; ${esc(D.stages[st - 1].name)}</div>
+    <h1>${fin ? 'Programme complete' : 'Week ' + w + ': ' + esc(W.title)}</h1>
+    <p>${fin ? 'You passed all four exams and the capstone. Next: book SAL1, start SOC Level 2, and keep clearing reviews so it stays.' : esc(W.goal)}</p>
+    ${fin ? '' : `<div class="pips">${STEPS.map((s, i) => `<span class="pip${ss[i] ? ' on' : i === cs ? ' now' : ''}">${i + 1} ${s}</span>`).join('')}</div>`}
+    ${sched}</div>${ring(overallPct(), 'overall')}</section>
   <div class="stats">
-    <div class="stat"><b>${overall}%</b><span>Overall</span></div>
     <div class="stat"><b>${doneTasks}/${totTasks}</b><span>Lab tasks</span></div>
     <div class="stat"><b>${qp}/12</b><span>Quizzes passed</span></div>
     <div class="stat"><b>${cp}/12</b><span>Challenges solved</span></div>
     <div class="stat"><b>${ep}/4</b><span>Exams passed</span></div>
     <div class="stat${due ? ' due' : ''}"><b>${due}</b><span>Reviews due</span></div>
   </div>
-  <div class="card"><h2>Do next</h2>${next.length ? `<ul class="next">${next.slice(0, 4).map(n => `<li><span>${esc(n[0])}</span><a class="btn small" href="${n[1]}">${n[2]}</a></li>`).join('')}</ul>` : '<p>Nothing open. Check the Review tab tomorrow.</p>'}</div>
+  <div class="two"><div class="card"><h2>Do next, in this order</h2>${next.length ? `<ol class="next">${next.slice(0, 5).map((n, i) => `<li><b>${i + 1}</b><span>${esc(n[0])}</span><a class="btn small${i ? ' ghost' : ''}" href="${n[1]}">${n[2]}</a></li>`).join('')}</ol>` : '<p>Nothing open. Check the Review tab tomorrow.</p>'}</div>
+  <div class="card"><div class="eyebrow">Checkpoint</div><h2>${st === 4 ? 'Final exam' : 'Stage ' + st + ' exam'}</h2>
+    <div class="kv"><span>Weeks finished in this stage</span><b>${D.stages[st - 1].weeks.filter(weekDone).length}/3</b><span>Exam</span><b>${examChip(st)}</b><span>Questions in review rotation</span><b>${Object.keys(S.q).filter(id => Q[id]).length}</b><span>Resources ticked</span><b>${Object.keys(S.res).length}/${D.weeks.reduce((a, x) => a + x.res.length, 0)}</b></div>
+    <div class="row" style="margin-top:14px"><a class="btn ghost small" href="#exam-${st}">Exam page</a><a class="btn ghost small" href="#cheatsheets">Cheat sheets</a></div></div></div>
   <div class="card"><h2>All 12 weeks</h2><div class="strip">${D.weeks.map((_, i) => { const n = i + 1; return `<a href="#week-${n}" class="${n === w ? 'cur ' : ''}${weekDone(n) ? 'done ' : ''}${unlocked(stageOf(n)) ? '' : 'lock'}" title="Week ${n}: ${esc(D.weeks[i].title)}">${n}<i style="width:${weekPct(n)}%"></i></a>`; }).join('')}</div></div>
   <div class="card"><h2>How to spend 8 hours a week</h2>
-    <ul><li><b>Two lab sessions, 2.5 h each.</b> TryHackMe rooms for the week. Type every command yourself; no walkthrough until you have been stuck for 20 minutes.</li>
-    <li><b>One depth session, 1.5 to 2 h.</b> pwn.college and the "own work" task. This is where weak areas get fixed.</li>
-    <li><b>One proof session, 1 h.</b> Read the coach notes, pass the quiz, solve the challenge here.</li>
+    <ul><li><b>Session 1, about 1.5 h: step 1.</b> Watch and read the two core resources before touching a lab, so the lab is practice and not first contact.</li>
+    <li><b>Sessions 2 and 3, about 2.5 h each: step 2.</b> TryHackMe rooms, then the pwn.college or own-work task. Type every command yourself; no walkthrough until you have been stuck for 20 minutes.</li>
+    <li><b>Session 4, about 1 h: steps 3 to 5.</b> Coach notes, quiz, challenge.</li>
     <li><b>Every session starts with due reviews.</b> Five minutes. This is what moves knowledge from "seen it" to "know it".</li></ul>
-    <p class="lead">Short week? Skip the pwn.college task, never the quiz and challenge.</p></div>
+    <p class="lead">Short week? Skip optional resources and the pwn.college task. Never skip the quiz and challenge.</p></div>
   <footer><span>Quiz pass mark ${Math.round(QPASS * 100)}%. Exam pass mark ${Math.round(PASS * 100)}%. Review intervals 1, 3, 7, 14, 30 days.</span><span id="resetBox"><button class="btn ghost small" data-act="reset1">Reset all progress</button></span></footer>`;
 }
 
 function viewRoadmap() {
-  return `<div><h1>Roadmap</h1><p class="lead">Four stages of three weeks. Each stage ends with a timed exam; passing it unlocks the next stage. About 8 hours a week, 12 weeks.</p></div>` +
-    D.stages.map((s, si) => { const st = si + 1, open = unlocked(st), fin = s.final;
-      const mins = fin ? 40 : 25, n = fin ? 30 : 20;
-      return `<section class="stage${open ? '' : ' locked'}"><div class="row" style="justify-content:space-between"><div><div class="eyebrow">Stage ${st}${open ? '' : ' &middot; locked until the stage ' + (st - 1) + ' exam is passed'}</div><h2>${esc(s.name)}</h2></div><span class="lead">${esc(s.blurb)}</span></div>
-      ${s.weeks.map(w => { const W = D.weeks[w - 1]; return `<a class="wk" href="#week-${w}"><span class="n">${String(w).padStart(2, '0')}</span><span><b>${esc(W.title)}</b><small>${esc(W.module)} &middot; ${hours(w)} h</small></span><span class="side">${meter(weekPct(w))}${weekChip(w)}</span></a>`; }).join('')}
-      <a class="wk exam" href="#exam-${st}"><span class="n">${fin ? 'F' : 'E' + st}</span><span><b>${fin ? 'Final exam' : 'Stage ' + st + ' exam'}</b><small>${n} questions &middot; ${mins} minutes &middot; pass at ${Math.round(PASS * 100)}%${fin ? ' &middot; covers all 12 weeks' : ''}</small></span><span class="side">${examChip(st)}</span></a></section>`; }).join('');
+  const ww = workingWeek(), cst = [1, 2, 3, 4].find(s => !(S.ex[s] && S.ex[s].passed)) || 4;
+  const path = D.stages.map((s, si) => { const st = si + 1, done = S.ex[st] && S.ex[st].passed; return `<a href="#stage-${st}" data-act="jump" data-to="stage-${st}" class="${done ? 'done' : st === cst ? 'now' : unlocked(st) ? '' : 'lock'}"><small>Stage ${st} &middot; weeks ${s.weeks[0]} to ${s.weeks[2]}</small><b>${esc(s.name)}</b><small>${done ? 'Exam passed' : s.final ? 'Ends with the final exam' : 'Ends with exam ' + st}</small></a>`; }).join('<span></span>');
+  return `<section class="hero"><div><div class="eyebrow">12 weeks &middot; about 8 hours a week</div><h1>Roadmap</h1>
+    <p>Four stages of three weeks. Every week has the same five steps: learn, labs, recap, quiz, challenge. Each stage ends with a timed exam, and passing it unlocks the next stage.</p></div>${ring(overallPct(), 'overall')}</section>
+  <div class="path">${path}</div>
+  <div class="tl">` + D.stages.map((s, si) => { const st = si + 1, open = unlocked(st), fin = s.final, mins = fin ? 40 : 25, n = fin ? 30 : 20;
+    return `<div class="node stagehead" data-n="${st}" id="stage-${st}"><div class="eyebrow">Stage ${st}${open ? '' : ' &middot; locked until the stage ' + (st - 1) + ' exam is passed'}</div><h2>${esc(s.name)}</h2><p class="lead">${esc(s.blurb)}</p></div>
+    <div class="${open ? '' : 'stage-locked'}" style="display:contents">${s.weeks.map(w => { const W = D.weeks[w - 1], ss = stepState(w); return `<div class="node${weekDone(w) ? ' done' : w === ww && open ? ' cur' : ''}"><a class="wk" href="#week-${w}"><span><span class="eyebrow">Week ${w} &middot; ${hours(w)} h of labs</span><b style="display:block;font:600 1.15rem var(--display)">${esc(W.title)}</b><small>${esc(W.goal)}</small><span class="mini">${STEPS.map((x, i) => `<i class="${ss[i] ? 'on' : ''}">${x}</i>`).join('')}</span></span><span class="side">${meter(weekPct(w))}${weekChip(w)}</span></a></div>`; }).join('')}
+    <div class="node${S.ex[st] && S.ex[st].passed ? ' done' : ''}"><a class="wk exam" href="#exam-${st}"><span><span class="eyebrow">${fin ? 'Final test' : 'Checkpoint'}</span><b style="display:block;font:600 1.15rem var(--display)">${fin ? 'Final exam and capstone' : 'Stage ' + st + ' exam'}</b><small>${n} questions &middot; ${mins} minutes &middot; pass at ${Math.round(PASS * 100)}%${fin ? ' &middot; covers all 12 weeks' : ''}</small></span><span class="side">${examChip(st)}</span></a></div></div>`; }).join('') + `</div>`;
 }
 
 function viewWeek(w) {
-  const W = D.weeks[w - 1], st = stageOf(w);
-  const head = `<div><div class="eyebrow"><a href="#roadmap">Roadmap</a> &middot; Stage ${st} &middot; Week ${w} of 12</div><h1>${esc(W.title)}</h1><p class="lead">${esc(W.goal)}</p><div class="row">${meter(weekPct(w))}${weekChip(w)}</div></div>`;
+  const W = D.weeks[w - 1], st = stageOf(w), ss = stepState(w), cs = curStep(w);
+  const head = `<section class="hero"><div><div class="eyebrow"><a href="#roadmap">Roadmap</a> &middot; Stage ${st} &middot; Week ${w} of 12</div><h1>${esc(W.title)}</h1><p>${esc(W.goal)}</p>
+    <div class="pips">${STEPS.map((s, i) => `<span class="pip${ss[i] ? ' on' : i === cs ? ' now' : ''}">${i + 1} ${s}</span>`).join('')}</div></div>${ring(weekPct(w), 'this week')}</section>`;
   if (!unlocked(st)) return head + `<div class="card"><h2>Locked</h2><p>Pass the stage ${st - 1} exam to open this week.</p><a class="btn" href="#exam-${st - 1}">Go to the stage ${st - 1} exam</a></div>`;
   const tasks = W.tasks.map((t, i) => { const on = !!S.tasks[w + '-' + i]; return `<li><label><input type="checkbox" id="t-${w}-${i}" data-act="task" data-k="${w}-${i}"${on ? ' checked' : ''}><span class="${on ? 'done' : ''}">${esc(t[1])}</span><span class="chip">${TYPE[t[0]]} &middot; ${t[2]} h</span></label></li>`; }).join('');
-  const wq = S.wq[w];
-  return head + `
-  <div class="card"><h2>1. Labs</h2>${W.note ? `<p class="note">${esc(W.note)}</p>` : ''}<ul class="tasks">${tasks}</ul>
-    <p class="hint">Module names follow the current SOC Level 1 path. If TryHackMe shows them in a different order, follow this page's order. Already completed a module? Tick it.</p></div>
-  <div class="card"><h2>2. Coach notes</h2><div class="lesson">${W.lesson}</div></div>
-  <div class="card" id="quizCard"><h2>3. Quiz</h2><div id="quiz">${quizIntro(w, wq)}</div></div>
-  <div class="card"><h2>4. Challenge: ${esc(W.chal.title)}</h2>${chalHtml(w)}</div>
-  <div class="row" style="justify-content:space-between">${w > 1 ? `<a class="btn ghost" href="#week-${w - 1}">Week ${w - 1}</a>` : '<span></span>'}${w % 3 === 0 ? `<a class="btn" href="#exam-${st}">${st === 4 ? 'Final exam' : 'Stage ' + st + ' exam'}</a>` : `<a class="btn ghost" href="#week-${w + 1}">Week ${w + 1}</a>`}</div>`;
+  const core = coreIdx(w), opt = W.res.map((_, i) => i).filter(i => !W.res[i][5]);
+  const wq = S.wq[w], o = OPEN[w] || {};
+  const bodies = [
+    [`Watch and read first`, `${coreDone(w)}/${core.length} core done &middot; ${mins(coreMins(w))} core`,
+      `<p class="lead">Do the two core items before the labs. The optional ones are for when a topic does not click or you want more depth. Links open in a new tab; tick each one when you have finished it.</p>
+      <h4>Core</h4><ul class="reslist">${core.map(i => resRow(w, i)).join('')}</ul>
+      <h4>Optional, for depth</h4><ul class="reslist">${opt.map(i => resRow(w, i)).join('')}</ul>`],
+    [`Hands-on labs`, `${tasksDone(w)}/${W.tasks.length} done &middot; ${hours(w)} h`,
+      `${W.note ? `<p class="note">${esc(W.note)}</p>` : ''}<p class="lead">Work top to bottom.</p><ul class="tasks">${tasks}</ul>
+      <p class="hint">Module names follow the current SOC Level 1 path. If TryHackMe shows them in a different order, follow this page's order. Already completed a module? Tick it.</p>`],
+    [`Coach notes and self-check`, S.rec[w] ? 'Self-check ticked' : 'Read, then tick the self-check',
+      `<div class="lesson">${W.lesson}</div><h4>Interview questions</h4><p class="hint">Answer aloud first, then open the model answer and compare.</p><div class="ivq">${W.iv.map(q => `<details><summary>${esc(q[0])}</summary><p>${esc(q[1])}</p></details>`).join('')}</div><label class="selfc"><input type="checkbox" id="rec-${w}" data-act="rec" data-w="${w}"${S.rec[w] ? ' checked' : ''}><span><b>Self-check, without looking at the notes:</b> ${esc(W.check)}</span></label>`],
+    [`Quiz`, wq ? `Best ${Math.round(wq.best * 100)}% &middot; pass at ${Math.round(QPASS * 100)}%` : `${W.quiz.length} questions &middot; pass at ${Math.round(QPASS * 100)}%`, `<div id="quiz">${quizIntro(w, wq)}</div>`],
+    [`Challenge: ${esc(W.chal.title)}`, `${chalSolved(w)}/${W.chal.qs.length} solved`, chalHtml(w)],
+  ];
+  const aside = `<aside class="aside"><div class="card"><div class="eyebrow">Week ${w} steps</div><ol class="snav">${STEPS.map((x, i) => `<li class="${ss[i] ? 'done' : i === cs ? 'cur' : ''}"><button data-act="goStep" data-w="${w}" data-i="${i}"><b>${ss[i] ? '&#10003;' : i + 1}</b><span>${x}<small>${bodies[i][1]}</small></span></button></li>`).join('')}</ol>${meter(weekPct(w))}</div>
+    <div class="card"><div class="eyebrow">Time this week</div><div class="kv"><span>Core watching and reading</span><b>${mins(coreMins(w))}</b><span>Labs</span><b>${hours(w)} h</b><span>Recap, quiz, challenge</span><b>1 h</b></div></div></aside>`;
+  return head + `<div class="wkgrid"><ol class="steps">${bodies.map((b, i) => `<li class="step ${ss[i] ? 'done' : i === cs ? 'cur' : 'todo'}"><span class="dot" aria-hidden="true">${ss[i] ? '&#10003;' : i + 1}</span>
+    <details id="step-${w}-${i}" data-w="${w}" data-i="${i}"${(o[i] !== undefined ? o[i] : i === cs) ? ' open' : ''}><summary><span><span class="eyebrow">Step ${i + 1} &middot; ${STEPS[i]}</span><h2>${b[0]}</h2><small>${b[1]}</small></span><span class="row">${ss[i] ? '<span class="chip good">Done</span>' : i === cs ? '<span class="chip acc">Now</span>' : ''}<span class="caret"></span></span></summary><div class="body">${b[2]}</div></details></li>`).join('')}</ol>${aside}</div>
+  <div class="row between">${w > 1 ? `<a class="btn ghost" href="#week-${w - 1}">Week ${w - 1}</a>` : '<span></span>'}${w % 3 === 0 ? `<a class="btn" href="#exam-${st}">${st === 4 ? 'Final exam' : 'Stage ' + st + ' exam'}</a>` : `<a class="btn ghost" href="#week-${w + 1}">Week ${w + 1}</a>`}</div>`;
+}
+
+function viewLibrary() {
+  const tot = D.weeks.reduce((a, W) => a + W.res.length, 0), seen = Object.keys(S.res).length;
+  const f = LIBF;
+  return `<div><h1>Library</h1><p class="lead">Every video, reference page, tool and practice site from the 12 weeks in one place. ${seen} of ${tot} ticked. Items marked "YouTube search" open a search for that exact video.</p></div>
+  <div class="filters" role="group" aria-label="Filter by type">${[['all', 'All'], ['core', 'Core only'], ['video', 'Videos'], ['read', 'Reading'], ['tool', 'Tools'], ['practice', 'Practice']].map(([k, t]) => `<button data-act="libf" data-f="${k}" aria-pressed="${f === k}">${t}</button>`).join('')}</div>
+  <div class="card lib">${D.weeks.map((W, wi) => { const w = wi + 1, idx = W.res.map((_, i) => i).filter(i => f === 'all' || (f === 'core' ? W.res[i][5] : W.res[i][0] === f)); return idx.length ? `<h3><a href="#week-${w}">Week ${w}</a> &middot; ${esc(W.title)}</h3><ul class="reslist">${idx.map(i => resRow(w, i)).join('')}</ul>` : ''; }).join('')}</div>`;
+}
+function viewSheets() {
+  const skip = /trap|out loud|what next|did it work/i, P = new DOMParser();
+  return `<div><h1>Cheat sheets</h1><p class="lead">Every reference table and command list from the coach notes on one page. Keep it open in a second tab while you do labs, or print it.</p></div>` +
+    D.weeks.map((W, wi) => { const d = P.parseFromString('<div>' + W.lesson + '</div>', 'text/html'), out = [];
+      d.querySelectorAll('h4').forEach(h => { if (skip.test(h.textContent)) return; let html = '', n = h.nextElementSibling; while (n && n.tagName !== 'H4') { html += n.outerHTML; n = n.nextElementSibling; } out.push(`<div><h4>${esc(h.textContent)}</h4>${html}</div>`); });
+      return out.length ? `<div class="card"><div class="eyebrow"><a href="#week-${wi + 1}">Week ${wi + 1}</a></div><h2>${esc(W.title)}</h2><div class="sheet">${out.join('')}</div></div>` : ''; }).join('');
 }
 function quizIntro(w, wq) {
   return `<p>${D.weeks[w - 1].quiz.length} questions, feedback after each. Pass at ${Math.round(QPASS * 100)}%. Every question then enters your review schedule; wrong answers come back tomorrow.</p>
@@ -348,7 +512,7 @@ function viewReview() {
   const boxes = [1, 2, 3, 4, 5].map(b => all.filter(id => S.q[id].b === b).length), mx = Math.max(1, ...boxes);
   const nextDue = all.length ? Math.min(...all.map(id => S.q[id].d)) : null;
   return `<div><h1>Review</h1><p class="lead">Questions you have answered come back just before you would forget them. A correct answer moves a question up one box and doubles the wait. A wrong one sends it back to box 1.</p></div>
-  <div class="card" id="quizCard"><h2>${due.length} due now</h2><div id="quiz">${due.length ? `<button class="btn" data-act="startReview">Start review (${Math.min(20, due.length)} questions)</button>` : all.length ? `<p>Nothing due. Next review on ${fmtDate(nextDue)}.</p>` : '<p>Take a week quiz first. Its questions will appear here on schedule.</p>'}</div></div>
+  <div class="card"><h2>${due.length} due now</h2><div id="quiz">${due.length ? `<button class="btn" data-act="startReview">Start review (${Math.min(20, due.length)} questions)</button>` : all.length ? `<p>Nothing due. Next review on ${fmtDate(nextDue)}.</p>` : '<p>Take a week quiz first. Its questions will appear here on schedule.</p>'}</div></div>
   <div class="card"><h2>Memory boxes</h2><p class="lead">${all.length} questions in rotation. Box 5 means you answered correctly five times in a row over about two months.</p>
   <div class="boxes">${boxes.map((n, i) => `<div><span>${n}</span><i style="height:${Math.round(n / mx * 60)}px"></i><span>Box ${i + 1}<br>${IV[i + 1]} d</span></div>`).join('')}</div></div>`;
 }
@@ -419,14 +583,15 @@ function route() {
   const h = (location.hash || '#today').slice(1); let m;
   if ((m = /^week-(\d+)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 12) return { name: 'week', n: +m[1] };
   if ((m = /^exam-(\d)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 4) return { name: 'exam', n: +m[1] };
-  if (h === 'roadmap' || h === 'review') return { name: h };
+  if (h === 'roadmap' || h === 'review' || h === 'library' || h === 'cheatsheets') return { name: h };
   return { name: 'today' };
 }
 function render() {
   const r = route();
   if (ES && !(r.name === 'exam' && r.n === ES.stage)) { clearInterval(esTimer); ES = null; }
   QS = null; nav(r.name);
-  $('#view').innerHTML = r.name === 'week' ? viewWeek(r.n) : r.name === 'exam' ? viewExam(r.n) : r.name === 'roadmap' ? viewRoadmap() : r.name === 'review' ? viewReview() : viewToday();
+  $('#view').className = r.name === 'week' ? 'wide' : '';
+  $('#view').innerHTML = r.name === 'week' ? viewWeek(r.n) : r.name === 'exam' ? viewExam(r.n) : r.name === 'roadmap' ? viewRoadmap() : r.name === 'library' ? viewLibrary() : r.name === 'cheatsheets' ? viewSheets() : r.name === 'review' ? viewReview() : viewToday();
 }
 window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
 
@@ -442,7 +607,11 @@ function checkAnswer(w, i) {
 document.addEventListener('click', ev => {
   const el = ev.target.closest('[data-act]'); if (!el) return;
   const a = el.dataset.act;
-  if (a === 'task' || a === 'ans') return;
+  if (a === 'task' || a === 'ans' || a === 'res' || a === 'rec') return;
+  if (a === 'jump') { ev.preventDefault(); const t = document.getElementById(el.dataset.to); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (a === 'libf') { LIBF = el.dataset.f; render(); return; }
+  if (a === 'theme') { const r = document.documentElement, cur = r.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'), nx = cur === 'dark' ? 'light' : 'dark'; r.dataset.theme = nx; try { localStorage.setItem('soc12-theme', nx); } catch (e) {} return; }
+  if (a === 'goStep') { const d = document.getElementById('step-' + el.dataset.w + '-' + el.dataset.i); if (d) { d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); } return; }
   if (a === 'setStart') { const v = $('#startDate').value; S.start = v ? new Date(v + 'T00:00:00').getTime() : Date.now(); save(); render(); }
   else if (a === 'clearStart') { S.start = null; save(); render(); }
   else if (a === 'reset1') { $('#resetBox').innerHTML = 'Delete all progress? <button class="btn small" data-act="reset2">Yes, delete</button> <button class="btn ghost small" data-act="reset0">Cancel</button>'; }
@@ -460,9 +629,11 @@ document.addEventListener('click', ev => {
 });
 document.addEventListener('change', ev => {
   const el = ev.target, a = el.dataset && el.dataset.act;
-  if (a === 'task') { if (el.checked) S.tasks[el.dataset.k] = 1; else delete S.tasks[el.dataset.k]; save(); const y = window.scrollY; render(); window.scrollTo(0, y); }
+  if (a === 'task' || a === 'res') { const m = a === 'task' ? S.tasks : S.res; if (el.checked) m[el.dataset.k] = 1; else delete m[el.dataset.k]; save(); const y = window.scrollY; render(); window.scrollTo(0, y); }
+  else if (a === 'rec') { if (el.checked) S.rec[el.dataset.w] = 1; else delete S.rec[el.dataset.w]; save(); const y = window.scrollY; render(); window.scrollTo(0, y); }
   else if (a === 'ans' && ES && !ES.result) { ES.ans[el.dataset.id] = +el.value; const t = document.querySelector('.timer span'); if (t) t.textContent = Object.keys(ES.ans).length + '/' + ES.ids.length + ' answered'; }
 });
+document.addEventListener('toggle', ev => { const d = ev.target; if (d.dataset && d.dataset.i !== undefined && d.dataset.w) { (OPEN[d.dataset.w] = OPEN[d.dataset.w] || {})[d.dataset.i] = d.open; } }, true);
 document.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches && ev.target.matches('.cq input')) checkAnswer(+ev.target.dataset.w, +ev.target.dataset.i); });
 
 render();

@@ -817,4 +817,270 @@ const stages = [
   ] },
 ];
 
+/* ---------- learning resources per week: [type, title, url, source, minutes, core] ---------- */
+const yt = q => 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
+const RES = {
+  1: [
+    ['read', 'The Pyramid of Pain, the original article', 'https://detect-respond.blogspot.com/2013/03/the-pyramid-of-pain.html', 'David Bianco', 10, 1],
+    ['read', 'ATT&CK Enterprise matrix: open three techniques each under Initial Access, Execution and Persistence', 'https://attack.mitre.org/', 'MITRE', 25, 1],
+    ['read', 'The Cyber Kill Chain', 'https://www.lockheedmartin.com/en-us/capabilities/cyber/cyber-kill-chain.html', 'Lockheed Martin', 10, 0],
+    ['read', 'The Unified Kill Chain', 'https://www.unifiedkillchain.com/', 'Paul Pols', 15, 0],
+    ['video', 'SOC Core Skills course, pay what you can (16 h in total; start session 1)', 'https://www.antisyphontraining.com/product/soc-core-skills-with-john-strand/', 'Antisyphon, John Strand', 120, 0],
+    ['practice', 'Real intrusion reports to map to ATT&CK', 'https://thedfirreport.com/', 'The DFIR Report', 30, 0],
+  ],
+  2: [
+    ['video', 'Networking Fundamentals, Module 1 playlist: lessons 1 to 4', 'https://www.youtube.com/playlist?list=PLIFyRwBY_4bRLmKfP1KnZA6rZbRHtxmXi', 'Practical Networking', 90, 1],
+    ['video', 'Wireshark Masterclass: lessons 1 to 5', yt('Chris Greer Wireshark Masterclass lesson 1'), 'Chris Greer (YouTube search)', 60, 1],
+    ['video', 'Lectures on IP, TCP and ARP on the module page', 'https://pwn.college/intro-to-cybersecurity/intercepting-communication', 'pwn.college', 60, 0],
+    ['read', 'The OSI model explained', 'https://www.cloudflare.com/learning/ddos/glossary/open-systems-interconnection-model-osi/', 'Cloudflare Learning', 10, 0],
+    ['read', 'Display filter reference: keep it open while you work', 'https://www.wireshark.org/docs/dfref/', 'Wireshark', 10, 0],
+    ['practice', 'Sample captures to open and explore', 'https://wiki.wireshark.org/SampleCaptures', 'Wireshark Wiki', 30, 0],
+  ],
+  3: [
+    ['read', 'Zeek log formats: read conn.log and dns.log', 'https://docs.zeek.org/en/master/logs/index.html', 'Zeek docs', 20, 1],
+    ['video', 'Spotting scans and malware traffic in Wireshark', yt('Chris Greer Wireshark nmap scan malware traffic analysis'), 'Chris Greer (YouTube search)', 30, 1],
+    ['read', 'How DNS tunnelling works and what it looks like', 'https://unit42.paloaltonetworks.com/dns-tunneling-how-dns-can-be-abused-by-malicious-actors/', 'Unit 42', 15, 0],
+    ['read', 'Snort 3 rule writing guide', 'https://docs.snort.org/', 'Snort', 20, 0],
+    ['read', 'What is DNS?', 'https://www.cloudflare.com/learning/dns/what-is-dns/', 'Cloudflare Learning', 10, 0],
+    ['practice', 'Traffic analysis exercises with real malware pcaps', 'https://www.malware-traffic-analysis.net/training-exercises.html', 'malware-traffic-analysis.net', 60, 0],
+  ],
+  4: [
+    ['video', 'Email Security: SPF, DKIM and DMARC', 'https://www.youtube.com/watch?v=v6ht9efsnRI', 'Professor Messer', 8, 1],
+    ['tool', 'Learn DMARC: send a test email and watch each check run', 'https://www.learndmarc.com/', 'learndmarc.com', 15, 1],
+    ['read', 'What are DMARC, DKIM and SPF?', 'https://www.cloudflare.com/learning/email-security/dmarc-dkim-spf/', 'Cloudflare Learning', 10, 0],
+    ['tool', 'Message Header Analyzer', 'https://mha.azurewebsites.net/', 'Microsoft', 5, 0],
+    ['tool', 'Email header analyzer', 'https://mxtoolbox.com/EmailHeaders.aspx', 'MXToolbox', 5, 0],
+    ['tool', 'Scan a suspicious URL without visiting it', 'https://urlscan.io/', 'urlscan.io', 5, 0],
+  ],
+  5: [
+    ['video', 'Running an SQL Injection Attack', 'https://www.youtube.com/watch?v=ciNHn38EyRc', 'Computerphile', 17, 1],
+    ['read', 'SQL injection: explanation, then the first two free labs', 'https://portswigger.net/web-security/sql-injection', 'PortSwigger Web Security Academy', 40, 1],
+    ['read', 'Cross-site scripting', 'https://portswigger.net/web-security/cross-site-scripting', 'PortSwigger Web Security Academy', 20, 0],
+    ['read', 'Path traversal', 'https://portswigger.net/web-security/file-path-traversal', 'PortSwigger Web Security Academy', 15, 0],
+    ['read', 'HTTP response status codes', 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status', 'MDN', 10, 0],
+    ['read', 'Apache log files: the access log format', 'https://httpd.apache.org/docs/2.4/logs.html', 'Apache', 10, 0],
+    ['read', 'OWASP Top 10', 'https://owasp.org/www-project-top-ten/', 'OWASP', 15, 0],
+  ],
+  6: [
+    ['read', 'Windows Security Log Encyclopedia: look up 4624, 4625, 4688, 4720, 4732, 1102', 'https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/', 'Ultimate Windows Security', 25, 1],
+    ['video', 'Event log forensics, including RDP logons', yt('13Cubed event log forensics RDP'), '13Cubed (YouTube search)', 30, 1],
+    ['practice', 'Room: Windows Logging for SOC', 'https://tryhackme.com/room/windowsloggingforsoc?pathCode=soclevel1', 'TryHackMe', 60, 0],
+    ['read', 'Sysmon: what each event ID records', 'https://learn.microsoft.com/en-us/sysinternals/downloads/sysmon', 'Microsoft Learn', 20, 0],
+    ['read', 'A well-commented Sysmon configuration', 'https://github.com/SwiftOnSecurity/sysmon-config', 'SwiftOnSecurity', 15, 0],
+    ['read', 'Events to monitor in Active Directory', 'https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/plan/appendix-l--events-to-monitor', 'Microsoft Learn', 15, 0],
+  ],
+  7: [
+    ['read', 'GTFOBins: how attackers abuse standard Linux binaries', 'https://gtfobins.github.io/', 'GTFOBins', 20, 1],
+    ['tool', 'explainshell: paste every one-liner from the cheat sheet and read the breakdown', 'https://explainshell.com/', 'explainshell.com', 20, 1],
+    ['video', 'Log analysis with grep, awk and sed', yt('linux log analysis grep awk sed security auth.log tutorial'), 'YouTube search', 30, 0],
+    ['read', 'Getting started with awk', 'https://www.gnu.org/software/gawk/manual/gawk.html#Getting-Started', 'GNU awk manual', 30, 0],
+    ['read', 'ATT&CK for Linux', 'https://attack.mitre.org/matrices/enterprise/linux/', 'MITRE', 15, 0],
+    ['practice', 'Bandit wargame, for speed on the command line', 'https://overthewire.org/wargames/bandit/', 'OverTheWire', 60, 0],
+  ],
+  8: [
+    ['read', 'LOLBAS: read the entries for certutil, mshta, rundll32 and regsvr32', 'https://lolbas-project.github.io/', 'LOLBAS Project', 20, 1],
+    ['tool', 'CyberChef: practise From Base64 followed by Decode text (UTF-16LE)', 'https://gchq.github.io/CyberChef/', 'GCHQ', 15, 1],
+    ['video', 'Deobfuscating malicious PowerShell', yt('John Hammond powershell malware deobfuscation'), 'John Hammond (YouTube search)', 30, 0],
+    ['tool', 'Hash, URL, domain and IP lookups', 'https://www.virustotal.com/', 'VirusTotal', 10, 0],
+    ['tool', 'IP reputation', 'https://www.abuseipdb.com/', 'AbuseIPDB', 5, 0],
+    ['tool', 'Malware samples and families by hash', 'https://bazaar.abuse.ch/', 'MalwareBazaar', 10, 0],
+    ['read', 'T1105 Ingress Tool Transfer', 'https://attack.mitre.org/techniques/T1105/', 'MITRE ATT&CK', 10, 0],
+  ],
+  9: [
+    ['read', 'Splunk Search Tutorial: parts 1 to 4', 'https://docs.splunk.com/Documentation/Splunk/latest/SearchTutorial/WelcometotheSearchTutorial', 'Splunk docs', 45, 1],
+    ['read', 'Kibana Query Language', 'https://www.elastic.co/guide/en/kibana/current/kuery-query.html', 'Elastic docs', 15, 1],
+    ['video', 'Splunk Tutorial for Beginners (Cyber Security Tools)', yt('MyDFIR Splunk Tutorial for Beginners Cyber Security Tools'), 'MyDFIR (YouTube search)', 30, 0],
+    ['read', 'SPL search command reference', 'https://docs.splunk.com/Documentation/Splunk/latest/SearchReference/', 'Splunk docs', 15, 0],
+    ['practice', 'Boss of the SOC datasets and challenges', 'https://bots.splunk.com/', 'Splunk', 90, 0],
+  ],
+  10: [
+    ['read', 'SAL1 certification page: exam format and scoring', 'https://tryhackme.com/certification/security-analyst-level-1', 'TryHackMe', 10, 1],
+    ['read', 'One full intrusion report. Study how the timeline and findings are written', 'https://thedfirreport.com/', 'The DFIR Report', 40, 1],
+    ['video', 'SOC Core Skills course, pay what you can: alert triage sessions', 'https://www.antisyphontraining.com/product/soc-core-skills-with-john-strand/', 'Antisyphon, John Strand', 120, 0],
+    ['practice', 'Blue team investigation labs', 'https://cyberdefenders.org/blueteam-ctf-challenges/', 'CyberDefenders', 90, 0],
+    ['practice', 'SOC alert practice', 'https://letsdefend.io/', 'LetsDefend', 60, 0],
+  ],
+  11: [
+    ['video', 'Kerberos Authentication Explained: a deep dive', 'https://www.youtube.com/watch?v=5N242XcKAsM', 'YouTube', 17, 1],
+    ['read', 'The shared responsibility model', 'https://aws.amazon.com/compliance/shared-responsibility-model/', 'AWS', 10, 1],
+    ['practice', 'flaws.cloud: learn AWS mistakes by exploiting them, levels 1 to 3', 'http://flaws.cloud/', 'Scott Piper', 60, 0],
+    ['read', 'CloudTrail user guide: what gets logged', 'https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html', 'AWS docs', 20, 0],
+    ['read', 'T1558.003 Kerberoasting: detection section', 'https://attack.mitre.org/techniques/T1558/003/', 'MITRE ATT&CK', 10, 0],
+    ['video', 'Kerberos deep dive series', 'https://blog.compass-security.com/2025/09/taming-the-three-headed-dog-kerberos-deep-dive-series/', 'Compass Security', 60, 0],
+    ['read', 'ATT&CK Cloud matrix', 'https://attack.mitre.org/matrices/enterprise/cloud/', 'MITRE', 15, 0],
+  ],
+  12: [
+    ['read', 'NIST SP 800-61 Rev. 3, incident response recommendations', 'https://csrc.nist.gov/pubs/sp/800/61/r3/final', 'NIST', 30, 1],
+    ['read', 'A second full intrusion report. Rebuild its timeline from memory afterwards', 'https://thedfirreport.com/', 'The DFIR Report', 40, 1],
+    ['practice', 'One more traffic analysis exercise, timed', 'https://www.malware-traffic-analysis.net/training-exercises.html', 'malware-traffic-analysis.net', 60, 0],
+    ['practice', 'A blue team lab of your choice, timed', 'https://cyberdefenders.org/blueteam-ctf-challenges/', 'CyberDefenders', 90, 0],
+    ['read', 'SAL1 certification page, if you decide to book it', 'https://tryhackme.com/certification/security-analyst-level-1', 'TryHackMe', 10, 0],
+  ],
+};
+
+const MORE = {
+  1: [
+    ['video', 'Security+ SY0-701 free video course: use it as a lookup for any concept that feels shaky', 'https://www.professormesser.com/security-plus/sy0-701/sy0-701-video/sy0-701-comptia-security-plus-course/', 'Professor Messer', 60, 0],
+    ['tool', 'ATT&CK Navigator: colour the techniques from your breach write-up', 'https://mitre-attack.github.io/attack-navigator/', 'MITRE', 20, 0],
+    ['read', 'D3FEND: the defensive counterpart to ATT&CK', 'https://d3fend.mitre.org/', 'MITRE', 15, 0],
+    ['read', 'T1566.001 Spearphishing Attachment: read one technique page end to end', 'https://attack.mitre.org/techniques/T1566/001/', 'MITRE ATT&CK', 10, 0],
+  ],
+  2: [
+    ['read', 'What is TCP/IP?', 'https://www.cloudflare.com/learning/ddos/glossary/tcp-ip/', 'Cloudflare Learning', 10, 0],
+    ['read', 'Port scanning techniques: what each scan type sends and receives', 'https://nmap.org/book/man-port-scanning-techniques.html', 'Nmap reference guide', 20, 0],
+    ['read', 'Capture filter syntax (BPF)', 'https://www.tcpdump.org/manpages/pcap-filter.7.html', 'tcpdump', 10, 0],
+    ['read', 'Wireshark User\'s Guide', 'https://www.wireshark.org/docs/wsug_html_chunked/', 'Wireshark', 30, 0],
+  ],
+  3: [
+    ['tool', 'Try Zeek in the browser on sample pcaps', 'https://try.zeek.org/', 'Zeek', 30, 0],
+    ['read', 'Suricata rules documentation, the modern sibling of Snort rules', 'https://docs.suricata.io/', 'Suricata', 20, 0],
+    ['read', 'Threat hunting blog: beacon analysis and long connections', 'https://www.activecountermeasures.com/blog/', 'Active Countermeasures', 20, 0],
+    ['read', 'Daily handler diaries: short real-world network detections', 'https://isc.sans.edu/', 'SANS Internet Storm Center', 15, 0],
+    ['read', 'Security Onion documentation: how a full NSM stack fits together', 'https://docs.securityonion.net/', 'Security Onion', 20, 0],
+  ],
+  4: [
+    ['tool', 'Message header analyser', 'https://toolbox.googleapps.com/apps/messageheader/', 'Google Admin Toolbox', 5, 0],
+    ['tool', 'PhishTool: a phishing analysis console with a free community tier', 'https://www.phishtool.com/', 'PhishTool', 20, 0],
+    ['tool', 'Check whether a URL is a known phish', 'https://phishtank.org/', 'PhishTank', 5, 0],
+    ['read', 'T1566 Phishing and its sub-techniques', 'https://attack.mitre.org/techniques/T1566/', 'MITRE ATT&CK', 10, 0],
+  ],
+  5: [
+    ['video', 'Web Security lectures on the module page', 'https://pwn.college/intro-to-cybersecurity/web-security', 'pwn.college', 60, 0],
+    ['video', 'Cracking Websites with Cross Site Scripting', yt('Computerphile Cracking Websites with Cross Site Scripting'), 'Computerphile (YouTube search)', 9, 0],
+    ['practice', 'All free Web Security Academy labs', 'https://portswigger.net/web-security/all-labs', 'PortSwigger', 120, 0],
+    ['practice', 'Juice Shop: a deliberately vulnerable shop to attack and then read the logs of', 'https://owasp.org/www-project-juice-shop/', 'OWASP', 90, 0],
+    ['read', 'Cheat Sheet Series: how each bug class is prevented', 'https://cheatsheetseries.owasp.org/', 'OWASP', 20, 0],
+    ['read', 'Core Rule Set: what WAF rules look like', 'https://coreruleset.org/', 'OWASP CRS', 15, 0],
+  ],
+  6: [
+    ['read', 'Event 4624 documentation, field by field', 'https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4624', 'Microsoft Learn', 15, 0],
+    ['practice', 'EVTX attack samples: real event logs of known techniques', 'https://github.com/sbousseaden/EVTX-ATTACK-SAMPLES', 'GitHub, sbousseaden', 60, 0],
+    ['tool', 'Hayabusa: fast timeline and threat hunting over event logs', 'https://github.com/Yamato-Security/hayabusa', 'Yamato Security', 30, 0],
+    ['read', 'Tool Analysis Result Sheet: which logs each attacker tool leaves behind', 'https://jpcertcc.github.io/ToolAnalysisResultSheet/', 'JPCERT/CC', 20, 0],
+    ['read', 'Sigma: generic detection rules, many for Windows events', 'https://github.com/SigmaHQ/sigma', 'SigmaHQ', 20, 0],
+  ],
+  7: [
+    ['read', 'The Linux Command Line, free book: chapters on redirection, pipelines and text processing', 'https://linuxcommand.org/tlcl.php', 'William Shotts', 90, 0],
+    ['tool', 'tldr pages: practical examples for any command', 'https://tldr.sh/', 'tldr', 10, 0],
+    ['tool', 'crontab.guru: read any cron schedule', 'https://crontab.guru/', 'crontab.guru', 5, 0],
+    ['tool', 'regex101: build and test the patterns you grep with', 'https://regex101.com/', 'regex101', 15, 0],
+  ],
+  8: [
+    ['tool', 'Interactive malware sandbox with public reports', 'https://any.run/', 'ANY.RUN', 20, 0],
+    ['tool', 'Free automated malware analysis', 'https://www.hybrid-analysis.com/', 'Hybrid Analysis', 15, 0],
+    ['tool', 'Malicious URL database', 'https://urlhaus.abuse.ch/', 'URLhaus', 5, 0],
+    ['read', 'Malware family encyclopedia', 'https://malpedia.caad.fkie.fraunhofer.de/', 'Malpedia', 15, 0],
+    ['tool', 'Open threat intelligence pulses', 'https://otx.alienvault.com/', 'AlienVault OTX', 10, 0],
+    ['read', 'Threat groups and the techniques they use', 'https://attack.mitre.org/groups/', 'MITRE ATT&CK', 15, 0],
+  ],
+  9: [
+    ['video', 'Free Splunk courses, including Intro to Splunk', 'https://www.splunk.com/en_us/training/free-courses/overview.html', 'Splunk', 120, 0],
+    ['read', 'Ready-made Splunk detections to read and learn SPL from', 'https://research.splunk.com/', 'Splunk Threat Research', 30, 0],
+    ['read', 'Elastic detection rules', 'https://github.com/elastic/detection-rules', 'Elastic', 20, 0],
+    ['read', 'Kusto Query Language, used by Microsoft Sentinel', 'https://learn.microsoft.com/en-us/kusto/query/', 'Microsoft Learn', 30, 0],
+    ['read', 'Sigma rules: one detection, any SIEM', 'https://github.com/SigmaHQ/sigma', 'SigmaHQ', 20, 0],
+  ],
+  10: [
+    ['read', 'Incident response playbooks for phishing, password spray and app consent', 'https://learn.microsoft.com/en-us/security/operations/incident-response-playbooks', 'Microsoft Learn', 30, 0],
+    ['practice', 'Blue team investigations and challenges', 'https://blueteamlabs.online/', 'Blue Team Labs Online', 90, 0],
+    ['read', 'Traffic Light Protocol: how to label what you share', 'https://www.first.org/tlp/', 'FIRST', 10, 0],
+  ],
+  11: [
+    ['practice', 'flaws2.cloud: attacker and defender paths', 'http://flaws2.cloud/', 'Scott Piper', 60, 0],
+    ['read', 'IAM security best practices', 'https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html', 'AWS docs', 15, 0],
+    ['read', 'Hacking the Cloud: an encyclopedia of cloud attack techniques', 'https://hackingthe.cloud/', 'Hacking the Cloud', 30, 0],
+    ['tool', 'Stratus Red Team: generate real attack events in a test AWS account', 'https://stratus-red-team.cloud/', 'Datadog', 30, 0],
+    ['read', 'Sign-in logs in Microsoft Entra', 'https://learn.microsoft.com/en-us/entra/identity/monitoring-health/concept-sign-ins', 'Microsoft Learn', 15, 0],
+    ['read', 'Active Directory security research', 'https://adsecurity.org/', 'Sean Metcalf', 30, 0],
+  ],
+  12: [
+    ['read', 'Curated list of incident response tools and resources', 'https://github.com/meirwah/awesome-incident-response', 'GitHub, meirwah', 20, 0],
+    ['tool', 'Volatility: the standard memory forensics framework', 'https://volatilityfoundation.org/', 'Volatility Foundation', 30, 0],
+    ['read', 'Known Exploited Vulnerabilities catalogue', 'https://www.cisa.gov/known-exploited-vulnerabilities-catalog', 'CISA', 10, 0],
+    ['read', 'Path outline: check nothing in SOC Level 1 is left unfinished', 'https://tryhackme.com/path/outline/soclevel1', 'TryHackMe', 10, 0],
+  ],
+};
+Object.keys(MORE).forEach(k => RES[k].push(...MORE[k]));
+
+/* ---------- interview questions per week: [question, model answer] ---------- */
+const IV = {
+  1: [
+    ['Walk me through what you do when a new alert lands in your queue.', 'I assign it to myself, read what the rule matched, then gather context: who the user is, what the host does, and what happened around that time in the SIEM. From the evidence I decide true or false positive, document what I checked and why, and either close it or escalate with everything L2 needs.'],
+    ['What is the difference between an IOC and a TTP? Which is better to detect on?', 'An IOC is an artefact such as a hash, IP or domain. A TTP is how the attacker behaves. IOCs are cheap for the attacker to change, so detections on them expire fast. Behavioural detections sit at the top of the Pyramid of Pain and stay valid much longer.'],
+    ['Explain MITRE ATT&CK to a manager in two sentences.', 'It is a public catalogue of what attackers do after they target an organisation, grouped by goal. We use it as a shared language to describe incidents and to check which attacker behaviours we can and cannot detect.'],
+  ],
+  2: [
+    ['What happens, at the network level, when you type a URL and press Enter?', 'The host resolves the name with DNS (UDP 53), gets an IP, uses ARP to find the MAC of the gateway, opens a TCP connection with a three-way handshake to port 443, negotiates TLS, then sends the HTTP request and receives the response.'],
+    ['How would you spot a port scan in a packet capture?', 'One source sending SYN packets to many ports or hosts in a short time, with mostly RST replies and few completed handshakes. In Wireshark I would check Statistics, Conversations, then filter on tcp.flags.syn==1 and tcp.flags.ack==0.'],
+    ['TCP versus UDP: give one security-relevant difference.', 'TCP is connection-oriented, so a handshake proves both sides can talk and makes spoofing harder. UDP has no handshake, which makes source spoofing easy and is why it is used in amplification attacks.'],
+  ],
+  3: [
+    ['How would you detect C2 beaconing?', 'Look for connections from one host to the same destination at regular intervals with similar sizes, often to a rare or newly registered domain. Flow logs or Zeek conn.log sorted by connection count and interval variance reveal it even when traffic is encrypted.'],
+    ['IDS or IPS: which would you deploy and where?', 'IPS inline at the perimeter for high-confidence signatures, because it can block. IDS on internal segments and for noisier rules, because a false positive there only creates an alert and does not break traffic.'],
+    ['What makes DNS attractive for data exfiltration?', 'DNS is almost always allowed out, is rarely inspected, and can carry data in subdomain labels and TXT answers. Indicators are long random-looking subdomains, high query volume to one domain, and unusual record types.'],
+  ],
+  4: [
+    ['An employee reports a suspicious email. What are your steps?', 'Get the original with headers. Check sender, Return-Path, Reply-To and the SPF, DKIM and DMARC results. Examine links and attachments without opening them: defang, hash, reputation, sandbox. Then scope it: who else received it and whether anyone clicked. Finally contain: block sender and URL, purge the message, reset credentials if needed.'],
+    ['An email passes SPF, DKIM and DMARC. Is it safe?', 'Not necessarily. Those checks only prove the mail really came from the domain it claims. An attacker can register a lookalike domain and pass all three, or send from a compromised legitimate mailbox.'],
+    ['What is the difference between phishing and business email compromise?', 'Phishing usually carries a link or attachment to steal credentials or run malware. BEC often has neither: it impersonates a trusted person and asks for a payment or data, so it depends on process checks rather than malware detection.'],
+  ],
+  5: [
+    ['How do you tell from logs whether a SQL injection succeeded?', 'I compare status codes and response sizes. A 200 with a much larger body than normal for that page, a time delay matching a sleep payload, or errors that turn into clean responses suggest success. Then I check the database and application logs for the queries.'],
+    ['Explain XSS and its impact.', 'The application returns attacker-supplied script to other users\' browsers. It runs in their session, so it can steal cookies, perform actions as the user or redirect them. Prevention is output encoding and a content security policy.'],
+    ['You see 500 failed logins from one IP in a minute. What do you do?', 'Confirm it in the logs, check whether any attempt succeeded, identify the targeted accounts, block or rate-limit the source, and if there was a success treat that account as compromised: reset, revoke sessions, review its activity.'],
+  ],
+  6: [
+    ['Which Windows event IDs do you use most and why?', '4624 and 4625 for logon success and failure, with the logon type. 4688 or Sysmon 1 for process creation. 4720 and 4732 for new accounts and group changes. 7045 for new services. 1102 for log clearing. Together they cover access, execution, persistence and anti-forensics.'],
+    ['How do you tell brute force from password spraying in the logs?', 'Brute force is many failures against one account. Spraying is one or two attempts against many accounts from the same source, designed to stay below lockout. I group 4625 events by source and count distinct usernames.'],
+    ['Name three common Windows persistence mechanisms.', 'Run keys in the registry, scheduled tasks, and services. I would look at Sysmon 13 for registry writes, task creation events and 7045 for services.'],
+  ],
+  7: [
+    ['A Linux server is at 100% CPU. How do you investigate?', 'Check top or ps for the process, its path and user. A binary in /tmp or a deleted one is suspicious. Look at its network connections with ss, its parent, cron and systemd for how it starts, and auth.log for how the attacker got in.'],
+    ['Where would you look for evidence of SSH compromise?', '/var/log/auth.log or secure for failures followed by an accepted login, last and lastb, authorized_keys files for new keys, bash history, and new users in /etc/passwd.'],
+    ['Write a one-liner to list the top IPs by failed SSH logins.', 'grep "Failed password" /var/log/auth.log | awk \'{print $(NF-3)}\' | sort | uniq -c | sort -nr | head'],
+  ],
+  8: [
+    ['What is living off the land and why is it hard to detect?', 'Attackers use legitimate built-in tools such as PowerShell, certutil or rundll32, so there is no malicious file for antivirus to flag. Detection has to rely on context: unusual parent processes, command-line arguments and network connections.'],
+    ['You have a suspicious file hash. What do you do with it?', 'Search it on VirusTotal and other intel sources without uploading the file, note the family and behaviour, then hunt for the hash and its related indicators across all endpoints to find the scope.'],
+    ['Why is winword.exe spawning powershell.exe suspicious?', 'Office applications do not normally start a shell. It usually means a macro or exploit is executing code, which is a classic initial-access pattern.'],
+  ],
+  9: [
+    ['What is a SIEM and what are its limits?', 'It centralises and normalises logs, correlates them and raises alerts. It only sees what is logged and sent to it, depends on rule quality, and can drown analysts in false positives without tuning.'],
+    ['Write a Splunk search for sources with more than 10 failed logins in the last hour.', 'index=auth action=failure earliest=-1h | stats count by src_ip | where count > 10 | sort -count'],
+    ['EDR, SIEM, SOAR: how do they work together?', 'EDR produces endpoint telemetry and can act on hosts. The SIEM correlates that with network, identity and cloud logs. SOAR automates the response steps, such as enrichment, ticketing and isolation.'],
+  ],
+  10: [
+    ['How do you prioritise when several alerts arrive together?', 'By severity and by how critical the affected asset and user are, then by age. A medium alert on a domain controller can outrank a high one on a test machine.'],
+    ['What goes into a good escalation?', 'A clear summary, the 5 Ws, a timeline in UTC, the evidence with queries used, indicators, what I already did, and what I recommend. L2 should not need to repeat my work.'],
+    ['Tell me about a false positive and how you would reduce it.', 'For example a brute-force rule firing on a monitoring service account. I would confirm it is expected, then tune the rule with a narrow exclusion for that source and account, document it, and review the exclusion periodically.'],
+  ],
+  11: [
+    ['What is the shared responsibility model?', 'The cloud provider secures the infrastructure it runs. The customer is responsible for what they configure and store: identities, permissions, network exposure, data and logging.'],
+    ['Which cloud log events would worry you most?', 'A console login without MFA from a new location, creation of new users or access keys, admin policies being attached, logging being stopped or deleted, and storage being made public.'],
+    ['Explain Kerberoasting and how to detect it.', 'Any domain user can request service tickets for accounts with an SPN. The ticket is encrypted with the service account\'s password hash, so it can be cracked offline. Detect a single account requesting many 4769 tickets, especially with RC4 encryption, in a short time.'],
+  ],
+  12: [
+    ['Walk me through the incident response lifecycle.', 'Preparation, detection and analysis, containment eradication and recovery, and post-incident activity. It is a loop: new findings during containment send you back to analysis.'],
+    ['A host is confirmed infected. What do you do first?', 'Contain without destroying evidence: isolate it from the network through EDR, do not reboot, capture memory if required, then continue analysis and scoping.'],
+    ['How do you know an incident is fully scoped?', 'When every indicator and behaviour found has been searched across the whole environment and no new affected hosts or accounts appear, and the initial access and timeline are explained without gaps.'],
+  ],
+};
+weeks.forEach((w, i) => { w.iv = IV[i + 1]; });
+weeks.forEach((w, i) => { w.res = RES[i + 1]; });
+const selfCheck = [
+  'I can name the 7 Kill Chain phases in order and explain tactic versus technique without notes.',
+  'I can describe the TCP handshake and write three Wireshark display filters from memory.',
+  'I can explain beaconing, DNS tunnelling and exfiltration and read a Snort rule aloud.',
+  'I can explain SPF, DKIM and DMARC in one sentence each and list my five triage steps.',
+  'I can recognise SQLi, XSS, traversal and brute force in a log line and say whether it worked.',
+  'I can write the event ID and logon type tables from memory.',
+  'I can list where Linux keeps auth logs and five live-triage commands without looking.',
+  'I can name five LOLBins with what each is abused for, and decode an -enc command.',
+  'I can write an SPL search with stats, where and sort, and a KQL query, from memory.',
+  'I can recite the triage loop and the 5 Ws report template.',
+  'I can list five risky CloudTrail events and explain Kerberoasting to a non-expert.',
+  'I can name the NIST phases and explain why memory is captured before a reboot.',
+];
+weeks.forEach((w, i) => { w.check = selfCheck[i]; });
+
 module.exports = { weeks, stages };

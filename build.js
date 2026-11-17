@@ -7,6 +7,7 @@ const answers = {};
 const data = {
   weeks: weeks.map((w, wi) => {
     if (w.quiz.length !== 7) throw new Error('week ' + (wi + 1) + ' quiz length');
+    if (!w.res || w.res.filter(r => r[5]).length !== 2 || w.res.some(r => !/^https?:\/\//.test(r[2]))) throw new Error('week ' + (wi + 1) + ' resources');
     w.quiz.forEach(q => { if (q.o.length !== 4 || q.a < 0 || q.a > 3) throw new Error('bad question ' + q.q); });
     answers[wi + 1] = w.chal.qs.map(q => q[1][0]);
     return { ...w, chal: { ...w.chal, qs: w.chal.qs.map(q => ({ p: q[0], h: [...new Set(q[1].map(a => hash(norm(a))))], hint: q[2] })) } };
