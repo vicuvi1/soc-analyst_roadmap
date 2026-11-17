@@ -59,6 +59,10 @@ nav{display:flex;gap:2px;flex-wrap:wrap}
 nav a{padding:6px 9px;border-radius:6px;text-decoration:none;color:var(--muted);font-weight:500;font-size:.95rem}
 nav a:hover{color:var(--ink)}
 nav a[aria-current="page"]{background:var(--tint);color:var(--accent)}
+.sub{background:var(--surface);border-bottom:1px solid var(--line)}
+.sub nav{max-width:1060px;margin:0 auto;padding:6px 20px;gap:4px;overflow-x:auto;flex-wrap:nowrap}
+.sub nav a{font-size:.88rem;padding:4px 10px;white-space:nowrap}
+.sub nav a[aria-current="page"]{background:none;color:var(--ink);box-shadow:inset 0 -2px 0 var(--accent);border-radius:0}
 .badge{display:inline-block;min-width:1.4em;padding:0 .4em;margin-left:5px;border-radius:9px;background:var(--warn);color:var(--surface);font-size:.75rem;text-align:center;font-weight:600}
 .sync{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:6px}
 .sync i{width:8px;height:8px;border-radius:50%;background:var(--muted);display:inline-block}
@@ -304,6 +308,7 @@ footer{font-size:.82rem;color:var(--muted);display:flex;gap:12px;justify-content
   <button class="themebtn" data-act="theme" aria-label="Switch between light and dark theme" title="Light or dark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
   <div class="sync" id="sync"><i></i><span>Saved in this browser</span></div>
 </div></div>
+<div class="sub"><nav id="subnav" aria-label="Section"></nav></div>
 <main id="view"></main>
 <script id="seed" type="application/json">null</script>
 <script src="thm.js"></script>
@@ -326,7 +331,7 @@ D.stages.forEach((s, si) => s.extra.forEach((q, qi) => Q['s' + (si + 1) + 'x' + 
 const weekQids = w => D.weeks[w - 1].quiz.map((_, i) => 'w' + w + 'q' + (i + 1));
 
 /* state */
-const fresh = () => ({ v: 2, updatedAt: 0, start: null, tasks: {}, res: {}, rec: {}, act: {}, rooms: {}, thm: null, skill: {}, rv: [], drill: {}, bank: {}, rep: {}, iv: {}, log: {}, time: {}, timer: null, plan: null, cal: {}, todo: {}, sim: [], q: {}, wq: {}, ch: {}, ex: {} });
+const fresh = () => ({ v: 2, updatedAt: 0, start: null, tasks: {}, res: {}, rec: {}, act: {}, rooms: {}, thm: null, skill: {}, rv: [], drill: {}, bank: {}, rep: {}, iv: {}, log: {}, time: {}, timer: null, plan: null, cal: {}, todo: {}, sim: [], place: null, diag: null, q: {}, wq: {}, ch: {}, ex: {} });
 let S = fresh();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
 try { const seed = JSON.parse(document.getElementById('seed').textContent); if (seed && (seed.updatedAt || 0) > (S.updatedAt || 0)) { S = Object.assign(fresh(), seed); localStorage.setItem(KEY, JSON.stringify(S)); } } catch (e) {}
@@ -344,7 +349,7 @@ let LIVE = { ok: false, at: 0, checked: 0, news: [] }, CLOUD = { at: 0 }, pendin
 const roomTitle = c => { for (const W of D.weeks) for (const t of W.tasks) if (t[3] === c) return t[1]; return null; };
 function liveRender() {
   const el = document.activeElement, typing = el && /INPUT|TEXTAREA/.test(el.tagName) && el.type !== 'checkbox' && el.type !== 'radio' && el.value;
-  if (QS || ES || (SIM && !SIM.result) || typing) { pendingRender = true; return; }
+  if (QS || ES || PL || (SIM && !SIM.result) || typing) { pendingRender = true; return; }
   pendingRender = false; const y = window.scrollY; render(); window.scrollTo(0, y);
 }
 function pollThm() {
@@ -380,6 +385,7 @@ async function initRemote() {
     const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
     if (!db || !user) return;
     const id = await user.id(); if (!id) return;
+    DBH = db; UID = id;
     const ref = db.doc('data/users/' + id + '/progress');
     const snap = await Promise.race([ref.get(), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 10000))]);
     remote = ref;
@@ -392,8 +398,8 @@ async function initRemote() {
         if (!ES && !QS) render();
       } else if ((S.updatedAt || 0) > ((R && R.updatedAt) || 0)) { dirty = true; pushRemote(); }
     } else if (S.updatedAt) { dirty = true; pushRemote(); }
-    setSync('cloud');
-    try { db.doc('sync/thm').onSnapshot(snap => { if (!snap.exists) return; const t = snap.data(); if (!t || !Array.isArray(t.codes)) return; CLOUD.at = t.at || 0;
+    setSync('cloud'); backupRemote();
+    try { db.doc('sync/thm').onSnapshot(snap => { if (!snap.exists) return; const t = snap.data(); if (!t || !Array.isArray(t.codes)) return; CLOUD.at = t.at || 0; CLOUD.source = t.source || '';
       const before = new Set(THMSET); if (adoptThm({ user: t.user, at: t.at, codes: t.codes })) { refreshThm(); const fr = [...THMSET].filter(c => !before.has(c) && roomTitle(c)); if (fr.length) { bump(3 * fr.length); logDay('r', fr.length); LIVE.news = fr.map(roomTitle); } save(); }
       liveRender(); }, () => {}); } catch (e) {}
   } catch (e) { setSync('local'); }
@@ -454,7 +460,7 @@ const LEVELS = [[80, 'Strong'], [60, 'Competent'], [40, 'Developing'], [15, 'Nov
 const levelOf = s => LEVELS.find(l => s >= l[0])[1];
 function skillScores() {
   return AREAS.map(a => {
-    const qs = a.w.flatMap(weekQids), know = qs.reduce((x, id) => x + (S.q[id] ? Math.min(1, S.q[id].b / 4) : 0), 0) / qs.length;
+    const qs = a.w.flatMap(weekQids), know = Math.max(qs.reduce((x, id) => x + (S.q[id] ? Math.min(1, S.q[id].b / 4) : 0), 0) / qs.length, S.place ? 0.6 * (S.place.by[AREAS.indexOf(a)] || 0) / 3 : 0);
     const seen = qs.filter(id => S.q[id]), acc = seen.length ? seen.reduce((x, id) => x + S.q[id].c, 0) / seen.reduce((x, id) => x + S.q[id].n, 0) : null;
     const tt = a.w.reduce((x, w) => x + D.weeks[w - 1].tasks.length, 0), labs = a.w.reduce((x, w) => x + tasksDone(w), 0) / tt;
     const cq = a.w.reduce((x, w) => x + D.weeks[w - 1].chal.qs.length, 0), solved = a.w.reduce((x, w) => x + chalSolved(w), 0), tries = a.w.reduce((x, w) => x + ((S.ch[w] && S.ch[w].tries) || 0), 0);
@@ -541,10 +547,16 @@ const ICON = {
 const RTYPE = { video: 'Video', read: 'Read', tool: 'Tool', practice: 'Practice' };
 const mins = m => m >= 60 ? (m / 60).toFixed(m % 60 ? 1 : 0) + ' h' : m + ' min';
 let OPEN = {}, LIBF = 'all';
+const GROUPS = [
+  ['Today', [['today', 'Overview'], ['session', "Today's session"]]],
+  ['Learn', [['roadmap', 'Roadmap'], ['library', 'Library'], ['cheatsheets', 'Cheat sheets']]],
+  ['Practice', [['sim', 'Simulator'], ['review', 'Review'], ['placement', 'Placement test']]],
+  ['Progress', [['skills', 'Skills'], ['weekly', 'Weekly review'], ['check', 'System check']]],
+];
 function nav(route) {
-  const due = dueIds().length;
-  $('#nav').innerHTML = [['today', 'Today'], ['roadmap', 'Roadmap'], ['library', 'Library'], ['skills', 'Skills'], ['sim', 'Simulator'], ['weekly', 'Weekly'], ['cheatsheets', 'Sheets'], ['review', 'Review' + (due ? '<span class="badge">' + due + '</span>' : '')]]
-    .map(([h, t]) => `<a href="#${h}"${route === h ? ' aria-current="page"' : ''}>${t}</a>`).join('');
+  const due = dueIds().length, r = route === 'week' || route === 'exam' ? 'roadmap' : route, gi = Math.max(0, GROUPS.findIndex(g => g[1].some(x => x[0] === r)));
+  $('#nav').innerHTML = GROUPS.map((g, i) => `<a href="#${g[1][0][0]}"${i === gi ? ' aria-current="page"' : ''}>${g[0]}${g[0] === 'Practice' && due ? '<span class="badge">' + due + '</span>' : ''}</a>`).join('');
+  $('#subnav').innerHTML = GROUPS[gi][1].map(x => `<a href="#${x[0]}"${x[0] === r ? ' aria-current="page"' : ''}>${x[1]}${x[0] === 'review' && due ? '<span class="badge">' + due + '</span>' : ''}</a>`).join('');
 }
 const meter = p => `<span class="meter" role="img" aria-label="${p}% complete"><i style="width:${p}%"></i></span>`;
 const ring = (p, label) => `<div class="ring" role="img" aria-label="${p}% ${label}"><svg viewBox="0 0 80 80"><circle class="t" cx="40" cy="40" r="34"/><circle class="v" cx="40" cy="40" r="34" stroke-dasharray="${(2 * Math.PI * 34).toFixed(1)}" stroke-dashoffset="${(2 * Math.PI * 34 * (1 - p / 100)).toFixed(1)}"/></svg><div>${p}%<small>${label}</small></div></div>`;
@@ -577,10 +589,11 @@ function viewToday() {
   const ep = [1, 2, 3, 4].filter(s => S.ex[s] && S.ex[s].passed).length, due = dueIds().length, fin = allDone();
   let sched;
   if (!S.start) sched = `<div class="row"><label for="startDate" class="sched">Start date</label><input type="date" id="startDate" value="${new Date().toISOString().slice(0, 10)}"><button class="btn" data-act="setStart">Start the 12 weeks</button><a class="btn ghost" href="#roadmap">See the roadmap</a></div>`;
-  else { const diff = pw - w; sched = `<div class="row"><a class="btn" href="${fin ? '#roadmap' : unlocked(st) ? '#week-' + w : '#exam-' + (st - 1)}">${fin ? 'Open roadmap' : unlocked(st) ? (cs < 5 ? 'Continue: step ' + (cs + 1) + ', ' + STEPS[cs] : 'Open week ' + w) : 'Sit the stage ' + (st - 1) + ' exam'}</a><span class="sched">Started ${fmtDate(S.start)} &middot; calendar week ${pw} of 12 &middot; ${fin ? 'finished' : diff > 0 ? diff + ' week' + (diff > 1 ? 's' : '') + ' behind' : diff < 0 ? -diff + ' week' + (diff < -1 ? 's' : '') + ' ahead' : 'on schedule'}</span><button class="btn ghost small" data-act="clearStart">Change start date</button></div>`; }
+  else { const diff = pw - w; sched = `<div class="row">${fin ? '' : '<button class="btn" data-act="sessStart">Start today\'s session</button>'}<a class="btn ghost" href="${fin ? '#roadmap' : unlocked(st) ? '#week-' + w : '#exam-' + (st - 1)}">${fin ? 'Open roadmap' : unlocked(st) ? (cs < 5 ? 'Continue: step ' + (cs + 1) + ', ' + STEPS[cs] : 'Open week ' + w) : 'Sit the stage ' + (st - 1) + ' exam'}</a><span class="sched">Started ${fmtDate(S.start)} &middot; calendar week ${pw} of 12 &middot; ${fin ? 'finished' : diff > 0 ? diff + ' week' + (diff > 1 ? 's' : '') + ' behind' : diff < 0 ? -diff + ' week' + (diff < -1 ? 's' : '') + ' ahead' : 'on schedule'}</span><button class="btn ghost small" data-act="clearStart">Change start date</button></div>`; }
   const next = [];
   const sx = [1, 2, 3, 4].find(s => unlocked(s) && !(S.ex[s] && S.ex[s].passed));
   if (!S.drill[dkey(new Date())] && Object.keys(S.q).length >= 7) next.push(['Daily drill: 8 questions from your weakest areas (5 min)', '#skills', 'Drill']);
+  if (!S.place) next.push(['Take the placement test once (20 min) so your skill scores start from what you already know', '#placement', 'Placement']);
   if (due) next.push([`Review ${due} due question${due > 1 ? 's' : ''} (about ${Math.max(2, Math.round(due * 0.5))} min). Always first.`, '#review', 'Review']);
   if (sx && D.stages[sx - 1].weeks.every(weekDone)) next.push([`Sit the ${sx === 4 ? 'final exam' : 'stage ' + sx + ' exam'}. Passing ${sx === 4 ? 'completes the programme' : 'unlocks stage ' + (sx + 1)}.`, '#exam-' + sx, 'Exam']);
   if (unlocked(st)) ss.forEach((d, i) => { if (!d) next.push([`${STEPS[i]}: ${stepHint(w, i)}`, '#week-' + w, 'Step ' + (i + 1)]); });
@@ -619,6 +632,7 @@ function viewToday() {
     <div class="row"><button class="btn" data-act="exportHtml">Download a copy with my progress</button><button class="btn ghost" data-act="exportJson">Download progress only</button><button class="btn ghost" data-act="copyCode">Copy progress code</button></div>
     <h4>Bring progress in</h4>
     <div class="row"><label class="btn ghost" for="impFile">Choose a progress file</label><input type="file" id="impFile" accept=".json,.html,.txt" data-act="impFile" style="position:absolute;opacity:0;width:1px;height:1px"><input id="impCode" class="codein" placeholder="or paste a progress code here" autocomplete="off" spellcheck="false"><button class="btn ghost" data-act="impCode">Load code</button></div>
+    ${backupsHtml()}
     <p class="hint" id="moveMsg">Newer progress always wins when you open a copy. If a download does not start (for example inside Claude), use "Copy progress code" and paste it on the other PC.</p></div>
   <footer><span>Quiz pass mark ${Math.round(QPASS * 100)}%. Exam pass mark ${Math.round(PASS * 100)}%. Review intervals 1, 3, 7, 14, 30 days.</span><span id="resetBox"><button class="btn ghost small" data-act="reset1">Reset all progress</button></span></footer>`;
 }
@@ -725,6 +739,7 @@ function drawRun() {
     } else if (QS.mode === 'ai') { save(); msg = `<p class="big">${QS.right}/${QS.ids.length}</p><p>These five questions are now in your question bank and will come back in reviews and drills.</p><button class="btn ghost" data-act="reload">Back to skills</button>`;
     } else if (QS.mode === 'drill') { S.drill[dkey(new Date())] = 1; save(); msg = `<p class="big">${QS.right}/${QS.ids.length}</p><p>Drill done for today. Your skill scores below are updated.</p><button class="btn ghost" data-act="reload">Show updated skills</button>`;
     } else { save(); const left = dueIds().length; msg = `<p class="big">${QS.right}/${QS.ids.length}</p><p>${left ? left + ' more due.' : 'All caught up.'}</p>${left ? '<button class="btn" data-act="startReview">Continue</button>' : '<a class="btn" href="#today">Back to today</a>'}`; }
+    if (SESS && route().name === 'session') msg += ' <button class="btn" data-act="sessNext">Continue session</button>';
     QS = null; box.innerHTML = msg; nav(route().name); return;
   }
   const id = QS.ids[QS.i], q = Q[id], done = QS.picked !== null;
@@ -815,7 +830,7 @@ async function initCaps() {
 }
 const logDay = (k, n) => { const d = dkey(new Date()); (S.log[d] = S.log[d] || {})[k] = ((S.log[d] || {})[k] || 0) + (n || 1); };
 function loadBank() { Object.entries(S.bank || {}).forEach(([id, q]) => { if (q && Array.isArray(q.o)) Q[id] = q; }); }
-function afterStateSwap() { adoptThm(D.thm); adoptThm(window.THM_SYNC); refreshThm(); loadBank(); }
+function afterStateSwap() { adoptThm(D.thm); adoptThm(window.THM_SYNC); refreshThm(); loadBank(); regPlacement(); }
 const aiErr = e => { const c = e && e.code; return c === 'rate_limited' ? 'Claude is busy. Wait a minute and try again.' : c === 'not_granted' ? 'Asking Claude was not allowed for this page. Allow it when prompted to use the tutor.' : 'Claude did not answer' + (e && e.message ? ' (' + String(e.message).slice(0, 120) + ')' : '') + '. Try again.'; };
 async function aiJson(prompt) { if (typeof AI.json === 'function') return AI.json(prompt); const r = await AI(prompt); const t = r.text, a = t.indexOf('{') < 0 || (t.indexOf('[') >= 0 && t.indexOf('[') < t.indexOf('{')) ? '[' : '{'; return JSON.parse(t.slice(t.indexOf(a), t.lastIndexOf(a === '[' ? ']' : '}') + 1)); }
 const lessonText = w => new DOMParser().parseFromString('<div>' + D.weeks[w - 1].lesson + '</div>', 'text/html').body.textContent.replace(/\s+/g, ' ').slice(0, 1800);
@@ -872,7 +887,7 @@ function interviewHtml(w) {
 
 /* connected apps */
 const mcpErr = (e, server) => { const c = e && e.code; return c === 'server_not_connected' || c === 'selection_required' ? `Add ${server} in claude.ai Settings, Connectors, then try again.` : c === 'needs_reauth' ? `Reconnect ${server} in claude.ai Settings, Connectors.` : c === 'not_in_manifest' || c === 'approval_required' || c === 'consent_required' ? `${server} was not allowed for this page. Click again and choose Allow.` : c === 'blocked_by_policy' ? `${server} is blocked by your organisation's policy.` : c === 'tool_error' ? `${server} refused the request: ${String(e.message || '').slice(0, 140)}` : c === 'server_unavailable' || c === 'upstream_error' ? `${server} did not answer. It may still have worked, so check ${server} before trying again.` : `${server} is not available in this view.`; };
-const SESS = [['Learn: core videos and reading', 1.5], ['Labs: TryHackMe rooms', 2.5], ['Labs: rooms and own work', 2.5], ['Recap, quiz and challenge', 1]];
+const SESSDEF = [['Learn: core videos and reading', 1.5], ['Labs: TryHackMe rooms', 2.5], ['Labs: rooms and own work', 2.5], ['Recap, quiz and challenge', 1]];
 const pad = n => String(n).padStart(2, '0');
 const localIso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':00';
 function appsCard(w) {
@@ -881,7 +896,7 @@ function appsCard(w) {
   if (!MCP) return `<div class="card"><div class="eyebrow">Connected apps</div><h2>Calendar and Todoist</h2><p class="hint">Planning sessions into Google Calendar and sending today's plan to Todoist works in the Claude-hosted version of this page, where it can use the apps you connected to Claude.</p></div>`;
   return `<div class="card"><div class="eyebrow">Connected apps</div><h2>Plan it where you will see it</h2>
     <div class="two" style="margin-top:8px"><div><h4 style="margin-top:0">Google Calendar: this week's four sessions</h4>
-      <div class="plan">${SESS.map((s, i) => `<div class="planrow"><span><b>Session ${i + 1}</b><small>${esc(s[0])} &middot; ${s[1]} h</small></span><select id="pd-${i}" aria-label="Day for session ${i + 1}">${dayOpts(plan[i].d)}</select><input type="time" id="pt-${i}" value="${esc(plan[i].t)}" aria-label="Start time for session ${i + 1}"></div>`).join('')}</div>
+      <div class="plan">${SESSDEF.map((s, i) => `<div class="planrow"><span><b>Session ${i + 1}</b><small>${esc(s[0])} &middot; ${s[1]} h</small></span><select id="pd-${i}" aria-label="Day for session ${i + 1}">${dayOpts(plan[i].d)}</select><input type="time" id="pt-${i}" value="${esc(plan[i].t)}" aria-label="Start time for session ${i + 1}"></div>`).join('')}</div>
       <div class="row" style="margin-top:10px"><button class="btn" data-act="calAdd" data-w="${w}">Add 4 sessions to Google Calendar</button>${S.cal[today] ? '<span class="chip good">Added today</span>' : ''}</div><p class="hint" id="calMsg">Creates four events named "SOC study" on your primary calendar. Nothing is sent to anyone else.</p></div>
     <div><h4 style="margin-top:0">Todoist: today's plan</h4><p class="hint">Sends your due reviews, today's two rooms and the next step of week ${w} as tasks due today in your Inbox.</p>
       <div class="row"><button class="btn" data-act="todoAdd" data-w="${w}">Send today's plan to Todoist</button>${S.todo[today] ? '<span class="chip good">Sent today</span>' : ''}</div><p class="hint" id="todoMsg"></p></div></div></div>`;
@@ -889,11 +904,11 @@ function appsCard(w) {
 async function calAdd(w, btn) {
   const msg = $('#calMsg'), today = dkey(new Date()); if (!MCP) return;
   if (S.cal[today] && btn.dataset.sure !== '1') { btn.dataset.sure = '1'; btn.textContent = 'Add again (creates duplicates)'; return; }
-  const plan = SESS.map((_, i) => ({ d: +$('#pd-' + i).value, t: $('#pt-' + i).value || '10:00' })); S.plan = plan; save();
+  const plan = SESSDEF.map((_, i) => ({ d: +$('#pd-' + i).value, t: $('#pt-' + i).value || '10:00' })); S.plan = plan; save();
   btn.disabled = true; const W = D.weeks[w - 1], rooms = pathRooms().filter(x => !roomDone(x.t[3]) && unlocked(stageOf(x.w))).slice(0, 5).map(x => x.t[1]); let ok = 0, lastErr = null; msg.style.color = '';
   for (let i = 0; i < 4; i++) { msg.textContent = `Creating session ${i + 1} of 4...`;
-    const st = new Date(); st.setDate(st.getDate() + plan[i].d); const [h, m] = plan[i].t.split(':').map(Number); st.setHours(h, m, 0, 0); const en = new Date(st.getTime() + SESS[i][1] * 36e5);
-    try { await MCP.callTool('Google Calendar', 'create_event', { summary: `SOC study: week ${w}, session ${i + 1}`, startTime: localIso(st), endTime: localIso(en), description: `${SESS[i][0]}.\nWeek ${w}: ${W.title}.\n${i === 1 || i === 2 ? 'Next rooms: ' + rooms.join(', ') + '.\n' : ''}Start with due reviews (5 min).` }, { cache: false }); ok++; }
+    const st = new Date(); st.setDate(st.getDate() + plan[i].d); const [h, m] = plan[i].t.split(':').map(Number); st.setHours(h, m, 0, 0); const en = new Date(st.getTime() + SESSDEF[i][1] * 36e5);
+    try { await MCP.callTool('Google Calendar', 'create_event', { summary: `SOC study: week ${w}, session ${i + 1}`, startTime: localIso(st), endTime: localIso(en), description: `${SESSDEF[i][0]}.\nWeek ${w}: ${W.title}.\n${i === 1 || i === 2 ? 'Next rooms: ' + rooms.join(', ') + '.\n' : ''}Start with due reviews (5 min).` }, { cache: false }); ok++; }
     catch (e) { lastErr = e; if (!e || !e.retryable) break; } }
   btn.disabled = false; btn.dataset.sure = ''; btn.textContent = 'Add 4 sessions to Google Calendar';
   if (ok) { S.cal[today] = ok; save(); }
@@ -987,7 +1002,7 @@ function simFinish() {
   if (!SIM || SIM.result) return; clearInterval(simTimer);
   const n = SIM.alerts.length, done = SIM.alerts.filter(a => SIM.ans[a.id]), correct = SIM.alerts.filter(a => SIM.ans[a.id] === a.v).length, missedTp = SIM.alerts.filter(a => a.v === 'tp' && SIM.ans[a.id] !== 'tp').length;
   let pairs = 0, good = 0; SIM.alerts.forEach(hi => SIM.alerts.forEach(lo => { if (SEVW[hi.sev] >= 3 && SEVW[lo.sev] <= 2) { pairs++; const a = SIM.order.indexOf(hi.id), b = SIM.order.indexOf(lo.id); if (a >= 0 && (b < 0 || a < b)) good++; } }));
-  const used = Math.min(SIMMIN * 6e4, Date.now() - SIM.started), verdict = Math.round(70 * correct / n), order = correct * 2 < n ? 0 : pairs ? Math.round(15 * good / pairs) : 15, speed = done.length === n ? Math.round(15 * Math.min(1, (SIMMIN * 6e4 - used) / (SIMMIN * 6e4) * 2)) : 0;
+  const used = Math.min(SIMMIN * 6e4, Date.now() - SIM.started), verdict = Math.round(70 * correct / n), order = correct * 2 < n ? 0 : pairs ? Math.round(15 * good / pairs) : 15, speed = done.length === n && correct * 2 >= n ? Math.round(15 * Math.min(1, (SIMMIN * 6e4 - used) / (SIMMIN * 6e4) * 2)) : 0;
   SIM.result = { correct, n, missedTp, verdict, order, speed, score: verdict + order + speed, mins: Math.round(used / 6e4) };
   S.sim.push({ at: Date.now(), title: SIM.title, score: SIM.result.score, correct, n, missedTp, mins: SIM.result.mins }); if (S.sim.length > 60) S.sim = S.sim.slice(-60);
   bump(5); logDay('sim'); save(); render(); window.scrollTo(0, 0);
@@ -1013,7 +1028,7 @@ function viewSim() {
     <p>A queue of eight alerts, ${SIMMIN} minutes, logs to read, and a reference sheet. Give each alert a verdict, take the dangerous ones first, then write the case report. This is the closest thing here to a real shift and to the SAL1 simulator.</p>
     <div class="row">${D.sims.map((s, i) => `<button class="btn${i ? ' ghost' : ''}" data-act="simStart" data-i="${i}">Start: ${esc(s.title)}</button>`).join('')}${AI ? '<button class="btn ghost" data-act="simGen">Generate a new scenario</button>' : ''}</div><p class="sched" id="simMsg">${AI ? 'Generated scenarios are written by Claude around your weakest areas, so no two runs are the same.' : 'Freshly generated scenarios are available in the Claude-hosted version.'}</p></div>${ring(avg === null ? 0 : avg, 'last 3 runs')}</section>
   <div class="stats"><div class="stat"><b>${S.sim.length}</b><span>Runs</span></div><div class="stat"><b>${avg === null ? '&ndash;' : avg}</b><span>Average of last 3</span></div><div class="stat"><b>${best === null ? '&ndash;' : best}</b><span>Best run</span></div><div class="stat"><b>${S.sim.reduce((a, x) => a + (x.missedTp || 0), 0)}</b><span>Real attacks missed, all time</span></div></div>
-  <div class="card"><h2>How a run is scored</h2><ul><li><b>Verdicts, 70 points.</b> True or false positive for each alert, judged from the logs and the reference sheet.</li><li><b>Priority order, 15 points.</b> Critical and high alerts handled before medium and low ones. Counts only if at least half your verdicts are right.</li><li><b>Speed, 15 points.</b> Only if every alert is triaged. Finishing in half the time earns all 15.</li><li><b>Case report.</b> Graded separately out of 100 after the run.</li></ul><p class="hint">Leaving this page cancels a run in progress.</p></div>
+  <div class="card"><h2>How a run is scored</h2><ul><li><b>Verdicts, 70 points.</b> True or false positive for each alert, judged from the logs and the reference sheet.</li><li><b>Priority order, 15 points.</b> Critical and high alerts handled before medium and low ones. Counts only if at least half your verdicts are right.</li><li><b>Speed, 15 points.</b> Only if every alert is triaged and at least half are right. Finishing in half the time earns all 15.</li><li><b>Case report.</b> Graded separately out of 100 after the run.</li></ul><p class="hint">Leaving this page cancels a run in progress.</p></div>
   <div class="card"><h2>Run history</h2>${S.sim.length ? `<div class="skilltable">${S.sim.slice().reverse().slice(0, 12).map(x => `<div class="skillrow"><div><b>${esc(x.title)}</b><small>${new Date(x.at).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} &middot; ${x.correct}/${x.n} verdicts &middot; ${x.mins} min${x.missedTp ? ' &middot; ' + x.missedTp + ' missed' : ''}${x.rep != null ? ' &middot; report ' + x.rep : ''}</small></div><div class="bars"><span><i style="width:${x.score}%"></i></span></div><div class="sc"><b>${x.score}</b></div></div>`).join('')}</div>` : '<p class="lead">No runs yet. Start with "Monday morning queue".</p>'}</div>`;
 }
 async function simGrade(btn) {
@@ -1029,6 +1044,116 @@ function mistakesHtml() {
   if (!wrong.length) return `<div class="card"><h2>Mistake notebook</h2><p class="lead">Every question you get wrong is kept here with the right answer and the reason. Nothing yet.</p></div>`;
   const by = {}; wrong.forEach(id => { const a = AREAS[areaOf(Q[id].week)].n; (by[a] = by[a] || []).push(id); });
   return `<div class="card"><h2>Mistake notebook</h2><p class="lead">${wrong.length} question${wrong.length === 1 ? '' : 's'} you have got wrong at least once, most-missed first. Read these before a stage exam.</p>${Object.entries(by).sort((a, b) => b[1].length - a[1].length).map(([a, ids]) => `<h4>${esc(a)} &middot; ${ids.length}</h4><div class="ivq">${ids.slice(0, 25).map(id => { const q = Q[id], r = S.q[id]; return `<details><summary>${esc(q.q)} <span class="chip bad">wrong ${r.n - r.c}x of ${r.n}</span></summary><p><b>${esc(q.o[q.a])}</b></p><p>${esc(q.why)}</p></details>`; }).join('')}</div>`).join('')}</div>`;
+}
+
+/* ---------- placement test ---------- */
+let PL = null;
+function regPlacement() { D.placement.forEach((arr, a) => arr.forEach((q, i) => { Q['p' + a + '_' + i] = Object.assign({ week: AREAS[a].w[0], place: 1 }, q); })); }
+const placeIds = () => D.placement.flatMap((arr, a) => arr.map((_, i) => 'p' + a + '_' + i));
+function viewPlacement() {
+  if (PL && !PL.done) { const id = PL.ids[PL.i], q = Q[id];
+    return `<div class="timer"><span>Placement test &middot; question ${PL.i + 1} of ${PL.ids.length}</span>${meter(Math.round(PL.i / PL.ids.length * 100))}</div>
+    <div class="card"><p class="qtext">${esc(q.q)}</p><div class="opts">${PL.order[id].map(oi => `<button class="opt" data-act="plPick" data-o="${oi}">${esc(q.o[oi])}</button>`).join('')}<button class="opt" data-act="plPick" data-o="-1" style="color:var(--muted)">I don't know</button></div><p class="hint">No feedback until the end. "I don't know" is better than a guess: a lucky guess inflates your score and hides a gap.</p></div>`; }
+  const p = S.place, sc = skillScores();
+  const res = p ? `<div class="card"><h2>Your placement, ${fmtDate(p.at)}</h2><div class="skilltable">${AREAS.map((a, i) => { const c = p.by[i] || 0; return `<div class="skillrow"><div><b>${esc(a.n)}</b><small>${c === 3 ? 'You know this. Go straight to the quiz and challenge in week' + (a.w.length > 1 ? 's ' : ' ') + a.w.join(', ') + '.' : c === 2 ? 'Mostly there. Skim the coach notes, then quiz.' : c === 1 ? 'Partial. Do the core resources and labs.' : 'New ground. Work the full week' + (a.w.length > 1 ? 's' : '') + ' ' + a.w.join(', ') + ' step by step.'}</small></div><div class="bars"><span><i style="width:${Math.round(c / 3 * 100)}%"></i></span></div><div class="sc"><b>${c}/3</b><span class="chip${c === 3 ? ' good' : c === 2 ? ' acc' : ''}">now ${sc[i].score}</span></div></div>`; }).join('')}</div>
+    <p class="hint">Placement sets a floor under the knowledge part of each skill score (up to 60% of it). The rest still has to be earned with reviews, labs and challenges. The 27 questions are now in your review rotation.</p></div>` : '';
+  return `<section class="hero"><div><div class="eyebrow">27 questions &middot; about 20 minutes &middot; all nine areas</div><h1>Placement test</h1>
+    <p>You have done a lot on TryHackMe that this app has never measured. Three scenario questions per area set an honest starting point for your skill scores and tell you which weeks you can move through fast.</p>
+    <div class="row"><button class="btn" data-act="plStart">${p ? 'Retake placement test' : 'Start placement test'}</button>${p ? `<span class="sched">Last result ${p.by.reduce((a, b) => a + b, 0)}/27</span>` : ''}</div></div>${ring(skillIndex(), 'skill index')}</section>${res}`;
+}
+function plPick(o) {
+  const id = PL.ids[PL.i]; PL.ans[id] = o; PL.i++;
+  if (PL.i >= PL.ids.length) { const by = AREAS.map(() => 0);
+    PL.ids.forEach(x => { const ok = PL.ans[x] === Q[x].a; if (ok) by[+x.slice(1).split('_')[0]]++; grade(x, ok, 'week'); logDay('q'); if (ok) logDay('ok'); });
+    S.place = { at: Date.now(), by }; bump(8); PL = null; save(); }
+  render(); window.scrollTo(0, 0);
+}
+
+/* ---------- guided daily session ---------- */
+let SESS = null;
+function sessStart() {
+  const w = workingWeek(), steps = []; if (dueIds().length) steps.push('review');
+  if (pathRooms().some(x => !roomDone(x.t[3]) && unlocked(stageOf(x.w)))) steps.push('room');
+  steps.push(Object.keys(S.q).length >= 7 ? 'drill' : 'quiz'); steps.push('done');
+  const k = dkey(new Date()), L = S.log[k] || {};
+  if (!S.timer) { S.timer = Date.now(); save(); timerPaint(); }
+  SESS = { steps, i: 0, w, idx0: skillIndex(), q0: L.q || 0, ok0: L.ok || 0, r0: L.r || 0, t0: Date.now() };
+  location.hash = '#session'; render(); window.scrollTo(0, 0);
+}
+function sessNext() { if (!SESS) return; SESS.i = Math.min(SESS.steps.length - 1, SESS.i + 1);
+  if (SESS.steps[SESS.i] === 'done' && S.timer) { const ms = Date.now() - S.timer, min = Math.round(Math.min(ms, 4 * 36e5) / 6e4); S.timer = null; if (min >= 1) { const k = dkey(new Date()); S.time[k] = (S.time[k] || 0) + min; bump(Math.max(1, Math.round(min / 20))); } SESS.min = min; save(); timerPaint(); }
+  render(); window.scrollTo(0, 0); }
+function viewSession() {
+  if (!SESS) return `<section class="hero"><div><div class="eyebrow">One button, the whole routine</div><h1>Today's session</h1><p>The app walks you through today in the right order: due reviews, your next TryHackMe room, then a short drill. The study timer starts and stops by itself.</p><div class="row"><button class="btn" data-act="sessStart">Start today's session</button></div></div>${ring(overallPct(), 'overall')}</section>`;
+  const st = SESS.steps[SESS.i], NAMES = { review: 'Reviews', room: 'Room', drill: 'Drill', quiz: 'Quiz', done: 'Summary' };
+  const head = `<section class="hero"><div><div class="eyebrow">Today's session &middot; step ${SESS.i + 1} of ${SESS.steps.length}</div><h1>${{ review: 'Clear your reviews', room: 'Do the next room', drill: 'Weak-spot drill', quiz: 'Week ' + SESS.w + ' quiz', done: 'Session complete' }[st]}</h1>
+    <div class="pips">${SESS.steps.map((x, i) => `<span class="pip${i < SESS.i ? ' on' : i === SESS.i ? ' now' : ''}">${i + 1} ${NAMES[x]}</span>`).join('')}</div></div>${ring(Math.round(SESS.i / (SESS.steps.length - 1) * 100), 'of session')}</section>`;
+  if (st === 'review') { const due = dueIds().length; return head + `<div class="card"><div id="quiz">${due ? `<p>${due} question${due > 1 ? 's are' : ' is'} due. This takes about ${Math.max(2, Math.round(Math.min(20, due) * 0.5))} minutes and is the highest-value thing you will do today.</p><button class="btn" data-act="startReview">Start reviews</button>` : '<p>Nothing due.</p>'} <button class="btn ghost" data-act="sessNext">${due ? 'Skip for now' : 'Continue'}</button></div></div>`; }
+  if (st === 'room') { const x = pathRooms().find(r => !roomDone(r.t[3]) && unlocked(stageOf(r.w)));
+    return head + (x ? `<div class="card"><div class="eyebrow">${esc(x.t[4])} &middot; week ${x.w} &middot; about ${x.t[2]} h</div><h2>${esc(x.t[1])}</h2><p class="lead">Open the room, work through it, then come back. Type every command yourself. If you get stuck, give it 20 minutes before looking at a walkthrough.</p>
+      <div class="row"><a class="btn" href="${roomUrl(x.t[3])}" target="_blank" rel="noopener">Open room on TryHackMe</a><button class="btn ghost" data-act="sessRoom" data-code="${esc(x.t[3])}">I finished this room</button><button class="btn ghost" data-act="sessNext">Not today</button></div><p class="hint">The timer in the top bar keeps running while you are on TryHackMe.</p></div>` : `<div class="card"><p>No open rooms.</p><button class="btn" data-act="sessNext">Continue</button></div>`); }
+  if (st === 'drill') return head + `<div class="card"><div id="quiz"><p>Eight questions from where you are weakest.</p><button class="btn" data-act="startDrill">Start drill</button> <button class="btn ghost" data-act="sessNext">Skip</button></div></div>`;
+  if (st === 'quiz') return head + `<div class="card"><div id="quiz"><p>You have not answered enough questions for a drill yet, so take the week ${SESS.w} quiz. If the material is new, <a href="#week-${SESS.w}">read the coach notes</a> first and come back.</p><button class="btn" data-act="startQuiz" data-w="${SESS.w}">Start quiz</button> <button class="btn ghost" data-act="sessNext">Skip</button></div></div>`;
+  const L = S.log[dkey(new Date())] || {}, q = (L.q || 0) - SESS.q0, ok = (L.ok || 0) - SESS.ok0, rooms = (L.r || 0) - SESS.r0, d = skillIndex() - SESS.idx0;
+  return head + `<div class="stats"><div class="stat"><b>${SESS.min || Math.round((Date.now() - SESS.t0) / 6e4)} min</b><span>Logged to your calendar</span></div><div class="stat"><b>${q}</b><span>Questions answered${q ? ', ' + Math.round(ok / q * 100) + '% right' : ''}</span></div><div class="stat"><b>${rooms}</b><span>Rooms finished</span></div><div class="stat"><b>${d >= 0 ? '+' : ''}${d}</b><span>Skill index, now ${skillIndex()}</span></div></div>
+    <div class="card"><h2>Done for today</h2><p class="lead">${q + rooms === 0 ? 'You skipped every step. Tomorrow, do at least the reviews: five minutes keeps what you have learned.' : 'That is a complete session. Come back tomorrow and press the same button.'}</p><div class="row"><a class="btn" href="#today" data-act="sessEnd">Back to Today</a><a class="btn ghost" href="#weekly" data-act="sessEnd">Weekly review</a></div></div>`;
+}
+
+/* ---------- backups ---------- */
+let DBH = null, UID = null;
+const BAK = 'soc12-bak-';
+function localBackups() { const out = []; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(BAK)) out.push(k); } } catch (e) {} return out.sort().reverse(); }
+function backupDaily() {
+  try { const k = BAK + dkey(new Date()); if (!S.updatedAt || localStorage.getItem(k)) return; localStorage.setItem(k, JSON.stringify(S)); localBackups().slice(7).forEach(x => localStorage.removeItem(x)); } catch (e) {}
+}
+async function backupRemote() {
+  try { if (!DBH || !UID || !S.updatedAt) return; const day = dkey(new Date()); if (localStorage.getItem('soc12-bakr') === day) return;
+    await DBH.doc('data/users/' + UID + '/bak' + new Date().getDay()).set({ json: JSON.stringify(S), at: Date.now(), day }); localStorage.setItem('soc12-bakr', day); } catch (e) {}
+}
+function backupsHtml() {
+  const pctOf = j => { try { const keep = S, o = JSON.parse(j); S = Object.assign(fresh(), o); refreshThm(); const p = overallPct(); S = keep; refreshThm(); return p; } catch (e) { return null; } };
+  const rows = localBackups().map(k => { let j = null; try { j = localStorage.getItem(k); } catch (e) {} const p = j ? pctOf(j) : null; return p === null ? '' : `<div class="row between" style="padding:6px 0;border-top:1px solid var(--line)"><span>${esc(k.slice(BAK.length))} &middot; ${p}% overall <span class="hint">start of that day, this browser</span></span><button class="btn ghost small" data-act="bakRestore" data-k="${esc(k)}">Restore</button></div>`; }).join('');
+  return `<h4>Automatic backups</h4><p class="hint">A copy of your progress is kept at the start of each day you use the app, for seven days${DBH ? ', in this browser and in your Claude account' : ', in this browser'}. Restoring replaces current progress after you confirm.</p>${rows || '<p class="hint">No backups yet. The first one is made tomorrow.</p>'}${DBH ? `<div class="row" style="margin-top:8px"><button class="btn ghost small" data-act="bakCloud">Show account backups</button></div><div id="bakCloud"></div>` : ''}`;
+}
+async function bakCloudList(btn) {
+  const box = $('#bakCloud'); btn.disabled = true; box.textContent = 'Loading...'; const out = [];
+  for (let d = 0; d < 7; d++) { try { const s = await DBH.doc('data/users/' + UID + '/bak' + d).get(); if (s.exists) { const b = s.data(); if (b && b.json) out.push(b); } } catch (e) {} }
+  out.sort((a, b) => b.at - a.at); CLOUDBAK = out; btn.disabled = false;
+  box.innerHTML = out.length ? out.map((b, i) => `<div class="row between" style="padding:6px 0;border-top:1px solid var(--line)"><span>${esc(b.day)} <span class="hint">start of that day, your account</span></span><button class="btn ghost small" data-act="bakCloudRestore" data-i="${i}">Restore</button></div>`).join('') : '<p class="hint">No account backups yet.</p>';
+}
+let CLOUDBAK = [];
+
+/* ---------- system check: prove the real integrations ---------- */
+const CHECKS = [
+  ['db', 'Progress saved to your Claude account', 'Writes a small test record and reads it back.'],
+  ['ai', 'Ask Claude (tutor, grading, generated scenarios)', 'Sends one short test question.'],
+  ['thm', 'TryHackMe scheduled sync', 'Checks when the profile was last read by the scheduled task.'],
+  ['cal', 'Google Calendar connection', 'Checks the connection only. No event is created.'],
+  ['todo', 'Todoist connection', 'Checks the connection only. No task is created.'],
+  ['live', 'Desktop live sync (launcher)', 'Only applies when the page was started with Start SOC Analyst.bat.'],
+];
+async function runCheck(k) {
+  const fail = m => [0, m], pass = m => [1, m], na = m => [2, m];
+  try {
+    if (k === 'db') { if (!DBH || !UID) return na('Not available in this view. Progress is saved in this browser only.'); const ref = DBH.doc('data/users/' + UID + '/check'), v = Date.now(); await ref.set({ v }); const s = await ref.get(); return s.exists && s.data().v === v ? pass('Write and read succeeded.') : fail('Wrote the record but could not read it back.'); }
+    if (k === 'ai') { if (!AI) return na('Not available in this view. Open the Claude-hosted page.'); const r = await AI('Reply with exactly the two letters OK and nothing else.', { modelTier: 'quick', cache: false }); return /OK/i.test(r.text || '') ? pass('Claude answered.') : fail('Unexpected answer: ' + String(r.text).slice(0, 60)); }
+    if (k === 'thm') { if (!CLOUD.at) return na(DBH ? 'No synced data found yet.' : 'Not available in this view.'); const h = (Date.now() - CLOUD.at) / 36e5; return CLOUD.source === 'scheduled' ? (h < 26 ? pass('Last read by the scheduled task ' + h.toFixed(1) + ' h ago.') : fail('The scheduled task last ran ' + Math.round(h) + ' h ago. It should run four times a day.')) : na('Only the manual seed is present. The scheduled task has not written yet (it runs at 09:23, 14:23, 19:23 and 23:23).'); }
+    if (k === 'cal' || k === 'todo') { const name = k === 'cal' ? 'Google Calendar' : 'Todoist'; if (!MCP) return na('Not available in this view. Open the Claude-hosted page.'); const r = await MCP.listTools(name), s = (r.servers || []).find(x => x.server === name); if (!s) return fail(name + ' is not connected. Add it in claude.ai Settings, Connectors.'); return s.authStatus === 'needs_reauth' ? fail('Reconnect ' + name + ' in claude.ai Settings, Connectors.') : pass(name + ' is listed' + (s.authStatus === 'connected' ? ' and connected.' : '. The first real action will ask your permission.')); }
+    if (k === 'live') return LIVE.ok ? pass('The launcher sync is running.') : na('Not running. This is normal on the Claude-hosted page.');
+  } catch (e) { return fail((e && e.code ? e.code + ': ' : '') + String((e && e.message) || e).slice(0, 140)); }
+  return na('');
+}
+async function runAllChecks(btn) {
+  btn.disabled = true; btn.textContent = 'Checking...'; const r = {};
+  for (const c of CHECKS) { const el = $('#ck-' + c[0]); if (el) el.textContent = 'checking...'; r[c[0]] = await runCheck(c[0]); S.diag = { at: Date.now(), r: Object.assign({}, (S.diag && S.diag.r) || {}, r) }; if (route().name === 'check') render(); const b2 = document.querySelector('[data-act=checkAll]'); if (b2) { b2.disabled = true; b2.textContent = 'Checking...'; } }
+  save(); try { if (DBH) await DBH.doc('sync/diag').set({ at: Date.now(), r: JSON.stringify(S.diag.r) }); } catch (e) {} render();
+}
+function viewCheck() {
+  const d = S.diag, lab = ['Failed', 'Working', 'Not in this view'], cls = ['bad', 'good', ''];
+  return `<div><h1>System check</h1><p class="lead">Each connection this app depends on, tested for real from this page. Nothing is created in your calendar or task list. Run it on the Claude-hosted page; results are saved so problems can be fixed.</p></div>
+  <div class="card"><div class="row between"><h2>Connections</h2><button class="btn" data-act="checkAll">Run all checks</button></div>
+    <div class="skilltable">${CHECKS.map(c => { const r = d && d.r && d.r[c[0]]; return `<div class="skillrow" style="grid-template-columns:minmax(0,1fr) auto"><div><b>${esc(c[1])}</b><small id="ck-${c[0]}">${r ? esc(r[1]) : esc(c[2])}</small></div><div class="sc">${r ? `<span class="chip ${cls[r[0]]}">${lab[r[0]]}</span>` : '<span class="chip">Not run</span>'}</div></div>`; }).join('')}</div>
+    ${d ? `<p class="hint">Last run ${new Date(d.at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.</p>` : ''}</div>`;
 }
 
 /* ---------- transfer ---------- */
@@ -1069,16 +1194,17 @@ function route() {
   const h = (location.hash || '#today').slice(1); let m;
   if ((m = /^week-(\d+)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 12) return { name: 'week', n: +m[1] };
   if ((m = /^exam-(\d)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 4) return { name: 'exam', n: +m[1] };
-  if (h === 'roadmap' || h === 'review' || h === 'library' || h === 'cheatsheets' || h === 'skills' || h === 'weekly' || h === 'sim') return { name: h };
+  if (h === 'roadmap' || h === 'review' || h === 'library' || h === 'cheatsheets' || h === 'skills' || h === 'weekly' || h === 'sim' || h === 'placement' || h === 'session' || h === 'check') return { name: h };
   return { name: 'today' };
 }
 function render() {
   const r = route();
   if (ES && !(r.name === 'exam' && r.n === ES.stage)) { clearInterval(esTimer); ES = null; }
   if (SIM && r.name !== 'sim') { clearInterval(simTimer); SIM = null; }
+  if (PL && r.name !== 'placement') PL = null;
   QS = null; nav(r.name);
   $('#view').className = r.name === 'week' || (r.name === 'sim' && SIM && !SIM.result) ? 'wide' : '';
-  $('#view').innerHTML = r.name === 'week' ? viewWeek(r.n) : r.name === 'exam' ? viewExam(r.n) : r.name === 'roadmap' ? viewRoadmap() : r.name === 'library' ? viewLibrary() : r.name === 'cheatsheets' ? viewSheets() : r.name === 'skills' ? viewSkills() : r.name === 'weekly' ? viewWeekly() : r.name === 'sim' ? viewSim() : r.name === 'review' ? viewReview() : viewToday();
+  $('#view').innerHTML = r.name === 'week' ? viewWeek(r.n) : r.name === 'exam' ? viewExam(r.n) : r.name === 'roadmap' ? viewRoadmap() : r.name === 'library' ? viewLibrary() : r.name === 'cheatsheets' ? viewSheets() : r.name === 'skills' ? viewSkills() : r.name === 'weekly' ? viewWeekly() : r.name === 'sim' ? viewSim() : r.name === 'placement' ? viewPlacement() : r.name === 'session' ? viewSession() : r.name === 'check' ? viewCheck() : r.name === 'review' ? viewReview() : viewToday();
 }
 window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
 
@@ -1096,6 +1222,16 @@ document.addEventListener('click', ev => {
   const a = el.dataset.act;
   if (a === 'task' || a === 'ans' || a === 'res' || a === 'rec' || a === 'impFile') return;
   if (a === 'jump') { ev.preventDefault(); const t = document.getElementById(el.dataset.to); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (a === 'plStart') { const ids = placeIds(); PL = { ids, i: 0, ans: {}, order: {} }; ids.forEach(id => PL.order[id] = shuffle(Q[id].o.map((_, i) => i))); render(); window.scrollTo(0, 0); return; }
+  if (a === 'plPick' && PL) return plPick(+el.dataset.o);
+  if (a === 'sessStart') return sessStart();
+  if (a === 'sessNext') return sessNext();
+  if (a === 'sessRoom') { S.rooms[el.dataset.code] = 1; bump(3); logDay('r'); save(); return sessNext(); }
+  if (a === 'sessEnd') { SESS = null; return; }
+  if (a === 'bakRestore') { let j = null; try { j = localStorage.getItem(el.dataset.k); } catch (e) {} return offerImport(j || ''); }
+  if (a === 'bakCloud') return bakCloudList(el);
+  if (a === 'bakCloudRestore') return offerImport((CLOUDBAK[+el.dataset.i] || {}).json || '');
+  if (a === 'checkAll') return runAllChecks(el);
   if (a === 'simStart') return simStart(D.sims[+el.dataset.i]);
   if (a === 'simGen') return simGenerate(el);
   if (a === 'simSel' && SIM) { SIM.sel = +el.dataset.id; const y = window.scrollY; render(); window.scrollTo(0, y); return; }
@@ -1158,7 +1294,9 @@ document.addEventListener('change', ev => {
 document.addEventListener('toggle', ev => { const d = ev.target; if (d.dataset && d.dataset.i !== undefined && d.dataset.w) { (OPEN[d.dataset.w] = OPEN[d.dataset.w] || {})[d.dataset.i] = d.open; } }, true);
 document.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches && ev.target.matches('.cq input')) checkAnswer(+ev.target.dataset.w, +ev.target.dataset.i); });
 
+backupDaily();
 loadBank();
+regPlacement();
 render();
 timerPaint();
 initCaps();

@@ -13,6 +13,9 @@ A personal learning system for becoming a junior SOC analyst in 12 weeks at abou
 - **Skills**: a score per area (50% knowledge retained, 30% labs, 20% challenges), a radar that shows today against an earlier day, a retention figure from review answers, a daily weak-spot drill, and a skill index over time.
 - **Alert simulator**: a timed queue of eight alerts with logs and a reference sheet; verdicts, priority order and speed are scored, then a case report is written. Two built-in scenarios; the hosted version generates new ones.
 - **Mistake notebook**: every question answered wrongly, with the right answer and reason, on the Review tab. Stage exam answers now count toward skill scores.
+- **Placement test**: 27 scenario questions across nine areas set a starting floor for the skill scores.
+- **Today's session**: one button walks through due reviews, the next room and a drill, with the timer started and stopped automatically.
+- **Backups and system check**: a daily automatic backup kept for seven days with restore, and a page that tests each connection for real.
 - **Study timer and weekly review**: a start/stop timer in the top bar logs real minutes; the Weekly tab shows hours against the 8-hour target, rooms, answer accuracy, skill change and one thing to change.
 - **AI tutor and connected apps (Claude-hosted version only)**: Claude writes fresh questions per area, explains wrong answers, grades incident reports against a rubric and grades interview answers; the page can add the week's four sessions to Google Calendar and send today's plan to Todoist. These need the page's ask-Claude and connector capabilities, so they are hidden when `index.html` is opened as a local file.
 - **Study calendar**: a GitHub-style activity grid in gold, with streaks.
@@ -46,6 +49,12 @@ After changing `content.js` or `template.html`:
 
 ```
 node build.js
+```
+
+Run the browser tests (needs `npm install` once, and Chrome or `npx playwright install chromium`):
+
+```
+npm test
 ```
 
 The build also writes `answers.json` (plain challenge answers, for testing). It is git-ignored.
