@@ -51,12 +51,12 @@ button,input{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 .bar{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
-.bar-in{max-width:980px;margin:0 auto;padding:10px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.bar-in{max-width:1060px;margin:0 auto;padding:10px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .brand{font:600 1.05rem var(--display);letter-spacing:.02em;margin-right:auto;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:9px}
 .brand svg{width:22px;height:22px;color:var(--accent)}
 .brand span{color:var(--accent)}
 nav{display:flex;gap:2px;flex-wrap:wrap}
-nav a{padding:6px 12px;border-radius:6px;text-decoration:none;color:var(--muted);font-weight:500;font-size:.95rem}
+nav a{padding:6px 9px;border-radius:6px;text-decoration:none;color:var(--muted);font-weight:500;font-size:.95rem}
 nav a:hover{color:var(--ink)}
 nav a[aria-current="page"]{background:var(--tint);color:var(--accent)}
 .badge{display:inline-block;min-width:1.4em;padding:0 .4em;margin-left:5px;border-radius:9px;background:var(--warn);color:var(--surface);font-size:.75rem;text-align:center;font-weight:600}
@@ -252,6 +252,17 @@ main.wide{max-width:1200px}
 .cells i.fut{background:transparent}
 .legend{display:flex;gap:4px;align-items:center;font-size:.78rem;color:var(--muted)}
 .legend i{width:13px;height:13px;border-radius:3px;display:inline-block}
+.skilltable{display:flex;flex-direction:column}
+.skillrow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 150px;gap:16px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.skillrow:first-child{border-top:0}
+.skillrow small{display:block;color:var(--muted);font-size:.82rem}
+.bars{display:flex;flex-direction:column;gap:4px}
+.bars span{display:block;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bars i{display:block;height:100%;background:var(--accent)}
+.bars span:nth-child(2) i{background:var(--g3)} .bars span:nth-child(3) i{background:var(--good)}
+.skillrow .sc{display:flex;gap:10px;align-items:center;justify-content:flex-end}
+.skillrow .sc b{font:600 1.5rem var(--display);font-variant-numeric:tabular-nums}
+@media(max-width:640px){.skillrow{grid-template-columns:1fr}.skillrow .sc{justify-content:flex-start}}
 .livedot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:7px;vertical-align:baseline}
 .livedot.on{background:var(--good);box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 25%,transparent)}
 .livenote{border-left-color:var(--g3);margin:10px 0}
@@ -292,7 +303,7 @@ D.stages.forEach((s, si) => s.extra.forEach((q, qi) => Q['s' + (si + 1) + 'x' + 
 const weekQids = w => D.weeks[w - 1].quiz.map((_, i) => 'w' + w + 'q' + (i + 1));
 
 /* state */
-const fresh = () => ({ v: 2, updatedAt: 0, start: null, tasks: {}, res: {}, rec: {}, act: {}, rooms: {}, thm: null, q: {}, wq: {}, ch: {}, ex: {} });
+const fresh = () => ({ v: 2, updatedAt: 0, start: null, tasks: {}, res: {}, rec: {}, act: {}, rooms: {}, thm: null, skill: {}, rv: [], drill: {}, q: {}, wq: {}, ch: {}, ex: {} });
 let S = fresh();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
 try { const seed = JSON.parse(document.getElementById('seed').textContent); if (seed && (seed.updatedAt || 0) > (S.updatedAt || 0)) { S = Object.assign(fresh(), seed); localStorage.setItem(KEY, JSON.stringify(S)); } } catch (e) {}
@@ -328,6 +339,7 @@ let remote = null, writing = false, dirty = false, saveTimer = null;
 function setSync(mode) { const el = $('#sync'); el.className = 'sync ' + mode; el.lastElementChild.textContent = mode === 'cloud' ? 'Progress saved to your account' : 'Progress saved in this browser'; }
 function save() {
   S.updatedAt = Date.now();
+  try { snapSkills(); } catch (e) {}
   try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
   if (remote) { dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(pushRemote, 1200); }
 }
@@ -406,9 +418,83 @@ function calendarHtml() {
     <div class="row" style="margin-top:12px"><span class="chip fill">${keys.length} study day${keys.length === 1 ? '' : 's'}</span><span class="chip fill">Current streak ${cur} day${cur === 1 ? '' : 's'}</span><span class="chip fill">Longest streak ${best}</span><span class="chip fill">${thisWeek}/7 days this week</span><span class="hint">A day turns gold when you tick a resource or lab, answer a quiz or review question, solve a challenge or sit an exam. Stronger gold means more done.</span></div></div>`;
 }
 
+/* skills: what you can do, measured from quizzes, labs and challenges */
+const AREAS = [
+  { n: 'SOC process', w: [1, 10] }, { n: 'Networking', w: [2, 3] }, { n: 'Email and web', w: [4, 5] }, { n: 'Windows', w: [6] }, { n: 'Linux', w: [7] },
+  { n: 'Malware and intel', w: [8] }, { n: 'SIEM', w: [9] }, { n: 'Cloud and identity', w: [11] }, { n: 'Incident response', w: [12] },
+];
+const areaOf = w => AREAS.findIndex(a => a.w.includes(w));
+const LEVELS = [[80, 'Strong'], [60, 'Competent'], [40, 'Developing'], [15, 'Novice'], [0, 'Untested']];
+const levelOf = s => LEVELS.find(l => s >= l[0])[1];
+function skillScores() {
+  return AREAS.map(a => {
+    const qs = a.w.flatMap(weekQids), know = qs.reduce((x, id) => x + (S.q[id] ? Math.min(1, S.q[id].b / 4) : 0), 0) / qs.length;
+    const seen = qs.filter(id => S.q[id]), acc = seen.length ? seen.reduce((x, id) => x + S.q[id].c, 0) / seen.reduce((x, id) => x + S.q[id].n, 0) : null;
+    const tt = a.w.reduce((x, w) => x + D.weeks[w - 1].tasks.length, 0), labs = a.w.reduce((x, w) => x + tasksDone(w), 0) / tt;
+    const cq = a.w.reduce((x, w) => x + D.weeks[w - 1].chal.qs.length, 0), solved = a.w.reduce((x, w) => x + chalSolved(w), 0), tries = a.w.reduce((x, w) => x + ((S.ch[w] && S.ch[w].tries) || 0), 0);
+    const proof = cq ? solved / cq * (solved ? 0.6 + 0.4 * Math.min(1, solved / Math.max(tries, solved)) : 0) : 0;
+    return { n: a.n, w: a.w, know: Math.round(know * 100), labs: Math.round(labs * 100), proof: Math.round(proof * 100), acc: acc === null ? null : Math.round(acc * 100), seen: seen.length, total: qs.length, score: Math.round(100 * (0.5 * know + 0.3 * labs + 0.2 * proof)) };
+  });
+}
+const skillIndex = () => { const s = skillScores(); return Math.round(s.reduce((a, x) => a + x.score, 0) / s.length); };
+function snapSkills() { const k = dkey(new Date()); S.skill[k] = skillScores().map(x => x.score); const ks = Object.keys(S.skill).sort(); if (ks.length > 200) ks.slice(0, ks.length - 200).forEach(x => delete S.skill[x]); }
+function retention() { const r = S.rv.slice(-50); if (r.length < 10) return { n: r.length, pct: null }; return { n: r.length, pct: Math.round(100 * r.filter(x => x[1]).length / r.length) }; }
+function drillIds(n) {
+  const sc = skillScores(), now = Date.now(), cand = [];
+  for (let w = 1; w <= 12; w++) { if (!unlocked(stageOf(w))) continue; const ar = sc[areaOf(w)];
+    weekQids(w).forEach(id => { const r = S.q[id]; const pr = r ? (5 - r.b) * 2 + (1 - r.c / r.n) * 4 + (r.d <= now ? 2 : 0) : 3 + (100 - ar.score) / 50; cand.push([pr + Math.random(), id]); }); }
+  return cand.sort((a, b) => b[0] - a[0]).slice(0, n).map(x => x[1]);
+}
+function radarSvg(cur, prev) {
+  const N = cur.length, cx = 230, cy = 190, R = 130, pt = (i, v) => { const a = -Math.PI / 2 + i * 2 * Math.PI / N; return [cx + Math.cos(a) * R * v / 100, cy + Math.sin(a) * R * v / 100]; };
+  const poly = vals => vals.map((v, i) => pt(i, Math.max(v, 2)).map(n => n.toFixed(1)).join(',')).join(' ');
+  const rings = [25, 50, 75, 100].map(v => `<polygon points="${poly(Array(N).fill(v))}" fill="none" stroke="var(--line)" stroke-width="1"/>`).join('');
+  const spokes = cur.map((_, i) => { const p = pt(i, 100); return `<line x1="${cx}" y1="${cy}" x2="${p[0].toFixed(1)}" y2="${p[1].toFixed(1)}" stroke="var(--line)"/>`; }).join('');
+  const labels = cur.map((s, i) => { const p = pt(i, 118), anc = Math.abs(p[0] - cx) < 12 ? 'middle' : p[0] > cx ? 'start' : 'end'; return `<text x="${p[0].toFixed(1)}" y="${p[1].toFixed(1)}" text-anchor="${anc}" dominant-baseline="middle" font-size="12" fill="var(--ink)">${esc(s.n)}<tspan fill="var(--muted)" font-family="var(--mono)" font-size="11"> ${s.score}</tspan></text>`; }).join('');
+  const dots = cur.map((s, i) => { const p = pt(i, Math.max(s.score, 2)); return `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.5" fill="var(--accent)"/>`; }).join('');
+  return `<svg viewBox="-70 10 600 365" role="img" aria-label="Skill radar across ${N} areas" style="width:100%;max-width:600px;height:auto;font-family:var(--body);display:block;margin:0 auto">${rings}${spokes}
+    ${prev ? `<polygon points="${poly(prev)}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/>` : ''}
+    <polygon points="${poly(cur.map(s => s.score))}" fill="var(--accent)" fill-opacity=".18" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>${dots}${labels}
+    <text x="${cx + 4}" y="${cy - R * .5 - 3}" font-size="9" fill="var(--muted)" font-family="var(--mono)">50</text><text x="${cx + 4}" y="${cy - R - 3}" font-size="9" fill="var(--muted)" font-family="var(--mono)">100</text></svg>`;
+}
+function trendSvg() {
+  const ks = Object.keys(S.skill).sort(); if (ks.length < 2) return '<p class="hint">The trend line appears after your second day of use.</p>';
+  const vals = ks.map(k => S.skill[k].reduce((a, b) => a + b, 0) / S.skill[k].length), W = 520, H = 110, mx = Math.max(10, ...vals) * 1.15;
+  const x = i => 30 + i * (W - 45) / (ks.length - 1), y = v => H - 22 - v / mx * (H - 34), line = vals.map((v, i) => x(i).toFixed(1) + ',' + y(v).toFixed(1)).join(' ');
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Skill index over time" style="width:100%;height:auto"><line x1="30" y1="${H - 22}" x2="${W - 15}" y2="${H - 22}" stroke="var(--line)"/><polygon points="30,${H - 22} ${line} ${x(ks.length - 1).toFixed(1)},${H - 22}" fill="var(--accent)" fill-opacity=".12"/><polyline points="${line}" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="${x(ks.length - 1).toFixed(1)}" cy="${y(vals[vals.length - 1]).toFixed(1)}" r="4" fill="var(--accent)"/>
+    <text x="30" y="${H - 6}" font-size="10" fill="var(--muted)" font-family="var(--mono)">${fmtDate(new Date(ks[0] + 'T00:00:00'))}</text><text x="${W - 15}" y="${H - 6}" font-size="10" fill="var(--muted)" font-family="var(--mono)" text-anchor="end">${fmtDate(new Date(ks[ks.length - 1] + 'T00:00:00'))}</text><text x="${(x(ks.length - 1) - 8).toFixed(1)}" y="${(y(vals[vals.length - 1]) - 8).toFixed(1)}" font-size="11" fill="var(--ink)" text-anchor="end" font-family="var(--mono)">${Math.round(vals[vals.length - 1])}</text></svg>`;
+}
+function viewSkills() {
+  const sc = skillScores(), idx = skillIndex(), ks = Object.keys(S.skill).sort(), today = dkey(new Date());
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 6); const pk = ks.filter(k => k <= dkey(weekAgo)).pop() || ks.filter(k => k < today)[0] || null;
+  const prev = pk ? S.skill[pk] : null, delta = prev ? idx - Math.round(prev.reduce((a, b) => a + b, 0) / prev.length) : null;
+  const open = sc.filter(a => a.w.some(w => unlocked(stageOf(w)))), weak = open.slice().sort((a, b) => a.score - b.score)[0], strong = sc.slice().sort((a, b) => b.score - a.score)[0];
+  const ret = retention(), due = dueIds().length, inRot = Object.keys(S.q).filter(id => Q[id]).length, drilled = !!S.drill[today];
+  let advice = '';
+  if (weak) { const w = weak.w.find(x => !weekDone(x)) || weak.w[0], low = [['labs', weak.labs, 'finish the labs'], ['know', weak.know, 'take or repeat the quiz'], ['proof', weak.proof, 'solve the challenge']].sort((a, b) => a[1] - b[1])[0];
+    advice = `<p><b>Weakest open area: ${esc(weak.n)} (${weak.score}).</b> The lowest part is ${low[0] === 'know' ? 'knowledge' : low[0] === 'labs' ? 'hands-on practice' : 'proof by challenge'} at ${low[1]}%, so the fastest gain is to ${low[2]} in <a href="#week-${w}">week ${w}</a>.</p>`; }
+  return `<section class="hero"><div><div class="eyebrow">Measured from quizzes, labs and challenges</div><h1>Skills</h1>
+    <p>What you can do, by area. Each score is 50% knowledge you have retained, 30% hands-on labs and 20% challenges solved from evidence. Ticking things does not move it much; answering correctly over time does.</p>
+    <div class="pips"><span class="pip on">Index ${idx}/100</span>${delta !== null ? `<span class="pip now">${delta >= 0 ? '+' : ''}${delta} since ${fmtDate(new Date(pk + 'T00:00:00'))}</span>` : ''}<span class="pip">${levelOf(idx)}</span></div></div>${ring(idx, 'skill index')}</section>
+  <div class="two"><div class="card"><h2>Skill radar</h2>${radarSvg(sc, prev)}<p class="hint">Solid shape: today.${prev ? ' Dashed outline: ' + fmtDate(new Date(pk + 'T00:00:00')) + '.' : ' A dashed outline of an earlier day appears once there is history, so you can see the shape grow.'} Areas in locked stages start near zero.</p></div>
+    <div style="display:flex;flex-direction:column;gap:20px"><div class="card"><div class="eyebrow">What to work on</div><h2>Focus</h2>${advice}${strong && strong.score > 0 ? `<p class="hint">Strongest: ${esc(strong.n)} (${strong.score}).</p>` : ''}</div>
+    <div class="card"><div class="eyebrow">Memory</div><h2>Retention ${ret.pct === null ? '<span class="chip">needs ' + (10 - ret.n) + ' more reviews</span>' : ret.pct + '%'}</h2>
+      <p class="hint">Share of your last ${ret.pct === null ? '50' : ret.n} review and drill answers that were correct, counting only questions you had not seen for at least a day. This is the honest number for "do I still know it".</p>
+      <div class="kv"><span>Questions in rotation</span><b>${inRot}/${Object.keys(Q).filter(id => Q[id].week).length}</b><span>Due now</span><b>${due}</b><span>In box 4 or 5 (long-term)</span><b>${Object.keys(S.q).filter(id => Q[id] && S.q[id].b >= 4).length}</b></div></div></div></div>
+  <div class="card"><div class="row between"><div><div class="eyebrow">5 minutes &middot; ${drilled ? 'done today' : 'not done today'}</div><h2>Daily weak-spot drill</h2></div>${drilled ? '<span class="chip good">Done today</span>' : ''}</div>
+    <div id="quiz"><p>Eight questions picked from where you are weakest: questions you got wrong, ones stuck in low boxes, and unseen questions from your lowest-scoring open area.</p><button class="btn" data-act="startDrill">${drilled ? 'Drill again' : 'Start drill'}</button></div></div>
+  <div class="card"><h2>By area</h2><div class="skilltable">${sc.map(a => `<div class="skillrow"><div><b>${esc(a.n)}</b><small>Week${a.w.length > 1 ? 's' : ''} ${a.w.join(', ')} &middot; ${a.seen}/${a.total} questions seen${a.acc !== null ? ' &middot; ' + a.acc + '% answer accuracy' : ''}</small></div>
+      <div class="bars"><span title="Knowledge ${a.know}%"><i style="width:${a.know}%"></i></span><span title="Labs ${a.labs}%"><i style="width:${a.labs}%"></i></span><span title="Challenges ${a.proof}%"><i style="width:${a.proof}%"></i></span></div>
+      <div class="sc"><b>${a.score}</b><span class="chip${a.score >= 60 ? ' good' : a.score >= 40 ? ' acc' : ''}">${levelOf(a.score)}</span></div></div>`).join('')}</div>
+    <p class="hint">Three bars per area, top to bottom: knowledge retained, labs done, challenges solved. Levels: Novice from 15, Developing from 40, Competent from 60, Strong from 80.</p></div>
+  <div class="card"><h2>Skill index over time</h2>${trendSvg()}</div>`;
+}
+
 /* spaced repetition */
-function grade(id, ok) {
+function grade(id, ok, mode) {
   const r = S.q[id] || { b: 0, d: 0, n: 0, c: 0 };
+  if (mode !== 'week' && r.n && Date.now() - (r.t || 0) > 20 * 36e5) { S.rv.push([Date.now(), ok ? 1 : 0]); if (S.rv.length > 300) S.rv = S.rv.slice(-300); }
+  r.t = Date.now();
   r.n++; if (ok) { r.c++; r.b = Math.min(5, r.b + 1); } else r.b = 1;
   r.d = Date.now() + IV[r.b] * DAY - 6 * 36e5;
   S.q[id] = r;
@@ -429,7 +515,7 @@ const mins = m => m >= 60 ? (m / 60).toFixed(m % 60 ? 1 : 0) + ' h' : m + ' min'
 let OPEN = {}, LIBF = 'all';
 function nav(route) {
   const due = dueIds().length;
-  $('#nav').innerHTML = [['today', 'Today'], ['roadmap', 'Roadmap'], ['library', 'Library'], ['cheatsheets', 'Cheat sheets'], ['review', 'Review' + (due ? '<span class="badge">' + due + '</span>' : '')]]
+  $('#nav').innerHTML = [['today', 'Today'], ['roadmap', 'Roadmap'], ['library', 'Library'], ['skills', 'Skills'], ['cheatsheets', 'Cheat sheets'], ['review', 'Review' + (due ? '<span class="badge">' + due + '</span>' : '')]]
     .map(([h, t]) => `<a href="#${h}"${route === h ? ' aria-current="page"' : ''}>${t}</a>`).join('');
 }
 const meter = p => `<span class="meter" role="img" aria-label="${p}% complete"><i style="width:${p}%"></i></span>`;
@@ -466,6 +552,7 @@ function viewToday() {
   else { const diff = pw - w; sched = `<div class="row"><a class="btn" href="${fin ? '#roadmap' : unlocked(st) ? '#week-' + w : '#exam-' + (st - 1)}">${fin ? 'Open roadmap' : unlocked(st) ? (cs < 5 ? 'Continue: step ' + (cs + 1) + ', ' + STEPS[cs] : 'Open week ' + w) : 'Sit the stage ' + (st - 1) + ' exam'}</a><span class="sched">Started ${fmtDate(S.start)} &middot; calendar week ${pw} of 12 &middot; ${fin ? 'finished' : diff > 0 ? diff + ' week' + (diff > 1 ? 's' : '') + ' behind' : diff < 0 ? -diff + ' week' + (diff < -1 ? 's' : '') + ' ahead' : 'on schedule'}</span><button class="btn ghost small" data-act="clearStart">Change start date</button></div>`; }
   const next = [];
   const sx = [1, 2, 3, 4].find(s => unlocked(s) && !(S.ex[s] && S.ex[s].passed));
+  if (!S.drill[dkey(new Date())] && Object.keys(S.q).length >= 7) next.push(['Daily drill: 8 questions from your weakest areas (5 min)', '#skills', 'Drill']);
   if (due) next.push([`Review ${due} due question${due > 1 ? 's' : ''} (about ${Math.max(2, Math.round(due * 0.5))} min). Always first.`, '#review', 'Review']);
   if (sx && D.stages[sx - 1].weeks.every(weekDone)) next.push([`Sit the ${sx === 4 ? 'final exam' : 'stage ' + sx + ' exam'}. Passing ${sx === 4 ? 'completes the programme' : 'unlocks stage ' + (sx + 1)}.`, '#exam-' + sx, 'Exam']);
   if (unlocked(st)) ss.forEach((d, i) => { if (!d) next.push([`${STEPS[i]}: ${stepHint(w, i)}`, '#week-' + w, 'Step ' + (i + 1)]); });
@@ -477,6 +564,7 @@ function viewToday() {
     ${fin ? '' : `<div class="pips">${STEPS.map((s, i) => `<span class="pip${ss[i] ? ' on' : i === cs ? ' now' : ''}">${i + 1} ${s}</span>`).join('')}</div>`}
     ${sched}</div>${ring(overallPct(), 'overall')}</section>
   <div class="stats">
+    <a class="stat" href="#skills" style="text-decoration:none;color:inherit"><b>${skillIndex()}</b><span>Skill index of 100</span></a>
     <div class="stat"><b>${doneTasks}/${totTasks}</b><span>Lab tasks</span></div>
     <div class="stat"><b>${qp}/12</b><span>Quizzes passed</span></div>
     <div class="stat"><b>${cp}/12</b><span>Challenges solved</span></div>
@@ -604,11 +692,12 @@ function drawRun() {
     if (QS.mode === 'week') {
       const p = S.wq[QS.w] || { best: 0, n: 0 }; p.best = Math.max(p.best, score); p.last = score; p.n++; S.wq[QS.w] = p; save();
       msg = `<p class="big">${QS.right}/${QS.ids.length}</p><p>${score >= QPASS ? 'Passed.' : 'Not passed yet. Re-read the coach notes and try again.'} These questions return in the Review tab on a 1, 3, 7, 14, 30 day schedule.</p><button class="btn" data-act="startQuiz" data-w="${QS.w}">Retake quiz</button>`;
+    } else if (QS.mode === 'drill') { S.drill[dkey(new Date())] = 1; save(); msg = `<p class="big">${QS.right}/${QS.ids.length}</p><p>Drill done for today. Your skill scores below are updated.</p><button class="btn ghost" data-act="reload">Show updated skills</button>`;
     } else { save(); const left = dueIds().length; msg = `<p class="big">${QS.right}/${QS.ids.length}</p><p>${left ? left + ' more due.' : 'All caught up.'}</p>${left ? '<button class="btn" data-act="startReview">Continue</button>' : '<a class="btn" href="#today">Back to today</a>'}`; }
     QS = null; box.innerHTML = msg; nav(route().name); return;
   }
   const id = QS.ids[QS.i], q = Q[id], done = QS.picked !== null;
-  box.innerHTML = `<div class="eyebrow">Question ${QS.i + 1} of ${QS.ids.length}${QS.mode === 'review' ? ' &middot; from week ' + q.week : ''}</div>
+  box.innerHTML = `<div class="eyebrow">Question ${QS.i + 1} of ${QS.ids.length}${QS.mode !== 'week' ? ' &middot; ' + esc(AREAS[areaOf(q.week)].n) + ' &middot; week ' + q.week : ''}</div>
   <p class="qtext">${esc(q.q)}</p>
   <div class="opts">${QS.order[id].map(oi => `<button class="opt${done ? (oi === q.a ? ' right' : oi === QS.picked ? ' wrong' : '') : ''}" data-act="pick" data-o="${oi}"${done ? ' disabled' : ''}>${esc(q.o[oi])}</button>`).join('')}</div>
   ${done ? `<p class="why"><b>${QS.picked === q.a ? 'Correct.' : 'Not this time.'}</b> ${esc(q.why)}</p><button class="btn" data-act="nextQ">${QS.i + 1 < QS.ids.length ? 'Next question' : 'See result'}</button>` : ''}`;
@@ -723,7 +812,7 @@ function route() {
   const h = (location.hash || '#today').slice(1); let m;
   if ((m = /^week-(\d+)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 12) return { name: 'week', n: +m[1] };
   if ((m = /^exam-(\d)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 4) return { name: 'exam', n: +m[1] };
-  if (h === 'roadmap' || h === 'review' || h === 'library' || h === 'cheatsheets') return { name: h };
+  if (h === 'roadmap' || h === 'review' || h === 'library' || h === 'cheatsheets' || h === 'skills') return { name: h };
   return { name: 'today' };
 }
 function render() {
@@ -731,7 +820,7 @@ function render() {
   if (ES && !(r.name === 'exam' && r.n === ES.stage)) { clearInterval(esTimer); ES = null; }
   QS = null; nav(r.name);
   $('#view').className = r.name === 'week' ? 'wide' : '';
-  $('#view').innerHTML = r.name === 'week' ? viewWeek(r.n) : r.name === 'exam' ? viewExam(r.n) : r.name === 'roadmap' ? viewRoadmap() : r.name === 'library' ? viewLibrary() : r.name === 'cheatsheets' ? viewSheets() : r.name === 'review' ? viewReview() : viewToday();
+  $('#view').innerHTML = r.name === 'week' ? viewWeek(r.n) : r.name === 'exam' ? viewExam(r.n) : r.name === 'roadmap' ? viewRoadmap() : r.name === 'library' ? viewLibrary() : r.name === 'cheatsheets' ? viewSheets() : r.name === 'skills' ? viewSkills() : r.name === 'review' ? viewReview() : viewToday();
 }
 window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
 
@@ -749,6 +838,8 @@ document.addEventListener('click', ev => {
   const a = el.dataset.act;
   if (a === 'task' || a === 'ans' || a === 'res' || a === 'rec' || a === 'impFile') return;
   if (a === 'jump') { ev.preventDefault(); const t = document.getElementById(el.dataset.to); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (a === 'startDrill') { const ids = drillIds(8); if (ids.length) startRun(ids, 'drill'); return; }
+  if (a === 'reload') { render(); return; }
   if (a === 'thmCheck') { el.textContent = 'Checking...'; pollThm(); setTimeout(() => { if (el.isConnected) el.textContent = 'Check now'; }, 1500); return; }
   if (a === 'newsOk') { LIVE.news = []; render(); return; }
   if (a === 'thmPaste') { const msg = $('#thmMsg'); let codes = null;
@@ -772,7 +863,7 @@ document.addEventListener('click', ev => {
   else if (a === 'reset2') { S = fresh(); adoptThm(D.thm); adoptThm(window.THM_SYNC); refreshThm(); save(); render(); }
   else if (a === 'startQuiz') startRun(shuffle(weekQids(+el.dataset.w)), 'week', +el.dataset.w);
   else if (a === 'startReview') startRun(dueIds().slice(0, 20), 'review');
-  else if (a === 'pick' && QS && QS.picked === null) { const id = QS.ids[QS.i]; QS.picked = +el.dataset.o; const ok = QS.picked === Q[id].a; if (ok) QS.right++; grade(id, ok); bump(1); save(); drawRun(); }
+  else if (a === 'pick' && QS && QS.picked === null) { const id = QS.ids[QS.i]; QS.picked = +el.dataset.o; const ok = QS.picked === Q[id].a; if (ok) QS.right++; grade(id, ok, QS.mode); bump(1); save(); drawRun(); }
   else if (a === 'nextQ' && QS) { QS.i++; QS.picked = null; drawRun(); }
   else if (a === 'check') checkAnswer(+el.dataset.w, +el.dataset.i);
   else if (a === 'copy') { const t = D.weeks[+el.dataset.w - 1].chal.evidence; const done = () => { el.textContent = 'Copied'; setTimeout(() => el.textContent = 'Copy evidence', 1500); }; const fail = () => { const r = document.createRange(); r.selectNodeContents($('#ev-' + el.dataset.w)); const s = getSelection(); s.removeAllRanges(); s.addRange(r); el.textContent = 'Selected: press Ctrl+C'; }; try { navigator.clipboard.writeText(t).then(done, fail); } catch (e) { fail(); } }

@@ -10,6 +10,7 @@ A personal learning system for becoming a junior SOC analyst in 12 weeks at abou
 - **Cheat sheets**: every reference table and command list on one printable page.
 - **Interview questions**: three per week with model answers.
 - **TryHackMe integration**: the labs are the 65 real rooms of the SOC Level 1 path, each linked. `Start SOC Analyst.bat` reads your public TryHackMe profile on start and then every 2 minutes in a hidden background PowerShell (`sync-thm.ps1 -Loop`, username `vicuvi1` by default, stops after 12 hours). The open page re-reads the result every minute, ticks newly completed rooms without a reload, and adds them to the study calendar. Today shows the next two rooms to do.
+- **Skills**: a score per area (50% knowledge retained, 30% labs, 20% challenges), a radar that shows today against an earlier day, a retention figure from review answers, a daily weak-spot drill, and a skill index over time.
 - **Study calendar**: a GitHub-style activity grid in gold, with streaks.
 - **Move to another PC**: download one HTML copy that carries your progress inside it, or export and import a progress file or code.
 - **Spaced repetition**: quiz questions return after 1, 3, 7, 14 and 30 days. A wrong answer resets the question to the next day.
