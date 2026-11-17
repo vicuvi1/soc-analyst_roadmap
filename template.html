@@ -14,6 +14,7 @@
   --accent:#0a6c8f; --accent-ink:#ffffff; --tint:#e2eff4;
   --hero:#0e2a3b; --hero-ink:#eaf3f7; --hero-muted:#9dbccb; --hero-accent:#6cc8ea;
   --good:#1b7548; --warn:#955600; --bad:#b3261e; --code:#f3f6f8;
+  --g0:#e4e8ec; --g1:#f2e2a4; --g2:#e6c45c; --g3:#d4a017; --g4:#a67c00;
   --display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
@@ -25,6 +26,7 @@
     --accent:#5bbbdd; --accent-ink:#06222d; --tint:#17303c;
     --hero:#12303f; --hero-ink:#eaf3f7; --hero-muted:#9dbccb; --hero-accent:#6cc8ea;
     --good:#5fc391; --warn:#e2a650; --bad:#f28b84; --code:#0f181f; --shadow:none; color-scheme:dark;
+    --g0:#1e2933; --g1:#4a3b10; --g2:#806518; --g3:#bd931c; --g4:#f2c230;
   }
 }
 :root[data-theme="dark"]{
@@ -32,6 +34,7 @@
   --accent:#5bbbdd; --accent-ink:#06222d; --tint:#17303c;
   --hero:#12303f; --hero-ink:#eaf3f7; --hero-muted:#9dbccb; --hero-accent:#6cc8ea;
   --good:#5fc391; --warn:#e2a650; --bad:#f28b84; --code:#0f181f; --shadow:none; color-scheme:dark;
+    --g0:#1e2933; --g1:#4a3b10; --g2:#806518; --g3:#bd931c; --g4:#f2c230;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -175,6 +178,12 @@ main{max-width:980px;margin:0 auto;padding:24px 20px 80px;display:flex;flex-dire
 .meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 @media(max-width:560px){.reslist li{grid-template-columns:22px 1fr}.ico{display:none}.meta{grid-column:2;justify-content:flex-start}.tasks label{grid-template-columns:22px 1fr}.tasks label .chip{grid-column:2;justify-self:start}}
 .selfc{display:grid;grid-template-columns:22px 1fr;gap:10px;padding:12px 14px;border:1px dashed var(--accent);border-radius:8px;cursor:pointer;margin-top:14px;background:var(--tint)}
+.tasks .modhead{font:600 .76rem var(--body);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:10px 0 0;padding:0}
+.tasks a{font-weight:500;text-decoration:none} .tasks a:hover{text-decoration:underline}
+.tasks .done a{color:var(--muted)}
+.today-rooms{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.today-rooms li{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-left:3px solid var(--g3);border-radius:9px;margin:0}
+.today-rooms small{display:block;color:var(--muted)}
 .note{border-left:3px solid var(--accent);background:var(--tint);padding:10px 14px;border-radius:0 6px 6px 0;font-size:.95rem}
 .lesson{max-width:70ch}
 .opts{display:flex;flex-direction:column;gap:8px;margin:14px 0}
@@ -231,6 +240,24 @@ main.wide{max-width:1200px}
 .themebtn{background:none;border:1px solid var(--line);border-radius:7px;width:34px;height:34px;display:grid;place-items:center;cursor:pointer;color:var(--muted)}
 .themebtn svg{width:16px;height:16px}
 @media print{.bar,footer,.filters,.btn{display:none!important}body{background:#fff}.card{box-shadow:none;break-inside:avoid}}
+.cal{overflow-x:auto;padding-bottom:4px}
+.calgrid{display:grid;grid-template-columns:28px auto;gap:4px 6px;width:max-content}
+.months{grid-column:2;display:grid;grid-auto-flow:column;grid-auto-columns:15px;gap:3px;font:500 .68rem var(--mono);color:var(--muted);height:14px}
+.months span{white-space:nowrap;overflow:visible}
+.days{display:grid;grid-template-rows:repeat(7,15px);gap:3px;font:500 .66rem var(--mono);color:var(--muted);line-height:15px}
+.cells{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,15px);grid-auto-columns:15px;gap:3px}
+.cells i{border-radius:3px;background:var(--g0)}
+.cells i.l1{background:var(--g1)} .cells i.l2{background:var(--g2)} .cells i.l3{background:var(--g3)} .cells i.l4{background:var(--g4)}
+.cells i.today{outline:2px solid var(--ink);outline-offset:1px}
+.cells i.fut{background:transparent}
+.legend{display:flex;gap:4px;align-items:center;font-size:.78rem;color:var(--muted)}
+.legend i{width:13px;height:13px;border-radius:3px;display:inline-block}
+.livedot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:7px;vertical-align:baseline}
+.livedot.on{background:var(--good);box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 25%,transparent)}
+.livenote{border-left-color:var(--g3);margin:10px 0}
+.syncbox{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.syncbox summary{cursor:pointer;font-weight:500;color:var(--accent)}
+.codein{flex:1;min-width:200px;padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:var(--bg);font-family:var(--mono);font-size:.85rem}
 footer{font-size:.82rem;color:var(--muted);display:flex;gap:12px;justify-content:space-between;flex-wrap:wrap;align-items:center}
 @media (prefers-reduced-motion:no-preference){.meter i,.strip a i{transition:width .3s}.ring .v{transition:stroke-dashoffset .5s}}
 </style>
@@ -244,11 +271,13 @@ footer{font-size:.82rem;color:var(--muted);display:flex;gap:12px;justify-content
   <div class="sync" id="sync"><i></i><span>Saved in this browser</span></div>
 </div></div>
 <main id="view"></main>
+<script id="seed" type="application/json">null</script>
+<script src="thm.js"></script>
 <script>
 try { const t = localStorage.getItem('soc12-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
 const D = /*DATA*/null;
 const DAY = 864e5, IV = [0, 1, 3, 7, 14, 30], KEY = 'soc12-state-v1', PASS = 0.8, QPASS = 0.7, COOLDOWN = 12 * 36e5;
-const TYPE = { thm: 'TryHackMe', pwn: 'pwn.college', own: 'Own work' };
+const TYPE = { thm: 'TryHackMe', room: 'TryHackMe room', pwn: 'pwn.college', own: 'Own work' };
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const norm = s => String(s).toLowerCase().replace(/\s+/g, '');
@@ -263,9 +292,38 @@ D.stages.forEach((s, si) => s.extra.forEach((q, qi) => Q['s' + (si + 1) + 'x' + 
 const weekQids = w => D.weeks[w - 1].quiz.map((_, i) => 'w' + w + 'q' + (i + 1));
 
 /* state */
-const fresh = () => ({ v: 2, updatedAt: 0, start: null, tasks: {}, res: {}, rec: {}, q: {}, wq: {}, ch: {}, ex: {} });
+const fresh = () => ({ v: 2, updatedAt: 0, start: null, tasks: {}, res: {}, rec: {}, act: {}, rooms: {}, thm: null, q: {}, wq: {}, ch: {}, ex: {} });
 let S = fresh();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
+try { const seed = JSON.parse(document.getElementById('seed').textContent); if (seed && (seed.updatedAt || 0) > (S.updatedAt || 0)) { S = Object.assign(fresh(), seed); localStorage.setItem(KEY, JSON.stringify(S)); } } catch (e) {}
+/* TryHackMe sync: newest of built-in snapshot, thm.js written by the launcher, and saved state */
+let THMSET = new Set();
+function adoptThm(t) { if (t && Array.isArray(t.codes) && (t.at || 0) > ((S.thm && S.thm.at) || 0)) { S.thm = { user: t.user || 'vicuvi1', at: t.at, codes: [...new Set([...(S.thm ? S.thm.codes : []), ...t.codes.map(String)])] }; return true; } return false; }
+function refreshThm() { THMSET = new Set(S.thm ? S.thm.codes : []); }
+{ const a = adoptThm(D.thm), b = adoptThm(window.THM_SYNC); if (a || b) { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} } refreshThm(); }
+const roomDone = c => THMSET.has(c) || !!S.rooms[c];
+const taskOn = (w, i) => { const t = D.weeks[w - 1].tasks[i]; return t[3] ? roomDone(t[3]) : !!S.tasks[w + '-' + i]; };
+const roomUrl = c => 'https://tryhackme.com/room/' + c + '?pathCode=soclevel1';
+const pathRooms = () => D.weeks.flatMap((W, wi) => W.tasks.map((t, i) => ({ w: wi + 1, i, t })).filter(x => x.t[0] === 'room' && x.t[4] !== 'Extra room'));
+/* live updates: the launcher's background sync rewrites thm.js; the page re-reads it every minute and on focus */
+let LIVE = { ok: false, at: 0, checked: 0, news: [] }, pendingRender = false;
+const roomTitle = c => { for (const W of D.weeks) for (const t of W.tasks) if (t[3] === c) return t[1]; return null; };
+function liveRender() {
+  const el = document.activeElement, typing = el && /INPUT|TEXTAREA/.test(el.tagName) && el.type !== 'checkbox' && el.type !== 'radio' && el.value;
+  if (QS || ES || typing) { pendingRender = true; return; }
+  pendingRender = false; const y = window.scrollY; render(); window.scrollTo(0, y);
+}
+function pollThm() {
+  const s = document.createElement('script'); s.src = 'thm.js?t=' + Date.now();
+  s.onload = () => { s.remove(); const t = window.THM_SYNC, before = new Set(THMSET), was = LIVE.ok;
+    LIVE.checked = Date.now(); LIVE.at = (t && t.at) || 0; LIVE.ok = !!t && Date.now() - LIVE.at < 6 * 6e4;
+    if (adoptThm(t)) { refreshThm(); const fresh = [...THMSET].filter(c => !before.has(c) && roomTitle(c));
+      if (fresh.length) { bump(3 * fresh.length); LIVE.news = fresh.map(roomTitle); }
+      save(); liveRender(); }
+    else if (pendingRender || was !== LIVE.ok || route().name === 'today') liveRender(); };
+  s.onerror = () => { s.remove(); const was = LIVE.ok; LIVE.ok = false; LIVE.checked = Date.now(); if (was) liveRender(); };
+  document.head.appendChild(s);
+}
 let remote = null, writing = false, dirty = false, saveTimer = null;
 function setSync(mode) { const el = $('#sync'); el.className = 'sync ' + mode; el.lastElementChild.textContent = mode === 'cloud' ? 'Progress saved to your account' : 'Progress saved in this browser'; }
 function save() {
@@ -294,7 +352,7 @@ async function initRemote() {
       const body = snap.data();
       let R = null; try { R = JSON.parse(body.json); } catch (e) {}
       if (R && (R.updatedAt || 0) > (S.updatedAt || 0)) {
-        S = Object.assign(fresh(), R);
+        S = Object.assign(fresh(), R); adoptThm(D.thm); adoptThm(window.THM_SYNC); refreshThm();
         try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
         if (!ES && !QS) render();
       } else if ((S.updatedAt || 0) > ((R && R.updatedAt) || 0)) { dirty = true; pushRemote(); }
@@ -307,7 +365,7 @@ async function initRemote() {
 const STEPS = ['Learn', 'Labs', 'Recap', 'Quiz', 'Challenge'];
 const stageOf = w => Math.floor((w - 1) / 3) + 1;
 const unlocked = st => st === 1 || !!(S.ex[st - 1] && S.ex[st - 1].passed);
-const tasksDone = w => D.weeks[w - 1].tasks.filter((_, i) => S.tasks[w + '-' + i]).length;
+const tasksDone = w => D.weeks[w - 1].tasks.filter((_, i) => taskOn(w, i)).length;
 const coreIdx = w => D.weeks[w - 1].res.map((r, i) => r[5] ? i : -1).filter(i => i >= 0);
 const coreDone = w => coreIdx(w).filter(i => S.res[w + '-' + i]).length;
 const quizPassed = w => !!(S.wq[w] && S.wq[w].best >= QPASS);
@@ -324,6 +382,29 @@ function workingWeek() { for (let w = 1; w <= 12; w++) if (!weekDone(w)) return 
 function planWeek() { if (!S.start) return null; return Math.max(1, Math.min(12, Math.floor((Date.now() - S.start) / (7 * DAY)) + 1)); }
 const allDone = () => !!(S.ex[4] && S.ex[4].passed) && chalDone(12);
 const overallPct = () => Math.round(D.weeks.reduce((a, _, i) => a + weekPct(i + 1), 0) / 12 * 0.8 + [1, 2, 3, 4].filter(s => S.ex[s] && S.ex[s].passed).length / 4 * 20);
+
+/* study activity */
+const dkey = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+function bump(n) { const k = dkey(new Date()); S.act[k] = (S.act[k] || 0) + (n || 1); }
+const level = n => !n ? 0 : n < 3 ? 1 : n < 6 ? 2 : n < 10 ? 3 : 4;
+function calendarHtml() {
+  const WEEKS = 26, today = new Date(); today.setHours(0, 0, 0, 0);
+  const start = new Date(today); start.setDate(start.getDate() - ((start.getDay() + 6) % 7) - (WEEKS - 1) * 7);
+  let cells = '', months = '', lastM = -1;
+  for (let w = 0; w < WEEKS; w++) {
+    const ws = new Date(start); ws.setDate(start.getDate() + w * 7);
+    months += `<span>${ws.getMonth() !== lastM ? ws.toLocaleDateString(undefined, { month: 'short' }) : ''}</span>`; lastM = ws.getMonth();
+    for (let d = 0; d < 7; d++) { const day = new Date(ws); day.setDate(ws.getDate() + d); const n = S.act[dkey(day)] || 0, fut = day > today;
+      cells += `<i class="${fut ? 'fut' : 'l' + level(n)}${day.getTime() === today.getTime() ? ' today' : ''}"${fut ? '' : ` title="${day.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}: ${n ? n + ' action' + (n > 1 ? 's' : '') : 'no study'}"`}></i>`; }
+  }
+  const keys = Object.keys(S.act).filter(k => S.act[k] > 0).sort(), set = new Set(keys);
+  let cur = 0; const c = new Date(today); if (!set.has(dkey(c))) c.setDate(c.getDate() - 1); while (set.has(dkey(c))) { cur++; c.setDate(c.getDate() - 1); }
+  let best = 0, run = 0, prev = null; keys.forEach(k => { const t = new Date(k + 'T00:00:00').getTime(); run = prev !== null && Math.round((t - prev) / DAY) === 1 ? run + 1 : 1; best = Math.max(best, run); prev = t; });
+  const wk = new Date(today); wk.setDate(wk.getDate() - ((wk.getDay() + 6) % 7)); let thisWeek = 0; for (let d = 0; d < 7; d++) { const x = new Date(wk); x.setDate(wk.getDate() + d); if (set.has(dkey(x))) thisWeek++; }
+  return `<div class="card"><div class="row between"><h2>Study calendar</h2><div class="legend">Less <i style="background:var(--g0)"></i><i style="background:var(--g1)"></i><i style="background:var(--g2)"></i><i style="background:var(--g3)"></i><i style="background:var(--g4)"></i> More</div></div>
+    <div class="cal"><div class="calgrid"><span></span><div class="months">${months}</div><div class="days"><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span><span>Sun</span></div><div class="cells" role="img" aria-label="Study activity for the last ${WEEKS} weeks">${cells}</div></div></div>
+    <div class="row" style="margin-top:12px"><span class="chip fill">${keys.length} study day${keys.length === 1 ? '' : 's'}</span><span class="chip fill">Current streak ${cur} day${cur === 1 ? '' : 's'}</span><span class="chip fill">Longest streak ${best}</span><span class="chip fill">${thisWeek}/7 days this week</span><span class="hint">A day turns gold when you tick a resource or lab, answer a quiz or review question, solve a challenge or sit an exam. Stronger gold means more done.</span></div></div>`;
+}
 
 /* spaced repetition */
 function grade(id, ok) {
@@ -372,7 +453,7 @@ function resRow(w, i) {
 }
 function stepHint(w, i) {
   const W = D.weeks[w - 1];
-  return [`Watch and read the 2 core resources (${mins(coreMins(w))})`, W.tasks[Math.max(0, W.tasks.findIndex((_, t) => !S.tasks[w + '-' + t]))][1], 'Read the coach notes and tick the self-check', `Pass the quiz at ${Math.round(QPASS * 100)}% or more`, W.chal.title][i];
+  return [`Watch and read the 2 core resources (${mins(coreMins(w))})`, (t => (t[3] ? 'Room: ' : '') + t[1])(W.tasks[Math.max(0, W.tasks.findIndex((_, t) => !taskOn(w, t)))]), 'Read the coach notes and tick the self-check', `Pass the quiz at ${Math.round(QPASS * 100)}% or more`, W.chal.title][i];
 }
 
 function viewToday() {
@@ -402,10 +483,12 @@ function viewToday() {
     <div class="stat"><b>${ep}/4</b><span>Exams passed</span></div>
     <div class="stat${due ? ' due' : ''}"><b>${due}</b><span>Reviews due</span></div>
   </div>
+  ${thmCard(w)}
   <div class="two"><div class="card"><h2>Do next, in this order</h2>${next.length ? `<ol class="next">${next.slice(0, 5).map((n, i) => `<li><b>${i + 1}</b><span>${esc(n[0])}</span><a class="btn small${i ? ' ghost' : ''}" href="${n[1]}">${n[2]}</a></li>`).join('')}</ol>` : '<p>Nothing open. Check the Review tab tomorrow.</p>'}</div>
   <div class="card"><div class="eyebrow">Checkpoint</div><h2>${st === 4 ? 'Final exam' : 'Stage ' + st + ' exam'}</h2>
     <div class="kv"><span>Weeks finished in this stage</span><b>${D.stages[st - 1].weeks.filter(weekDone).length}/3</b><span>Exam</span><b>${examChip(st)}</b><span>Questions in review rotation</span><b>${Object.keys(S.q).filter(id => Q[id]).length}</b><span>Resources ticked</span><b>${Object.keys(S.res).length}/${D.weeks.reduce((a, x) => a + x.res.length, 0)}</b></div>
     <div class="row" style="margin-top:14px"><a class="btn ghost small" href="#exam-${st}">Exam page</a><a class="btn ghost small" href="#cheatsheets">Cheat sheets</a></div></div></div>
+  ${calendarHtml()}
   <div class="card"><h2>All 12 weeks</h2><div class="strip">${D.weeks.map((_, i) => { const n = i + 1; return `<a href="#week-${n}" class="${n === w ? 'cur ' : ''}${weekDone(n) ? 'done ' : ''}${unlocked(stageOf(n)) ? '' : 'lock'}" title="Week ${n}: ${esc(D.weeks[i].title)}">${n}<i style="width:${weekPct(n)}%"></i></a>`; }).join('')}</div></div>
   <div class="card"><h2>How to spend 8 hours a week</h2>
     <ul><li><b>Session 1, about 1.5 h: step 1.</b> Watch and read the two core resources before touching a lab, so the lab is practice and not first contact.</li>
@@ -413,9 +496,30 @@ function viewToday() {
     <li><b>Session 4, about 1 h: steps 3 to 5.</b> Coach notes, quiz, challenge.</li>
     <li><b>Every session starts with due reviews.</b> Five minutes. This is what moves knowledge from "seen it" to "know it".</li></ul>
     <p class="lead">Short week? Skip optional resources and the pwn.college task. Never skip the quiz and challenge.</p></div>
+  <div class="card" id="moveCard"><h2>Move to another PC</h2>
+    <p class="lead">Your progress travels inside the file. Download a copy, send that one HTML file to the other computer by any means, and open it there. It continues from exactly where you are now.</p>
+    <div class="row"><button class="btn" data-act="exportHtml">Download a copy with my progress</button><button class="btn ghost" data-act="exportJson">Download progress only</button><button class="btn ghost" data-act="copyCode">Copy progress code</button></div>
+    <h4>Bring progress in</h4>
+    <div class="row"><label class="btn ghost" for="impFile">Choose a progress file</label><input type="file" id="impFile" accept=".json,.html,.txt" data-act="impFile" style="position:absolute;opacity:0;width:1px;height:1px"><input id="impCode" class="codein" placeholder="or paste a progress code here" autocomplete="off" spellcheck="false"><button class="btn ghost" data-act="impCode">Load code</button></div>
+    <p class="hint" id="moveMsg">Newer progress always wins when you open a copy. If a download does not start (for example inside Claude), use "Copy progress code" and paste it on the other PC.</p></div>
   <footer><span>Quiz pass mark ${Math.round(QPASS * 100)}%. Exam pass mark ${Math.round(PASS * 100)}%. Review intervals 1, 3, 7, 14, 30 days.</span><span id="resetBox"><button class="btn ghost small" data-act="reset1">Reset all progress</button></span></footer>`;
 }
 
+function thmCard(w) {
+  const all = pathRooms(), done = all.filter(x => roomDone(x.t[3])).length, open = all.filter(x => !roomDone(x.t[3]) && unlocked(stageOf(x.w)));
+  const today = open.slice(0, 2), locked = all.length - done - open.length;
+  const when = S.thm ? new Date(S.thm.at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'never';
+  const u = (S.thm && S.thm.user) || 'vicuvi1', api = p => 'https://tryhackme.com/api/v2/public-profile/completed-rooms?username=' + encodeURIComponent(u) + '&limit=100&page=' + p;
+  const news = LIVE.news.length ? `<p class="note livenote">Just completed on TryHackMe: <b>${LIVE.news.map(esc).join(', ')}</b>. Ticked here and added to your study calendar. <button class="btn ghost small" data-act="newsOk">OK</button></p>` : '';
+  return `<div class="card"><div class="row between"><div><div class="eyebrow"><span class="livedot${LIVE.ok ? ' on' : ''}"></span>${LIVE.ok ? 'Live' : 'Not live'} &middot; TryHackMe profile ${esc(u)} &middot; last read ${when}</div><h2>Rooms to do today</h2></div><div class="row"><span class="chip fill">${done}/${all.length} path rooms done</span>${meter(Math.round(done / all.length * 100))}<button class="btn ghost small" data-act="thmCheck">Check now</button></div></div>${news}
+    ${LIVE.ok ? '' : `<p class="hint">Live updates are off. Start the site with "Start SOC Analyst.bat" and finished rooms appear here within about 3 minutes, without reloading.</p>`}
+    ${today.length ? `<ol class="today-rooms">${today.map(x => `<li><span><b>${esc(x.t[1])}</b><small>${esc(x.t[4])} &middot; week ${x.w} &middot; about ${x.t[2]} h</small></span><a class="btn small" href="${roomUrl(x.t[3])}" target="_blank" rel="noopener">Open room</a></li>`).join('')}</ol>
+    <p class="hint">Two rooms is one 2-hour lab session. ${open.length - today.length} more room${open.length - today.length === 1 ? '' : 's'} open after these${locked ? ', ' + locked + ' in locked stages' : ''}.</p>` : `<p>${done === all.length ? 'Every room of the SOC Level 1 path is done.' : 'No open rooms in your unlocked stages. Pass the stage exam to unlock the next ones.'}</p>`}
+    <details class="syncbox"><summary>Sync with TryHackMe</summary>
+      <p class="hint"><b>Live:</b> "Start SOC Analyst.bat" reads your public profile every 2 minutes in the background, and this page checks for the result every minute and whenever you switch back to it.</p>
+      <p class="hint"><b>Manual:</b> open <a href="${api(1)}" target="_blank" rel="noopener">your completed rooms, page 1</a> and <a href="${api(2)}" target="_blank" rel="noopener">page 2</a>, select all, copy, and paste each one here.</p>
+      <div class="row"><input id="thmPaste" class="codein" placeholder="paste the text from the TryHackMe page here" autocomplete="off" spellcheck="false"><button class="btn ghost" data-act="thmPaste">Sync</button></div><p class="hint" id="thmMsg"></p></details></div>`;
+}
 function viewRoadmap() {
   const ww = workingWeek(), cst = [1, 2, 3, 4].find(s => !(S.ex[s] && S.ex[s].passed)) || 4;
   const path = D.stages.map((s, si) => { const st = si + 1, done = S.ex[st] && S.ex[st].passed; return `<a href="#stage-${st}" data-act="jump" data-to="stage-${st}" class="${done ? 'done' : st === cst ? 'now' : unlocked(st) ? '' : 'lock'}"><small>Stage ${st} &middot; weeks ${s.weeks[0]} to ${s.weeks[2]}</small><b>${esc(s.name)}</b><small>${done ? 'Exam passed' : s.final ? 'Ends with the final exam' : 'Ends with exam ' + st}</small></a>`; }).join('<span></span>');
@@ -433,7 +537,10 @@ function viewWeek(w) {
   const head = `<section class="hero"><div><div class="eyebrow"><a href="#roadmap">Roadmap</a> &middot; Stage ${st} &middot; Week ${w} of 12</div><h1>${esc(W.title)}</h1><p>${esc(W.goal)}</p>
     <div class="pips">${STEPS.map((s, i) => `<span class="pip${ss[i] ? ' on' : i === cs ? ' now' : ''}">${i + 1} ${s}</span>`).join('')}</div></div>${ring(weekPct(w), 'this week')}</section>`;
   if (!unlocked(st)) return head + `<div class="card"><h2>Locked</h2><p>Pass the stage ${st - 1} exam to open this week.</p><a class="btn" href="#exam-${st - 1}">Go to the stage ${st - 1} exam</a></div>`;
-  const tasks = W.tasks.map((t, i) => { const on = !!S.tasks[w + '-' + i]; return `<li><label><input type="checkbox" id="t-${w}-${i}" data-act="task" data-k="${w}-${i}"${on ? ' checked' : ''}><span class="${on ? 'done' : ''}">${esc(t[1])}</span><span class="chip">${TYPE[t[0]]} &middot; ${t[2]} h</span></label></li>`; }).join('');
+  let lastMod = null;
+  const tasks = W.tasks.map((t, i) => { const on = taskOn(w, i), room = !!t[3], synced = room && THMSET.has(t[3]);
+    const hd = room && t[4] !== lastMod ? `<li class="modhead">${esc(t[4] === 'Extra room' ? 'Extra room' : 'Module: ' + t[4])}</li>` : ''; if (room) lastMod = t[4];
+    return hd + `<li><label><input type="checkbox" id="t-${w}-${i}" data-act="task" data-k="${w}-${i}"${room ? ` data-code="${esc(t[3])}"` : ''}${on ? ' checked' : ''}${synced ? ' disabled' : ''}><span class="${on ? 'done' : ''}">${room ? `<a href="${roomUrl(t[3])}" target="_blank" rel="noopener">${esc(t[1])}</a>` : esc(t[1])}</span><span class="meta">${synced ? '<span class="chip good">Done on TryHackMe</span>' : ''}<span class="chip">${TYPE[t[0]]} &middot; ${t[2]} h</span></span></label></li>`; }).join('');
   const core = coreIdx(w), opt = W.res.map((_, i) => i).filter(i => !W.res[i][5]);
   const wq = S.wq[w], o = OPEN[w] || {};
   const bodies = [
@@ -443,7 +550,7 @@ function viewWeek(w) {
       <h4>Optional, for depth</h4><ul class="reslist">${opt.map(i => resRow(w, i)).join('')}</ul>`],
     [`Hands-on labs`, `${tasksDone(w)}/${W.tasks.length} done &middot; ${hours(w)} h`,
       `${W.note ? `<p class="note">${esc(W.note)}</p>` : ''}<p class="lead">Work top to bottom.</p><ul class="tasks">${tasks}</ul>
-      <p class="hint">Module names follow the current SOC Level 1 path. If TryHackMe shows them in a different order, follow this page's order. Already completed a module? Tick it.</p>`],
+      <p class="hint">These are the real rooms of the SOC Level 1 path; each name opens the room. Rooms finished on TryHackMe are ticked from your profile at the next sync. You can also tick a room by hand.</p>`],
     [`Coach notes and self-check`, S.rec[w] ? 'Self-check ticked' : 'Read, then tick the self-check',
       `<div class="lesson">${W.lesson}</div><h4>Interview questions</h4><p class="hint">Answer aloud first, then open the model answer and compare.</p><div class="ivq">${W.iv.map(q => `<details><summary>${esc(q[0])}</summary><p>${esc(q[1])}</p></details>`).join('')}</div><label class="selfc"><input type="checkbox" id="rec-${w}" data-act="rec" data-w="${w}"${S.rec[w] ? ' checked' : ''}><span><b>Self-check, without looking at the notes:</b> ${esc(W.check)}</span></label>`],
     [`Quiz`, wq ? `Best ${Math.round(wq.best * 100)}% &middot; pass at ${Math.round(QPASS * 100)}%` : `${W.quiz.length} questions &middot; pass at ${Math.round(QPASS * 100)}%`, `<div id="quiz">${quizIntro(w, wq)}</div>`],
@@ -567,7 +674,7 @@ function submitExam() {
   ES.ids.forEach(id => { if (Q[id].week && ES.ans[id] !== Q[id].a) { const r = S.q[id] || { b: 0, d: 0, n: 0, c: 0 }; r.b = 1; r.d = Date.now(); r.n++; S.q[id] = r; } });
   const e = S.ex[ES.stage] || { best: 0, passed: false, n: 0 };
   e.best = Math.max(e.best, score); e.passed = e.passed || pass; e.n++; e.at = Date.now(); S.ex[ES.stage] = e;
-  ES.result = { right, score, pass }; save(); render(); window.scrollTo(0, 0);
+  ES.result = { right, score, pass }; bump(5); save(); render(); window.scrollTo(0, 0);
 }
 function examResultHtml() {
   const r = ES.result, st = ES.stage, fin = examSpec(st).fin;
@@ -576,6 +683,39 @@ function examResultHtml() {
   <div class="row">${Object.entries(byWeek).map(([k, v]) => `<span class="chip ${v[0] === v[1] ? 'good' : v[0] / v[1] < 0.6 ? 'bad' : ''}">${k} ${v[0]}/${v[1]}</span>`).join('')}</div>
   <div class="row" style="margin-top:14px">${r.pass ? (fin ? '<a class="btn" href="#today">Finish</a>' : `<a class="btn" href="#week-${st * 3 + 1}">Start week ${st * 3 + 1}</a>`) : '<a class="btn" href="#review">Review missed questions</a>'}<button class="btn ghost" data-act="closeExam">Close</button></div></div>
   <div class="card"><h2>Answers</h2>${ES.ids.map((id, n) => { const q = Q[id], a = ES.ans[id]; return `<div class="eq"><p class="qtext">${n + 1}. ${esc(q.q)}</p><p>${a === q.a ? `<span class="r">${esc(q.o[a])}</span>` : `${a === undefined ? '<span class="w">No answer</span>' : `<span class="w">${esc(q.o[a])}</span>`}<br><span class="r">${esc(q.o[q.a])}</span>`}</p><p class="why">${esc(q.why)}</p></div>`; }).join('')}</div>`;
+}
+
+/* ---------- transfer ---------- */
+const stamp = () => new Date().toISOString().slice(0, 10);
+const toCode = () => 'SOC12:' + btoa(unescape(encodeURIComponent(JSON.stringify(S))));
+function moveMsg(t, bad) { const m = $('#moveMsg'); if (m) { m.textContent = t; m.style.color = bad ? 'var(--bad)' : 'var(--good)'; } }
+function download(name, text, type) {
+  try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); moveMsg('Saved "' + name + '" to your downloads. Send that file to the other PC.'); }
+  catch (e) { moveMsg('The download was blocked here. Use "Copy progress code" instead.', true); }
+}
+function exportHtml() {
+  S.updatedAt = S.updatedAt || Date.now();
+  const root = document.documentElement.cloneNode(true);
+  root.querySelector('#view').innerHTML = ''; root.querySelector('#nav').innerHTML = ''; root.removeAttribute('data-theme');
+  root.querySelector('#seed').textContent = JSON.stringify(S).replace(/</g, '\\u003c');
+  download('SOC Analyst in 12 Weeks (' + stamp() + ').html', '<!DOCTYPE html>\n' + root.outerHTML, 'text/html');
+}
+function parseProgress(text) {
+  text = String(text).trim(); let obj = null;
+  try {
+    if (text.startsWith('SOC12:')) obj = JSON.parse(decodeURIComponent(escape(atob(text.slice(6)))));
+    else if (text.startsWith('{')) obj = JSON.parse(text);
+    else { const m = /<script id="seed" type="application\/json">([\s\S]*?)<\/script>/.exec(text); if (m) obj = JSON.parse(m[1]); }
+  } catch (e) { obj = null; }
+  return obj && typeof obj === 'object' && obj.tasks && obj.q && obj.ex ? obj : null;
+}
+let PENDING = null;
+function offerImport(text) {
+  const obj = parseProgress(text);
+  if (!obj) return moveMsg('That is not a valid progress file or code.', true);
+  PENDING = obj; const cur = overallPct(), keep = S; S = Object.assign(fresh(), obj); const inc = overallPct(); S = keep;
+  const m = $('#moveMsg'); m.style.color = '';
+  m.innerHTML = `Replace the progress on this PC (${cur}%) with the imported progress (${inc}%, last changed ${obj.updatedAt ? fmtDate(obj.updatedAt) : 'unknown'})? <button class="btn small" data-act="impYes">Yes, replace</button> <button class="btn ghost small" data-act="impNo">Cancel</button>`;
 }
 
 /* ---------- router and events ---------- */
@@ -599,7 +739,7 @@ function checkAnswer(w, i) {
   const inp = $('#ci-' + w + '-' + i), val = inp.value; if (!norm(val)) return;
   const q = D.weeks[w - 1].chal.qs[i], c = S.ch[w] || { ok: [], tries: 0 };
   c.tries++; const ok = q.h.includes(hash(norm(val)));
-  if (ok) c.ok[i] = true;
+  if (ok) { c.ok[i] = true; bump(2); }
   S.ch[w] = c; save();
   if (ok) { const y = window.scrollY; render(); window.scrollTo(0, y); }
   else { $('#cq-' + w + '-' + i).classList.add('no'); $('#cm-' + w + '-' + i).textContent = 'Not correct. Go back to the evidence.' + (q.hint ? ' Hint: ' + q.hint : ''); }
@@ -607,8 +747,21 @@ function checkAnswer(w, i) {
 document.addEventListener('click', ev => {
   const el = ev.target.closest('[data-act]'); if (!el) return;
   const a = el.dataset.act;
-  if (a === 'task' || a === 'ans' || a === 'res' || a === 'rec') return;
+  if (a === 'task' || a === 'ans' || a === 'res' || a === 'rec' || a === 'impFile') return;
   if (a === 'jump') { ev.preventDefault(); const t = document.getElementById(el.dataset.to); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (a === 'thmCheck') { el.textContent = 'Checking...'; pollThm(); setTimeout(() => { if (el.isConnected) el.textContent = 'Check now'; }, 1500); return; }
+  if (a === 'newsOk') { LIVE.news = []; render(); return; }
+  if (a === 'thmPaste') { const msg = $('#thmMsg'); let codes = null;
+    try { const j = JSON.parse($('#thmPaste').value.trim()); codes = j.data.docs.map(d => String(d.code)); } catch (e) {}
+    if (!codes || !codes.length) { msg.textContent = 'That does not look like the TryHackMe page text. Copy the whole page (Ctrl+A, Ctrl+C) and paste again.'; msg.style.color = 'var(--bad)'; return; }
+    const before = THMSET.size; S.thm = { user: (S.thm && S.thm.user) || 'vicuvi1', at: Date.now(), codes: [...new Set([...(S.thm ? S.thm.codes : []), ...codes])] }; refreshThm(); save(); render();
+    const m2 = $('#thmMsg'); if (m2) { m2.closest('details').open = true; m2.textContent = 'Synced. ' + (THMSET.size - before) + ' new completed room' + (THMSET.size - before === 1 ? '' : 's') + ' found.'; m2.style.color = 'var(--good)'; } return; }
+  if (a === 'exportHtml') return exportHtml();
+  if (a === 'exportJson') return download('soc-progress-' + stamp() + '.json', JSON.stringify(S), 'application/json');
+  if (a === 'copyCode') { const c = toCode(); try { navigator.clipboard.writeText(c).then(() => moveMsg('Progress code copied. Paste it into "Bring progress in" on the other PC.'), () => { $('#impCode').value = c; $('#impCode').select(); moveMsg('Copy the selected code with Ctrl+C.'); }); } catch (e) { $('#impCode').value = c; $('#impCode').select(); moveMsg('Copy the selected code with Ctrl+C.'); } return; }
+  if (a === 'impCode') return offerImport($('#impCode').value);
+  if (a === 'impNo') { PENDING = null; return render(); }
+  if (a === 'impYes' && PENDING) { S = Object.assign(fresh(), PENDING); adoptThm(D.thm); adoptThm(window.THM_SYNC); refreshThm(); PENDING = null; save(); render(); moveMsg('Progress loaded.'); return; }
   if (a === 'libf') { LIBF = el.dataset.f; render(); return; }
   if (a === 'theme') { const r = document.documentElement, cur = r.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'), nx = cur === 'dark' ? 'light' : 'dark'; r.dataset.theme = nx; try { localStorage.setItem('soc12-theme', nx); } catch (e) {} return; }
   if (a === 'goStep') { const d = document.getElementById('step-' + el.dataset.w + '-' + el.dataset.i); if (d) { d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); } return; }
@@ -616,10 +769,10 @@ document.addEventListener('click', ev => {
   else if (a === 'clearStart') { S.start = null; save(); render(); }
   else if (a === 'reset1') { $('#resetBox').innerHTML = 'Delete all progress? <button class="btn small" data-act="reset2">Yes, delete</button> <button class="btn ghost small" data-act="reset0">Cancel</button>'; }
   else if (a === 'reset0') render();
-  else if (a === 'reset2') { S = fresh(); save(); render(); }
+  else if (a === 'reset2') { S = fresh(); adoptThm(D.thm); adoptThm(window.THM_SYNC); refreshThm(); save(); render(); }
   else if (a === 'startQuiz') startRun(shuffle(weekQids(+el.dataset.w)), 'week', +el.dataset.w);
   else if (a === 'startReview') startRun(dueIds().slice(0, 20), 'review');
-  else if (a === 'pick' && QS && QS.picked === null) { const id = QS.ids[QS.i]; QS.picked = +el.dataset.o; const ok = QS.picked === Q[id].a; if (ok) QS.right++; grade(id, ok); save(); drawRun(); }
+  else if (a === 'pick' && QS && QS.picked === null) { const id = QS.ids[QS.i]; QS.picked = +el.dataset.o; const ok = QS.picked === Q[id].a; if (ok) QS.right++; grade(id, ok); bump(1); save(); drawRun(); }
   else if (a === 'nextQ' && QS) { QS.i++; QS.picked = null; drawRun(); }
   else if (a === 'check') checkAnswer(+el.dataset.w, +el.dataset.i);
   else if (a === 'copy') { const t = D.weeks[+el.dataset.w - 1].chal.evidence; const done = () => { el.textContent = 'Copied'; setTimeout(() => el.textContent = 'Copy evidence', 1500); }; const fail = () => { const r = document.createRange(); r.selectNodeContents($('#ev-' + el.dataset.w)); const s = getSelection(); s.removeAllRanges(); s.addRange(r); el.textContent = 'Selected: press Ctrl+C'; }; try { navigator.clipboard.writeText(t).then(done, fail); } catch (e) { fail(); } }
@@ -629,8 +782,9 @@ document.addEventListener('click', ev => {
 });
 document.addEventListener('change', ev => {
   const el = ev.target, a = el.dataset && el.dataset.act;
-  if (a === 'task' || a === 'res') { const m = a === 'task' ? S.tasks : S.res; if (el.checked) m[el.dataset.k] = 1; else delete m[el.dataset.k]; save(); const y = window.scrollY; render(); window.scrollTo(0, y); }
-  else if (a === 'rec') { if (el.checked) S.rec[el.dataset.w] = 1; else delete S.rec[el.dataset.w]; save(); const y = window.scrollY; render(); window.scrollTo(0, y); }
+  if (a === 'task' || a === 'res') { const code = el.dataset.code, m = code ? S.rooms : a === 'task' ? S.tasks : S.res, k = code || el.dataset.k; if (el.checked) { m[k] = 1; bump(a === 'task' ? 3 : 1); } else delete m[k]; save(); const y = window.scrollY; render(); window.scrollTo(0, y); }
+  else if (a === 'rec') { if (el.checked) { S.rec[el.dataset.w] = 1; bump(1); } else delete S.rec[el.dataset.w]; save(); const y = window.scrollY; render(); window.scrollTo(0, y); }
+  else if (a === 'impFile' && el.files && el.files[0]) { const f = new FileReader(); f.onload = () => offerImport(f.result); f.readAsText(el.files[0]); }
   else if (a === 'ans' && ES && !ES.result) { ES.ans[el.dataset.id] = +el.value; const t = document.querySelector('.timer span'); if (t) t.textContent = Object.keys(ES.ans).length + '/' + ES.ids.length + ' answered'; }
 });
 document.addEventListener('toggle', ev => { const d = ev.target; if (d.dataset && d.dataset.i !== undefined && d.dataset.w) { (OPEN[d.dataset.w] = OPEN[d.dataset.w] || {})[d.dataset.i] = d.open; } }, true);
@@ -638,6 +792,10 @@ document.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target
 
 render();
 initRemote();
+if (window.THM_SYNC) { LIVE.at = window.THM_SYNC.at || 0; LIVE.ok = Date.now() - LIVE.at < 6 * 6e4; LIVE.checked = Date.now(); if (LIVE.ok) render(); }
+setInterval(pollThm, 60000);
+window.addEventListener('focus', pollThm);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pollThm(); });
 </script>
 </body>
 </html>

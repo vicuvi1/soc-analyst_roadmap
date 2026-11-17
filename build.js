@@ -1,5 +1,5 @@
 const fs = require('fs'), path = require('path');
-const { weeks, stages } = require('./content.js');
+const { weeks, stages, thm } = require('./content.js');
 const norm = s => String(s).toLowerCase().replace(/\s+/g, '');
 function hash(str) { let h1 = 0xdeadbeef ^ 77, h2 = 0x41c6ce57 ^ 77; for (let i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); } h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909); h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909); return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36); }
 
@@ -12,7 +12,7 @@ const data = {
     answers[wi + 1] = w.chal.qs.map(q => q[1][0]);
     return { ...w, chal: { ...w.chal, qs: w.chal.qs.map(q => ({ p: q[0], h: [...new Set(q[1].map(a => hash(norm(a))))], hint: q[2] })) } };
   }),
-  stages,
+  stages, thm,
 };
 stages.forEach(s => s.extra.forEach(q => { if (q.o.length !== 4) throw new Error('bad extra'); }));
 const json = JSON.stringify(data).replace(/</g, '\\u003c');

@@ -7,6 +7,10 @@ if not exist "%PAGE%" (
   pause
   exit /b 1
 )
+echo Syncing with TryHackMe...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0sync-thm.ps1"
+rem Keep syncing in the background (hidden, every 2 minutes, stops after 12 hours).
+start "" /min powershell -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "%~dp0sync-thm.ps1" -Loop
 set "URL=file:///%PAGE:\=/%"
 reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe" >nul 2>&1
 if %errorlevel%==0 (
