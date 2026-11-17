@@ -252,8 +252,23 @@ main.wide{max-width:1200px}
 .cells i.fut{background:transparent}
 .legend{display:flex;gap:4px;align-items:center;font-size:.78rem;color:var(--muted)}
 .legend i{width:13px;height:13px;border-radius:3px;display:inline-block}
+.ta{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font:inherit;font-size:.95rem;line-height:1.5;resize:vertical;color:var(--ink)}
+.fb{margin-top:12px;border:1px solid var(--line);border-radius:8px;padding:4px 14px 10px}
+.ivq details.model{border:0;padding:6px 0 0}
+.ivq details.model summary{font-weight:400;color:var(--accent);font-size:.9rem}
+.timerbtn{background:none;border:1px solid var(--line);border-radius:7px;padding:6px 11px;cursor:pointer;font:500 .82rem var(--mono);color:var(--ink);white-space:nowrap}
+.timerbtn.on{background:var(--g3);border-color:var(--g3);color:#1c1400}
+.plan{display:flex;flex-direction:column;gap:6px}
+.planrow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center}
+.planrow small{display:block;color:var(--muted);font-size:.8rem}
+.planrow select,.planrow input{padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font-size:.88rem}
+@media(max-width:560px){.planrow{grid-template-columns:1fr 1fr}.planrow span{grid-column:1/-1}}
+.daybars{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;height:160px}
+.daybars div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;font:500 .72rem var(--mono);color:var(--muted)}
+.daybars i{display:block;width:70%;background:var(--g3);border-radius:4px 4px 0 0}
+.daybars i.act{background:var(--g1)} .daybars i.none{background:var(--line)}
 .skilltable{display:flex;flex-direction:column}
-.skillrow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 150px;gap:16px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.skillrow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;gap:16px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
 .skillrow:first-child{border-top:0}
 .skillrow small{display:block;color:var(--muted);font-size:.82rem}
 .bars{display:flex;flex-direction:column;gap:4px}
@@ -278,6 +293,7 @@ footer{font-size:.82rem;color:var(--muted);display:flex;gap:12px;justify-content
 <div class="bar"><div class="bar-in">
   <a class="brand" href="#today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5" stroke-linecap="round"/></svg>SOC Analyst <span>in 12 Weeks</span></a>
   <nav id="nav"></nav>
+  <button class="timerbtn" id="timerBtn" data-act="timer">Start session</button>
   <button class="themebtn" data-act="theme" aria-label="Switch between light and dark theme" title="Light or dark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
   <div class="sync" id="sync"><i></i><span>Saved in this browser</span></div>
 </div></div>
@@ -303,7 +319,7 @@ D.stages.forEach((s, si) => s.extra.forEach((q, qi) => Q['s' + (si + 1) + 'x' + 
 const weekQids = w => D.weeks[w - 1].quiz.map((_, i) => 'w' + w + 'q' + (i + 1));
 
 /* state */
-const fresh = () => ({ v: 2, updatedAt: 0, start: null, tasks: {}, res: {}, rec: {}, act: {}, rooms: {}, thm: null, skill: {}, rv: [], drill: {}, q: {}, wq: {}, ch: {}, ex: {} });
+const fresh = () => ({ v: 2, updatedAt: 0, start: null, tasks: {}, res: {}, rec: {}, act: {}, rooms: {}, thm: null, skill: {}, rv: [], drill: {}, bank: {}, rep: {}, iv: {}, log: {}, time: {}, timer: null, plan: null, cal: {}, todo: {}, q: {}, wq: {}, ch: {}, ex: {} });
 let S = fresh();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
 try { const seed = JSON.parse(document.getElementById('seed').textContent); if (seed && (seed.updatedAt || 0) > (S.updatedAt || 0)) { S = Object.assign(fresh(), seed); localStorage.setItem(KEY, JSON.stringify(S)); } } catch (e) {}
@@ -329,7 +345,7 @@ function pollThm() {
   s.onload = () => { s.remove(); const t = window.THM_SYNC, before = new Set(THMSET), was = LIVE.ok;
     LIVE.checked = Date.now(); LIVE.at = (t && t.at) || 0; LIVE.ok = !!t && Date.now() - LIVE.at < 6 * 6e4;
     if (adoptThm(t)) { refreshThm(); const fresh = [...THMSET].filter(c => !before.has(c) && roomTitle(c));
-      if (fresh.length) { bump(3 * fresh.length); LIVE.news = fresh.map(roomTitle); }
+      if (fresh.length) { bump(3 * fresh.length); logDay('r', fresh.length); LIVE.news = fresh.map(roomTitle); }
       save(); liveRender(); }
     else if (pendingRender || was !== LIVE.ok || route().name === 'today') liveRender(); };
   s.onerror = () => { s.remove(); const was = LIVE.ok; LIVE.ok = false; LIVE.checked = Date.now(); if (was) liveRender(); };
@@ -364,7 +380,7 @@ async function initRemote() {
       const body = snap.data();
       let R = null; try { R = JSON.parse(body.json); } catch (e) {}
       if (R && (R.updatedAt || 0) > (S.updatedAt || 0)) {
-        S = Object.assign(fresh(), R); adoptThm(D.thm); adoptThm(window.THM_SYNC); refreshThm();
+        S = Object.assign(fresh(), R); afterStateSwap();
         try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
         if (!ES && !QS) render();
       } else if ((S.updatedAt || 0) > ((R && R.updatedAt) || 0)) { dirty = true; pushRemote(); }
@@ -407,7 +423,7 @@ function calendarHtml() {
     const ws = new Date(start); ws.setDate(start.getDate() + w * 7);
     months += `<span>${ws.getMonth() !== lastM ? ws.toLocaleDateString(undefined, { month: 'short' }) : ''}</span>`; lastM = ws.getMonth();
     for (let d = 0; d < 7; d++) { const day = new Date(ws); day.setDate(ws.getDate() + d); const n = S.act[dkey(day)] || 0, fut = day > today;
-      cells += `<i class="${fut ? 'fut' : 'l' + level(n)}${day.getTime() === today.getTime() ? ' today' : ''}"${fut ? '' : ` title="${day.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}: ${n ? n + ' action' + (n > 1 ? 's' : '') : 'no study'}"`}></i>`; }
+      cells += `<i class="${fut ? 'fut' : 'l' + level(n)}${day.getTime() === today.getTime() ? ' today' : ''}"${fut ? '' : ` title="${day.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}: ${n ? n + ' action' + (n > 1 ? 's' : '') : 'no study'}${S.time[dkey(day)] ? ', ' + S.time[dkey(day)] + ' min timed' : ''}"`}></i>`; }
   }
   const keys = Object.keys(S.act).filter(k => S.act[k] > 0).sort(), set = new Set(keys);
   let cur = 0; const c = new Date(today); if (!set.has(dkey(c))) c.setDate(c.getDate() - 1); while (set.has(dkey(c))) { cur++; c.setDate(c.getDate() - 1); }
@@ -485,7 +501,8 @@ function viewSkills() {
     <div id="quiz"><p>Eight questions picked from where you are weakest: questions you got wrong, ones stuck in low boxes, and unseen questions from your lowest-scoring open area.</p><button class="btn" data-act="startDrill">${drilled ? 'Drill again' : 'Start drill'}</button></div></div>
   <div class="card"><h2>By area</h2><div class="skilltable">${sc.map(a => `<div class="skillrow"><div><b>${esc(a.n)}</b><small>Week${a.w.length > 1 ? 's' : ''} ${a.w.join(', ')} &middot; ${a.seen}/${a.total} questions seen${a.acc !== null ? ' &middot; ' + a.acc + '% answer accuracy' : ''}</small></div>
       <div class="bars"><span title="Knowledge ${a.know}%"><i style="width:${a.know}%"></i></span><span title="Labs ${a.labs}%"><i style="width:${a.labs}%"></i></span><span title="Challenges ${a.proof}%"><i style="width:${a.proof}%"></i></span></div>
-      <div class="sc"><b>${a.score}</b><span class="chip${a.score >= 60 ? ' good' : a.score >= 40 ? ' acc' : ''}">${levelOf(a.score)}</span></div></div>`).join('')}</div>
+      <div class="sc">${AI ? `<button class="btn ghost small" data-act="aiQ" data-a="${AREAS.findIndex(x => x.n === a.n)}">5 new questions</button>` : ''}<b>${a.score}</b><span class="chip${a.score >= 60 ? ' good' : a.score >= 40 ? ' acc' : ''}">${levelOf(a.score)}</span></div></div>`).join('')}</div>
+    <p class="hint" id="aiMsg">${AI ? 'Claude writes five fresh questions for an area at your current level. They join your question bank (' + Object.keys(S.bank).length + ' added so far).' : 'Fresh AI-written questions are available in the Claude-hosted version.'}</p>
     <p class="hint">Three bars per area, top to bottom: knowledge retained, labs done, challenges solved. Levels: Novice from 15, Developing from 40, Competent from 60, Strong from 80.</p></div>
   <div class="card"><h2>Skill index over time</h2>${trendSvg()}</div>`;
 }
@@ -515,7 +532,7 @@ const mins = m => m >= 60 ? (m / 60).toFixed(m % 60 ? 1 : 0) + ' h' : m + ' min'
 let OPEN = {}, LIBF = 'all';
 function nav(route) {
   const due = dueIds().length;
-  $('#nav').innerHTML = [['today', 'Today'], ['roadmap', 'Roadmap'], ['library', 'Library'], ['skills', 'Skills'], ['cheatsheets', 'Cheat sheets'], ['review', 'Review' + (due ? '<span class="badge">' + due + '</span>' : '')]]
+  $('#nav').innerHTML = [['today', 'Today'], ['roadmap', 'Roadmap'], ['library', 'Library'], ['skills', 'Skills'], ['weekly', 'Weekly'], ['cheatsheets', 'Sheets'], ['review', 'Review' + (due ? '<span class="badge">' + due + '</span>' : '')]]
     .map(([h, t]) => `<a href="#${h}"${route === h ? ' aria-current="page"' : ''}>${t}</a>`).join('');
 }
 const meter = p => `<span class="meter" role="img" aria-label="${p}% complete"><i style="width:${p}%"></i></span>`;
@@ -571,7 +588,9 @@ function viewToday() {
     <div class="stat"><b>${ep}/4</b><span>Exams passed</span></div>
     <div class="stat${due ? ' due' : ''}"><b>${due}</b><span>Reviews due</span></div>
   </div>
+  ${TIMERNOTE ? `<p class="note">${esc(TIMERNOTE)} <a href="#weekly">Weekly review</a></p>` : ''}
   ${thmCard(w)}
+  ${appsCard(w)}
   <div class="two"><div class="card"><h2>Do next, in this order</h2>${next.length ? `<ol class="next">${next.slice(0, 5).map((n, i) => `<li><b>${i + 1}</b><span>${esc(n[0])}</span><a class="btn small${i ? ' ghost' : ''}" href="${n[1]}">${n[2]}</a></li>`).join('')}</ol>` : '<p>Nothing open. Check the Review tab tomorrow.</p>'}</div>
   <div class="card"><div class="eyebrow">Checkpoint</div><h2>${st === 4 ? 'Final exam' : 'Stage ' + st + ' exam'}</h2>
     <div class="kv"><span>Weeks finished in this stage</span><b>${D.stages[st - 1].weeks.filter(weekDone).length}/3</b><span>Exam</span><b>${examChip(st)}</b><span>Questions in review rotation</span><b>${Object.keys(S.q).filter(id => Q[id]).length}</b><span>Resources ticked</span><b>${Object.keys(S.res).length}/${D.weeks.reduce((a, x) => a + x.res.length, 0)}</b></div>
@@ -640,7 +659,7 @@ function viewWeek(w) {
       `${W.note ? `<p class="note">${esc(W.note)}</p>` : ''}<p class="lead">Work top to bottom.</p><ul class="tasks">${tasks}</ul>
       <p class="hint">These are the real rooms of the SOC Level 1 path; each name opens the room. Rooms finished on TryHackMe are ticked from your profile at the next sync. You can also tick a room by hand.</p>`],
     [`Coach notes and self-check`, S.rec[w] ? 'Self-check ticked' : 'Read, then tick the self-check',
-      `<div class="lesson">${W.lesson}</div><h4>Interview questions</h4><p class="hint">Answer aloud first, then open the model answer and compare.</p><div class="ivq">${W.iv.map(q => `<details><summary>${esc(q[0])}</summary><p>${esc(q[1])}</p></details>`).join('')}</div><label class="selfc"><input type="checkbox" id="rec-${w}" data-act="rec" data-w="${w}"${S.rec[w] ? ' checked' : ''}><span><b>Self-check, without looking at the notes:</b> ${esc(W.check)}</span></label>`],
+      `<div class="lesson">${W.lesson}</div><h4>Interview questions</h4><p class="hint">${AI ? 'Type your answer and have it graded like a real interview, then compare with the model answer.' : 'Answer aloud first, then open the model answer and compare.'}</p><div class="ivq">${interviewHtml(w)}</div><label class="selfc"><input type="checkbox" id="rec-${w}" data-act="rec" data-w="${w}"${S.rec[w] ? ' checked' : ''}><span><b>Self-check, without looking at the notes:</b> ${esc(W.check)}</span></label>`],
     [`Quiz`, wq ? `Best ${Math.round(wq.best * 100)}% &middot; pass at ${Math.round(QPASS * 100)}%` : `${W.quiz.length} questions &middot; pass at ${Math.round(QPASS * 100)}%`, `<div id="quiz">${quizIntro(w, wq)}</div>`],
     [`Challenge: ${esc(W.chal.title)}`, `${chalSolved(w)}/${W.chal.qs.length} solved`, chalHtml(w)],
   ];
@@ -675,7 +694,7 @@ function chalHtml(w) {
   <div class="ev"><button class="btn ghost small" data-act="copy" data-w="${w}">Copy evidence</button><pre id="ev-${w}" tabindex="0">${esc(C.evidence)}</pre></div>
   ${C.qs.map((q, i) => `<div class="cq${c.ok[i] ? ' ok' : ''}" id="cq-${w}-${i}"><label for="ci-${w}-${i}"><b>${i + 1}.</b> ${esc(q.p)}</label>
     <div class="in"><input id="ci-${w}-${i}" autocomplete="off" spellcheck="false" data-w="${w}" data-i="${i}"${c.ok[i] ? ' value="Solved" disabled' : ''}>${c.ok[i] ? '<span class="chip good">Correct</span>' : `<button class="btn small" data-act="check" data-w="${w}" data-i="${i}">Check</button>`}<span class="hint" id="cm-${w}-${i}">${c.ok[i] ? '' : esc(q.hint || '')}</span></div></div>`).join('')}
-  <p class="hint">${chalSolved(w)} of ${C.qs.length} solved &middot; ${c.tries} check${c.tries === 1 ? '' : 's'} used. Answers are not stored in readable form on this page, so the only way through is the evidence.</p>`;
+  <p class="hint">${chalSolved(w)} of ${C.qs.length} solved &middot; ${c.tries} check${c.tries === 1 ? '' : 's'} used. Answers are not stored in readable form on this page, so the only way through is the evidence.</p>` + reportHtml(w);
 }
 
 /* quiz and review share one runner */
@@ -692,6 +711,7 @@ function drawRun() {
     if (QS.mode === 'week') {
       const p = S.wq[QS.w] || { best: 0, n: 0 }; p.best = Math.max(p.best, score); p.last = score; p.n++; S.wq[QS.w] = p; save();
       msg = `<p class="big">${QS.right}/${QS.ids.length}</p><p>${score >= QPASS ? 'Passed.' : 'Not passed yet. Re-read the coach notes and try again.'} These questions return in the Review tab on a 1, 3, 7, 14, 30 day schedule.</p><button class="btn" data-act="startQuiz" data-w="${QS.w}">Retake quiz</button>`;
+    } else if (QS.mode === 'ai') { save(); msg = `<p class="big">${QS.right}/${QS.ids.length}</p><p>These five questions are now in your question bank and will come back in reviews and drills.</p><button class="btn ghost" data-act="reload">Back to skills</button>`;
     } else if (QS.mode === 'drill') { S.drill[dkey(new Date())] = 1; save(); msg = `<p class="big">${QS.right}/${QS.ids.length}</p><p>Drill done for today. Your skill scores below are updated.</p><button class="btn ghost" data-act="reload">Show updated skills</button>`;
     } else { save(); const left = dueIds().length; msg = `<p class="big">${QS.right}/${QS.ids.length}</p><p>${left ? left + ' more due.' : 'All caught up.'}</p>${left ? '<button class="btn" data-act="startReview">Continue</button>' : '<a class="btn" href="#today">Back to today</a>'}`; }
     QS = null; box.innerHTML = msg; nav(route().name); return;
@@ -700,7 +720,7 @@ function drawRun() {
   box.innerHTML = `<div class="eyebrow">Question ${QS.i + 1} of ${QS.ids.length}${QS.mode !== 'week' ? ' &middot; ' + esc(AREAS[areaOf(q.week)].n) + ' &middot; week ' + q.week : ''}</div>
   <p class="qtext">${esc(q.q)}</p>
   <div class="opts">${QS.order[id].map(oi => `<button class="opt${done ? (oi === q.a ? ' right' : oi === QS.picked ? ' wrong' : '') : ''}" data-act="pick" data-o="${oi}"${done ? ' disabled' : ''}>${esc(q.o[oi])}</button>`).join('')}</div>
-  ${done ? `<p class="why"><b>${QS.picked === q.a ? 'Correct.' : 'Not this time.'}</b> ${esc(q.why)}</p><button class="btn" data-act="nextQ">${QS.i + 1 < QS.ids.length ? 'Next question' : 'See result'}</button>` : ''}`;
+  ${done ? `<p class="why"><b>${QS.picked === q.a ? 'Correct.' : 'Not this time.'}</b> ${esc(q.why)}</p>${AI && QS.picked !== q.a ? `<p class="note" id="explain" style="white-space:pre-wrap"><button class="btn ghost small" data-act="explain">Explain my mistake</button></p>` : ''}<button class="btn" data-act="nextQ">${QS.i + 1 < QS.ids.length ? 'Next question' : 'See result'}</button>` : ''}`;
 }
 
 function viewReview() {
@@ -774,6 +794,166 @@ function examResultHtml() {
   <div class="card"><h2>Answers</h2>${ES.ids.map((id, n) => { const q = Q[id], a = ES.ans[id]; return `<div class="eq"><p class="qtext">${n + 1}. ${esc(q.q)}</p><p>${a === q.a ? `<span class="r">${esc(q.o[a])}</span>` : `${a === undefined ? '<span class="w">No answer</span>' : `<span class="w">${esc(q.o[a])}</span>`}<br><span class="r">${esc(q.o[q.a])}</span>`}</p><p class="why">${esc(q.why)}</p></div>`; }).join('')}</div>`;
 }
 
+/* ---------- hub: AI tutor (ask Claude), connected apps, study timer ---------- */
+let AI = null, MCP = null;
+async function initCaps() {
+  try { if (!window.claude || typeof window.claude.use !== 'function') return;
+    const [a, m] = await Promise.all([window.claude.use('sample'), window.claude.use('mcp')]); AI = a || null; MCP = m || null;
+    if (AI || MCP) liveRender(); } catch (e) {}
+}
+const logDay = (k, n) => { const d = dkey(new Date()); (S.log[d] = S.log[d] || {})[k] = ((S.log[d] || {})[k] || 0) + (n || 1); };
+function loadBank() { Object.entries(S.bank || {}).forEach(([id, q]) => { if (q && Array.isArray(q.o)) Q[id] = q; }); }
+function afterStateSwap() { adoptThm(D.thm); adoptThm(window.THM_SYNC); refreshThm(); loadBank(); }
+const aiErr = e => { const c = e && e.code; return c === 'rate_limited' ? 'Claude is busy. Wait a minute and try again.' : c === 'not_granted' ? 'Asking Claude was not allowed for this page. Allow it when prompted to use the tutor.' : 'Claude did not answer' + (e && e.message ? ' (' + String(e.message).slice(0, 120) + ')' : '') + '. Try again.'; };
+async function aiJson(prompt) { if (typeof AI.json === 'function') return AI.json(prompt); const r = await AI(prompt); const t = r.text, a = t.indexOf('{') < 0 || (t.indexOf('[') >= 0 && t.indexOf('[') < t.indexOf('{')) ? '[' : '{'; return JSON.parse(t.slice(t.indexOf(a), t.lastIndexOf(a === '[' ? ']' : '}') + 1)); }
+const lessonText = w => new DOMParser().parseFromString('<div>' + D.weeks[w - 1].lesson + '</div>', 'text/html').body.textContent.replace(/\s+/g, ' ').slice(0, 1800);
+const AILOCK = {};
+async function aiNewQuestions(areaIdx, btn) {
+  if (!AI || AILOCK.q) return; AILOCK.q = 1; const old = btn.textContent; btn.textContent = 'Writing questions...'; btn.disabled = true;
+  const a = AREAS[areaIdx], ws = a.w.filter(w => unlocked(stageOf(w))), w = ws.length ? ws : a.w, have = a.w.flatMap(weekQids).map(id => Q[id].q).concat(Object.values(S.bank).filter(q => a.w.includes(q.week)).map(q => q.q)).slice(-30);
+  const sc = skillScores()[areaIdx];
+  const prompt = `You write exam questions for a junior SOC analyst in training (target: TryHackMe SAL1). Area: "${a.n}". Material covered:\n${w.map(x => '- ' + D.weeks[x - 1].title + ': ' + lessonText(x)).join('\n')}\n\nThe learner's current score in this area is ${sc.score}/100, so pitch the difficulty ${sc.score < 40 ? 'at fundamentals with one harder question' : sc.score < 70 ? 'at applied, scenario-based level' : 'at hard scenario level with realistic log lines or commands'}.\nWrite 5 NEW multiple-choice questions. Prefer short scenarios (a log line, an alert, a command) over definitions. Exactly 4 options each, exactly one correct, plausible distractors, no "all of the above". Do not repeat these existing questions:\n${have.map(q => '- ' + q).join('\n')}\n\nReturn ONLY a JSON array of 5 objects: {"q": string, "o": [4 strings], "a": index of the correct option 0-3, "why": one or two sentences explaining the answer}.`;
+  try { const arr = await aiJson(prompt), ids = [];
+    (Array.isArray(arr) ? arr : arr.questions || []).forEach((x, i) => { if (!x || typeof x.q !== 'string' || !Array.isArray(x.o) || x.o.length !== 4 || !(x.a >= 0 && x.a <= 3)) return; const id = 'g' + Date.now().toString(36) + i; S.bank[id] = { q: x.q.slice(0, 600), o: x.o.map(o => String(o).slice(0, 300)), a: +x.a, why: String(x.why || '').slice(0, 500), week: w[0], gen: 1 }; ids.push(id); });
+    if (!ids.length) throw { message: 'no valid questions returned' };
+    const keys = Object.keys(S.bank); if (keys.length > 150) keys.slice(0, keys.length - 150).forEach(k => { delete S.bank[k]; delete S.q[k]; delete Q[k]; });
+    loadBank(); save(); AILOCK.q = 0;
+    if (!$('#quiz')) { location.hash = '#skills'; render(); }
+    startRun(ids, 'ai'); $('#quiz').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } catch (e) { AILOCK.q = 0; btn.textContent = old; btn.disabled = false; const m = $('#aiMsg'); if (m) { m.textContent = aiErr(e); m.style.color = 'var(--bad)'; } }
+}
+async function aiExplain(btn) {
+  if (!AI || !QS) return; const id = QS.ids[QS.i], q = Q[id], box = $('#explain'); btn.disabled = true; box.textContent = 'Thinking...';
+  try { await AI(`A SOC analyst student answered a multiple-choice question wrongly. Explain in at most 90 words, plain text, no lists: why their choice is wrong, why the correct one is right, and one way to remember it.\nQuestion: ${q.q}\nOptions: ${q.o.map((o, i) => i + ') ' + o).join(' | ')}\nThey chose: ${q.o[QS.picked]}\nCorrect: ${q.o[q.a]}\nReference note: ${q.why}`, { modelTier: 'quick', onText: ({ text }) => { box.textContent = text; } }).then(r => { box.textContent = r.text; }); }
+  catch (e) { box.textContent = aiErr(e); btn.disabled = false; }
+}
+const RUBRIC = [['Summary and verdict', 20], ['Timeline accuracy', 25], ['Evidence and indicators', 25], ['Actions and recommendations', 15], ['Clarity and precision', 15]];
+function reportHtml(w) {
+  const r = S.rep[w] || {}, fb = r.fb;
+  return `<h4>Write the incident report</h4><p class="hint">Solving the questions shows you found the facts. A report shows you can hand the case to someone else. Use the 5 Ws: who, what, when (UTC), where, why, then indicators, actions taken and next steps. Aim for 120 to 250 words.</p>
+  <textarea id="rep-${w}" class="ta" data-act="repText" data-w="${w}" rows="8" placeholder="Summary: ..." spellcheck="true">${esc(r.text || '')}</textarea>
+  <div class="row" style="margin-top:8px">${AI ? `<button class="btn" data-act="gradeRep" data-w="${w}">Grade my report</button>` : '<span class="hint">Report grading by Claude works in the Claude-hosted version. Here, check yourself against the rubric: ' + RUBRIC.map(x => x[0].toLowerCase()).join(', ') + '.</span>'}${r.score != null ? `<span class="chip ${r.score >= 75 ? 'good' : r.score >= 50 ? 'acc' : 'bad'}">Last grade ${r.score}/100</span>` : ''}<span class="hint" id="repMsg-${w}"></span></div>
+  ${fb ? `<div class="fb"><div class="skilltable">${(fb.rubric || []).map(x => `<div class="skillrow" style="grid-template-columns:minmax(0,1fr) 70px"><div><b>${esc(x.name)}</b><small>${esc(x.comment || '')}</small></div><div class="sc"><b style="font-size:1.1rem">${esc(x.points)}/${esc(x.max)}</b></div></div>`).join('')}</div>${(fb.fixes || []).length ? `<h4>Fix next time</h4><ul>${fb.fixes.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</div>` : ''}`;
+}
+async function aiGradeReport(w, btn) {
+  const text = ($('#rep-' + w).value || '').trim(), msg = $('#repMsg-' + w); if (text.split(/\s+/).length < 40) { msg.textContent = 'Write at least 40 words first.'; msg.style.color = 'var(--bad)'; return; }
+  if (!AI || AILOCK.r) return; AILOCK.r = 1; btn.disabled = true; btn.textContent = 'Grading...'; const C = D.weeks[w - 1].chal;
+  try { const fb = await aiJson(`You are a senior SOC analyst grading a junior analyst's incident report strictly but fairly. Work out the true facts yourself from the evidence, then grade the report against it. Penalise wrong facts, missing times/hosts/accounts, vague wording and missing recommendations.\n\nScenario: ${C.title}. ${C.brief}\n\nEVIDENCE:\n${C.evidence}\n\nREPORT:\n${text.slice(0, 4000)}\n\nRubric (name, max points): ${RUBRIC.map(x => x[0] + ' ' + x[1]).join('; ')}.\nReturn ONLY JSON: {"rubric":[{"name":string,"points":number,"max":number,"comment":"one specific sentence"}],"fixes":["up to 4 concrete improvements, each naming what was missing or wrong"]}`);
+    const rub = (fb.rubric || []).slice(0, 5).map((x, i) => ({ name: String(x.name || RUBRIC[i][0]).slice(0, 60), max: RUBRIC[i] ? RUBRIC[i][1] : +x.max || 0, points: Math.max(0, Math.min(RUBRIC[i] ? RUBRIC[i][1] : +x.max || 0, Math.round(+x.points || 0))), comment: String(x.comment || '').slice(0, 300) }));
+    if (!rub.length) throw { message: 'no rubric returned' };
+    S.rep[w] = { text, score: rub.reduce((a, x) => a + x.points, 0), at: Date.now(), fb: { rubric: rub, fixes: (fb.fixes || []).slice(0, 4).map(x => String(x).slice(0, 300)) } }; bump(3); logDay('rep'); save(); AILOCK.r = 0; const y = window.scrollY; render(); window.scrollTo(0, y);
+  } catch (e) { AILOCK.r = 0; btn.disabled = false; btn.textContent = 'Grade my report'; msg.textContent = aiErr(e); msg.style.color = 'var(--bad)'; }
+}
+async function aiGradeAnswer(w, i, btn) {
+  const ta = $('#iva-' + w + '-' + i), out = $('#ivo-' + w + '-' + i), text = (ta.value || '').trim(); if (text.length < 20) { out.textContent = 'Write your answer first.'; return; }
+  if (!AI) return; btn.disabled = true; out.textContent = 'Grading...'; const q = D.weeks[w - 1].iv[i];
+  try { const r = await aiJson(`You are interviewing a candidate for a junior SOC analyst job. Grade this answer from 0 to 10 as a hiring manager would. Be specific and brief.\nQuestion: ${q[0]}\nA strong answer covers: ${q[1]}\nCandidate's answer: ${text.slice(0, 2000)}\nReturn ONLY JSON: {"score": number 0-10, "good": "one sentence on what was good", "missing": "one sentence on the most important thing missing or wrong", "followup": "one follow-up question an interviewer would ask next"}`);
+    const sc = Math.max(0, Math.min(10, Math.round(+r.score || 0))); S.iv[w + '-' + i] = { score: sc, at: Date.now(), text: text.slice(0, 2000) }; bump(1); save();
+    out.innerHTML = `<b>${sc}/10.</b> ${esc(r.good || '')} <b>Missing:</b> ${esc(r.missing || '')} <b>Follow-up:</b> ${esc(r.followup || '')}`; btn.disabled = false;
+  } catch (e) { out.textContent = aiErr(e); btn.disabled = false; }
+}
+function interviewHtml(w) {
+  return D.weeks[w - 1].iv.map((q, i) => { const s = S.iv[w + '-' + i]; return `<details><summary>${esc(q[0])}${s ? ` <span class="chip ${s.score >= 7 ? 'good' : 'acc'}">${s.score}/10</span>` : ''}</summary>
+    ${AI ? `<textarea id="iva-${w}-${i}" class="ta" rows="4" placeholder="Type your answer as you would say it in the interview">${esc((s && s.text) || '')}</textarea><div class="row" style="margin-top:6px"><button class="btn small" data-act="gradeIv" data-w="${w}" data-i="${i}">Grade my answer</button></div><p class="hint" id="ivo-${w}-${i}"></p>` : ''}
+    <details class="model"><summary>Model answer</summary><p>${esc(q[1])}</p></details></details>`; }).join('');
+}
+
+/* connected apps */
+const mcpErr = (e, server) => { const c = e && e.code; return c === 'server_not_connected' || c === 'selection_required' ? `Add ${server} in claude.ai Settings, Connectors, then try again.` : c === 'needs_reauth' ? `Reconnect ${server} in claude.ai Settings, Connectors.` : c === 'not_in_manifest' || c === 'approval_required' || c === 'consent_required' ? `${server} was not allowed for this page. Click again and choose Allow.` : c === 'blocked_by_policy' ? `${server} is blocked by your organisation's policy.` : c === 'tool_error' ? `${server} refused the request: ${String(e.message || '').slice(0, 140)}` : c === 'server_unavailable' || c === 'upstream_error' ? `${server} did not answer. It may still have worked, so check ${server} before trying again.` : `${server} is not available in this view.`; };
+const SESS = [['Learn: core videos and reading', 1.5], ['Labs: TryHackMe rooms', 2.5], ['Labs: rooms and own work', 2.5], ['Recap, quiz and challenge', 1]];
+const pad = n => String(n).padStart(2, '0');
+const localIso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':00';
+function appsCard(w) {
+  const plan = S.plan && S.plan.length === 4 ? S.plan : [{ d: 1, t: '10:00' }, { d: 2, t: '10:00' }, { d: 4, t: '10:00' }, { d: 5, t: '10:00' }], today = dkey(new Date());
+  const dayOpts = sel => Array.from({ length: 8 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return `<option value="${i}"${i === sel ? ' selected' : ''}>${i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : d.toLocaleDateString(undefined, { weekday: 'long' })}, ${fmtDate(d)}</option>`; }).join('');
+  if (!MCP) return `<div class="card"><div class="eyebrow">Connected apps</div><h2>Calendar and Todoist</h2><p class="hint">Planning sessions into Google Calendar and sending today's plan to Todoist works in the Claude-hosted version of this page, where it can use the apps you connected to Claude.</p></div>`;
+  return `<div class="card"><div class="eyebrow">Connected apps</div><h2>Plan it where you will see it</h2>
+    <div class="two" style="margin-top:8px"><div><h4 style="margin-top:0">Google Calendar: this week's four sessions</h4>
+      <div class="plan">${SESS.map((s, i) => `<div class="planrow"><span><b>Session ${i + 1}</b><small>${esc(s[0])} &middot; ${s[1]} h</small></span><select id="pd-${i}" aria-label="Day for session ${i + 1}">${dayOpts(plan[i].d)}</select><input type="time" id="pt-${i}" value="${esc(plan[i].t)}" aria-label="Start time for session ${i + 1}"></div>`).join('')}</div>
+      <div class="row" style="margin-top:10px"><button class="btn" data-act="calAdd" data-w="${w}">Add 4 sessions to Google Calendar</button>${S.cal[today] ? '<span class="chip good">Added today</span>' : ''}</div><p class="hint" id="calMsg">Creates four events named "SOC study" on your primary calendar. Nothing is sent to anyone else.</p></div>
+    <div><h4 style="margin-top:0">Todoist: today's plan</h4><p class="hint">Sends your due reviews, today's two rooms and the next step of week ${w} as tasks due today in your Inbox.</p>
+      <div class="row"><button class="btn" data-act="todoAdd" data-w="${w}">Send today's plan to Todoist</button>${S.todo[today] ? '<span class="chip good">Sent today</span>' : ''}</div><p class="hint" id="todoMsg"></p></div></div></div>`;
+}
+async function calAdd(w, btn) {
+  const msg = $('#calMsg'), today = dkey(new Date()); if (!MCP) return;
+  if (S.cal[today] && btn.dataset.sure !== '1') { btn.dataset.sure = '1'; btn.textContent = 'Add again (creates duplicates)'; return; }
+  const plan = SESS.map((_, i) => ({ d: +$('#pd-' + i).value, t: $('#pt-' + i).value || '10:00' })); S.plan = plan; save();
+  btn.disabled = true; const W = D.weeks[w - 1], rooms = pathRooms().filter(x => !roomDone(x.t[3]) && unlocked(stageOf(x.w))).slice(0, 5).map(x => x.t[1]); let ok = 0, lastErr = null; msg.style.color = '';
+  for (let i = 0; i < 4; i++) { msg.textContent = `Creating session ${i + 1} of 4...`;
+    const st = new Date(); st.setDate(st.getDate() + plan[i].d); const [h, m] = plan[i].t.split(':').map(Number); st.setHours(h, m, 0, 0); const en = new Date(st.getTime() + SESS[i][1] * 36e5);
+    try { await MCP.callTool('Google Calendar', 'create_event', { summary: `SOC study: week ${w}, session ${i + 1}`, startTime: localIso(st), endTime: localIso(en), description: `${SESS[i][0]}.\nWeek ${w}: ${W.title}.\n${i === 1 || i === 2 ? 'Next rooms: ' + rooms.join(', ') + '.\n' : ''}Start with due reviews (5 min).` }, { cache: false }); ok++; }
+    catch (e) { lastErr = e; if (!e || !e.retryable) break; } }
+  btn.disabled = false; btn.dataset.sure = ''; btn.textContent = 'Add 4 sessions to Google Calendar';
+  if (ok) { S.cal[today] = ok; save(); }
+  msg.textContent = ok === 4 ? 'Done. Four sessions are in your Google Calendar.' : (ok ? ok + ' of 4 sessions were created. ' : '') + mcpErr(lastErr, 'Google Calendar'); msg.style.color = ok === 4 ? 'var(--good)' : 'var(--bad)';
+}
+async function todoAdd(w, btn) {
+  const msg = $('#todoMsg'), today = dkey(new Date()); if (!MCP) return;
+  if (S.todo[today] && btn.dataset.sure !== '1') { btn.dataset.sure = '1'; btn.textContent = 'Send again (creates duplicates)'; return; }
+  const due = dueIds().length, cs = curStep(w), tasks = [];
+  if (due) tasks.push({ content: `SOC: review ${due} due question${due > 1 ? 's' : ''}`, dueString: 'today', priority: 'p2', duration: Math.max(5, Math.round(due * 0.5)) + 'm' });
+  pathRooms().filter(x => !roomDone(x.t[3]) && unlocked(stageOf(x.w))).slice(0, 2).forEach(x => tasks.push({ content: `TryHackMe room: [${x.t[1]}](${roomUrl(x.t[3])})`, description: `${x.t[4]}, week ${x.w} of the SOC Level 1 plan`, dueString: 'today', priority: 'p2', duration: '1h' }));
+  if (cs < 5 && cs !== 1) tasks.push({ content: `SOC week ${w}, step ${cs + 1}: ${STEPS[cs]}`, description: stepHint(w, cs), dueString: 'today', priority: 'p3' });
+  if (!tasks.length) { msg.textContent = 'Nothing open to send today.'; return; }
+  btn.disabled = true; msg.style.color = ''; msg.textContent = 'Sending...';
+  try { await MCP.callTool('Todoist', 'add-tasks', { tasks }, { cache: false }); S.todo[today] = tasks.length; save(); msg.textContent = `Done. ${tasks.length} task${tasks.length > 1 ? 's' : ''} added to your Todoist Inbox, due today.`; msg.style.color = 'var(--good)'; }
+  catch (e) { msg.textContent = mcpErr(e, 'Todoist'); msg.style.color = 'var(--bad)'; }
+  btn.disabled = false; btn.dataset.sure = ''; btn.textContent = "Send today's plan to Todoist";
+}
+
+/* study timer */
+const fmtHMS = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return pad(Math.floor(s / 3600)) + ':' + pad(Math.floor(s / 60) % 60) + ':' + pad(s % 60); };
+function timerPaint() { const b = $('#timerBtn'); if (!b) return; const on = !!S.timer; b.classList.toggle('on', on); b.textContent = on ? 'Stop ' + fmtHMS(Date.now() - S.timer) : 'Start session'; b.title = on ? 'Stop the study timer and log the time' : 'Start a study timer'; }
+function timerToggle() {
+  if (S.timer) { const ms = Date.now() - S.timer, capped = Math.min(ms, 4 * 36e5), min = Math.round(capped / 6e4); S.timer = null;
+    if (min >= 1) { const k = dkey(new Date()); S.time[k] = (S.time[k] || 0) + min; bump(Math.max(1, Math.round(min / 20))); TIMERNOTE = ms > capped ? 'Timer ran over 4 hours, so 4 hours were logged.' : `Logged ${min} min of study.`; } }
+  else { S.timer = Date.now(); TIMERNOTE = ''; }
+  save(); timerPaint(); if (!QS && !ES) { const y = window.scrollY; render(); window.scrollTo(0, y); }
+}
+let TIMERNOTE = '', WKOFF = 0;
+setInterval(timerPaint, 1000);
+
+/* weekly review */
+function weekStats(off) {
+  const mon = new Date(); mon.setHours(0, 0, 0, 0); mon.setDate(mon.getDate() - ((mon.getDay() + 6) % 7) + off * 7);
+  const days = Array.from({ length: 7 }, (_, i) => { const d = new Date(mon); d.setDate(mon.getDate() + i); return d; }), keys = days.map(dkey), L = k => S.log[k] || {};
+  const sum = f => keys.reduce((a, k) => a + (f(k) || 0), 0), min = sum(k => S.time[k]), q = sum(k => L(k).q), ok = sum(k => L(k).ok);
+  const sk = Object.keys(S.skill).sort(), idxOf = k => k ? Math.round(S.skill[k].reduce((a, b) => a + b, 0) / S.skill[k].length) : null;
+  const before = sk.filter(k => k < keys[0]).pop() || null, within = sk.filter(k => k >= keys[0] && k <= keys[6]), end = within.pop() || null, startK = before || within[0] || null;
+  return { mon, days, keys, min, q, ok, acc: q ? Math.round(ok / q * 100) : null, rooms: sum(k => L(k).r), chal: sum(k => L(k).c), reps: sum(k => L(k).rep), active: keys.filter(k => (S.act[k] || 0) > 0 || (S.time[k] || 0) > 0).length, skillStart: idxOf(startK), skillEnd: idxOf(end), perDay: keys.map(k => S.time[k] || 0), actDay: keys.map(k => S.act[k] || 0) };
+}
+function viewWeekly() {
+  const st = weekStats(WKOFF), target = 480, pct = Math.min(100, Math.round(st.min / target * 100)), sun = st.days[6], cur = WKOFF === 0, ret = retention(), due = dueIds().length, sc = skillScores();
+  const weak = sc.filter(a => a.w.some(w => unlocked(stageOf(w)))).sort((a, b) => a.score - b.score)[0], d = st.skillEnd !== null && st.skillStart !== null ? st.skillEnd - st.skillStart : null;
+  const tracked = st.min > 0, advice = !st.active ? 'No study logged this week. Put four sessions in your calendar and start the timer when you sit down.'
+    : tracked && st.min < target * 0.5 ? `You logged ${(st.min / 60).toFixed(1)} h of the 8 h target. The plan needs time more than anything else: book the missing sessions now.`
+    : st.acc !== null && st.acc < 70 ? `Answer accuracy was ${st.acc}%. Before new rooms, run the daily drill and re-read the coach notes of your weakest area (${weak ? weak.n : 'see Skills'}).`
+    : due > 10 ? `${due} review questions are overdue. Clear them first; every extra day costs retention.`
+    : st.rooms === 0 ? 'No TryHackMe room finished this week. Do the two rooms on the Today page before anything else.'
+    : weak ? `Solid week. Next week, aim at ${weak.n} (${weak.score}), your lowest open area.` : 'Solid week. Keep the rhythm.';
+  const mx = Math.max(60, ...st.perDay), last4 = [0, -1, -2, -3].map(o => weekStats(WKOFF + o));
+  return `<section class="hero"><div><div class="eyebrow">${cur ? 'This week' : 'Week of'} &middot; ${fmtDate(st.mon)} to ${fmtDate(sun)}</div><h1>Weekly review</h1>
+    <p>One honest look at the week: time in the chair, work finished, and whether the skill numbers moved.</p>
+    <div class="row"><button class="btn ghost" data-act="wkPrev">Previous week</button>${cur ? '' : '<button class="btn ghost" data-act="wkNext">Next week</button>'}</div></div>${ring(pct, 'of 8 h target')}</section>
+  <div class="stats">
+    <div class="stat"><b>${(st.min / 60).toFixed(1)} h</b><span>Timed study, target 8 h</span></div>
+    <div class="stat"><b>${st.active}/7</b><span>Active days</span></div>
+    <div class="stat"><b>${st.rooms}</b><span>Rooms finished</span></div>
+    <div class="stat"><b>${st.q}</b><span>Questions answered${st.acc !== null ? ', ' + st.acc + '% right' : ''}</span></div>
+    <div class="stat"><b>${d === null ? '&ndash;' : (d >= 0 ? '+' : '') + d}</b><span>Skill index change${st.skillEnd !== null ? ', now ' + st.skillEnd : ''}</span></div>
+  </div>
+  <div class="two"><div class="card"><h2>Time per day</h2><div class="daybars">${st.days.map((dd, i) => `<div><span>${st.perDay[i] ? st.perDay[i] + 'm' : ''}</span><i class="${st.perDay[i] ? '' : st.actDay[i] ? 'act' : 'none'}" style="height:${st.perDay[i] ? Math.max(4, Math.round(st.perDay[i] / mx * 110)) : st.actDay[i] ? 6 : 2}px"></i><span>${dd.toLocaleDateString(undefined, { weekday: 'short' })}</span></div>`).join('')}</div>
+      <p class="hint">Gold bars are timed sessions. A short grey-gold mark means you did something that day without the timer running. Use "Start session" in the top bar so hours are real.</p></div>
+    <div style="display:flex;flex-direction:column;gap:20px"><div class="card"><div class="eyebrow">One thing to change</div><h2>Verdict</h2><p>${esc(advice)}</p>${AI ? `<button class="btn ghost small" data-act="coach">Ask Claude for a coach summary</button><p class="hint" id="coachOut"></p>` : ''}</div>
+      <div class="card"><div class="eyebrow">Also this week</div><div class="kv"><span>Challenge answers solved</span><b>${st.chal}</b><span>Reports graded</span><b>${st.reps}</b><span>Retention</span><b>${ret.pct === null ? 'n/a' : ret.pct + '%'}</b><span>Reviews due now</span><b>${due}</b></div></div></div></div>
+  <div class="card"><h2>Last four weeks</h2><div class="skilltable">${last4.map(x => `<div class="skillrow"><div><b>${fmtDate(x.mon)} to ${fmtDate(x.days[6])}</b><small>${x.active} active day${x.active === 1 ? '' : 's'} &middot; ${x.rooms} room${x.rooms === 1 ? '' : 's'} &middot; ${x.q} question${x.q === 1 ? '' : 's'}</small></div><div class="bars"><span><i style="width:${Math.min(100, Math.round(x.min / target * 100))}%;background:var(--g3)"></i></span></div><div class="sc"><b>${(x.min / 60).toFixed(1)} h</b></div></div>`).join('')}</div></div>`;
+}
+async function aiCoach(btn) {
+  const out = $('#coachOut'), st = weekStats(WKOFF), sc = skillScores(); btn.disabled = true; out.textContent = 'Thinking...';
+  try { const r = await AI(`You are a direct, practical study coach for a student training to be a SOC analyst on an 8-hours-a-week, 12-week plan. Write a coach summary of their week in at most 110 words, plain text, second person, no lists, no flattery: what went well, the main problem, and exactly what to do in the next 7 days.\nWeek data: timed study ${(st.min / 60).toFixed(1)} h (target 8), active days ${st.active}/7, TryHackMe rooms finished ${st.rooms}, questions answered ${st.q}${st.acc !== null ? ' at ' + st.acc + '% accuracy' : ''}, challenge answers solved ${st.chal}, skill index change ${st.skillStart !== null && st.skillEnd !== null ? st.skillEnd - st.skillStart : 'unknown'}, reviews overdue ${dueIds().length}.\nSkill scores by area (0-100): ${sc.map(a => a.n + ' ' + a.score).join(', ')}. Current plan week: ${workingWeek()} of 12.`, { modelTier: 'quick', onText: ({ text }) => { out.textContent = text; } }); out.textContent = r.text; }
+  catch (e) { out.textContent = aiErr(e); } btn.disabled = false;
+}
+
 /* ---------- transfer ---------- */
 const stamp = () => new Date().toISOString().slice(0, 10);
 const toCode = () => 'SOC12:' + btoa(unescape(encodeURIComponent(JSON.stringify(S))));
@@ -812,7 +992,7 @@ function route() {
   const h = (location.hash || '#today').slice(1); let m;
   if ((m = /^week-(\d+)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 12) return { name: 'week', n: +m[1] };
   if ((m = /^exam-(\d)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 4) return { name: 'exam', n: +m[1] };
-  if (h === 'roadmap' || h === 'review' || h === 'library' || h === 'cheatsheets' || h === 'skills') return { name: h };
+  if (h === 'roadmap' || h === 'review' || h === 'library' || h === 'cheatsheets' || h === 'skills' || h === 'weekly') return { name: h };
   return { name: 'today' };
 }
 function render() {
@@ -820,7 +1000,7 @@ function render() {
   if (ES && !(r.name === 'exam' && r.n === ES.stage)) { clearInterval(esTimer); ES = null; }
   QS = null; nav(r.name);
   $('#view').className = r.name === 'week' ? 'wide' : '';
-  $('#view').innerHTML = r.name === 'week' ? viewWeek(r.n) : r.name === 'exam' ? viewExam(r.n) : r.name === 'roadmap' ? viewRoadmap() : r.name === 'library' ? viewLibrary() : r.name === 'cheatsheets' ? viewSheets() : r.name === 'skills' ? viewSkills() : r.name === 'review' ? viewReview() : viewToday();
+  $('#view').innerHTML = r.name === 'week' ? viewWeek(r.n) : r.name === 'exam' ? viewExam(r.n) : r.name === 'roadmap' ? viewRoadmap() : r.name === 'library' ? viewLibrary() : r.name === 'cheatsheets' ? viewSheets() : r.name === 'skills' ? viewSkills() : r.name === 'weekly' ? viewWeekly() : r.name === 'review' ? viewReview() : viewToday();
 }
 window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
 
@@ -828,7 +1008,7 @@ function checkAnswer(w, i) {
   const inp = $('#ci-' + w + '-' + i), val = inp.value; if (!norm(val)) return;
   const q = D.weeks[w - 1].chal.qs[i], c = S.ch[w] || { ok: [], tries: 0 };
   c.tries++; const ok = q.h.includes(hash(norm(val)));
-  if (ok) { c.ok[i] = true; bump(2); }
+  if (ok) { c.ok[i] = true; bump(2); logDay('c'); }
   S.ch[w] = c; save();
   if (ok) { const y = window.scrollY; render(); window.scrollTo(0, y); }
   else { $('#cq-' + w + '-' + i).classList.add('no'); $('#cm-' + w + '-' + i).textContent = 'Not correct. Go back to the evidence.' + (q.hint ? ' Hint: ' + q.hint : ''); }
@@ -838,6 +1018,17 @@ document.addEventListener('click', ev => {
   const a = el.dataset.act;
   if (a === 'task' || a === 'ans' || a === 'res' || a === 'rec' || a === 'impFile') return;
   if (a === 'jump') { ev.preventDefault(); const t = document.getElementById(el.dataset.to); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+  if (a === 'timer') return timerToggle();
+  if (a === 'aiQ') return aiNewQuestions(+el.dataset.a, el);
+  if (a === 'explain') return aiExplain(el);
+  if (a === 'gradeRep') return aiGradeReport(+el.dataset.w, el);
+  if (a === 'gradeIv') return aiGradeAnswer(+el.dataset.w, +el.dataset.i, el);
+  if (a === 'calAdd') return calAdd(+el.dataset.w, el);
+  if (a === 'todoAdd') return todoAdd(+el.dataset.w, el);
+  if (a === 'coach') return aiCoach(el);
+  if (a === 'wkPrev') { WKOFF--; return render(); }
+  if (a === 'wkNext') { WKOFF = Math.min(0, WKOFF + 1); return render(); }
+  if (a === 'repText') return;
   if (a === 'startDrill') { const ids = drillIds(8); if (ids.length) startRun(ids, 'drill'); return; }
   if (a === 'reload') { render(); return; }
   if (a === 'thmCheck') { el.textContent = 'Checking...'; pollThm(); setTimeout(() => { if (el.isConnected) el.textContent = 'Check now'; }, 1500); return; }
@@ -852,7 +1043,7 @@ document.addEventListener('click', ev => {
   if (a === 'copyCode') { const c = toCode(); try { navigator.clipboard.writeText(c).then(() => moveMsg('Progress code copied. Paste it into "Bring progress in" on the other PC.'), () => { $('#impCode').value = c; $('#impCode').select(); moveMsg('Copy the selected code with Ctrl+C.'); }); } catch (e) { $('#impCode').value = c; $('#impCode').select(); moveMsg('Copy the selected code with Ctrl+C.'); } return; }
   if (a === 'impCode') return offerImport($('#impCode').value);
   if (a === 'impNo') { PENDING = null; return render(); }
-  if (a === 'impYes' && PENDING) { S = Object.assign(fresh(), PENDING); adoptThm(D.thm); adoptThm(window.THM_SYNC); refreshThm(); PENDING = null; save(); render(); moveMsg('Progress loaded.'); return; }
+  if (a === 'impYes' && PENDING) { S = Object.assign(fresh(), PENDING); afterStateSwap(); PENDING = null; save(); render(); moveMsg('Progress loaded.'); return; }
   if (a === 'libf') { LIBF = el.dataset.f; render(); return; }
   if (a === 'theme') { const r = document.documentElement, cur = r.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'), nx = cur === 'dark' ? 'light' : 'dark'; r.dataset.theme = nx; try { localStorage.setItem('soc12-theme', nx); } catch (e) {} return; }
   if (a === 'goStep') { const d = document.getElementById('step-' + el.dataset.w + '-' + el.dataset.i); if (d) { d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); } return; }
@@ -860,10 +1051,10 @@ document.addEventListener('click', ev => {
   else if (a === 'clearStart') { S.start = null; save(); render(); }
   else if (a === 'reset1') { $('#resetBox').innerHTML = 'Delete all progress? <button class="btn small" data-act="reset2">Yes, delete</button> <button class="btn ghost small" data-act="reset0">Cancel</button>'; }
   else if (a === 'reset0') render();
-  else if (a === 'reset2') { S = fresh(); adoptThm(D.thm); adoptThm(window.THM_SYNC); refreshThm(); save(); render(); }
+  else if (a === 'reset2') { S = fresh(); afterStateSwap(); save(); render(); }
   else if (a === 'startQuiz') startRun(shuffle(weekQids(+el.dataset.w)), 'week', +el.dataset.w);
   else if (a === 'startReview') startRun(dueIds().slice(0, 20), 'review');
-  else if (a === 'pick' && QS && QS.picked === null) { const id = QS.ids[QS.i]; QS.picked = +el.dataset.o; const ok = QS.picked === Q[id].a; if (ok) QS.right++; grade(id, ok, QS.mode); bump(1); save(); drawRun(); }
+  else if (a === 'pick' && QS && QS.picked === null) { const id = QS.ids[QS.i]; QS.picked = +el.dataset.o; const ok = QS.picked === Q[id].a; if (ok) QS.right++; grade(id, ok, QS.mode); bump(1); logDay('q'); if (ok) logDay('ok'); save(); drawRun(); }
   else if (a === 'nextQ' && QS) { QS.i++; QS.picked = null; drawRun(); }
   else if (a === 'check') checkAnswer(+el.dataset.w, +el.dataset.i);
   else if (a === 'copy') { const t = D.weeks[+el.dataset.w - 1].chal.evidence; const done = () => { el.textContent = 'Copied'; setTimeout(() => el.textContent = 'Copy evidence', 1500); }; const fail = () => { const r = document.createRange(); r.selectNodeContents($('#ev-' + el.dataset.w)); const s = getSelection(); s.removeAllRanges(); s.addRange(r); el.textContent = 'Selected: press Ctrl+C'; }; try { navigator.clipboard.writeText(t).then(done, fail); } catch (e) { fail(); } }
@@ -873,15 +1064,19 @@ document.addEventListener('click', ev => {
 });
 document.addEventListener('change', ev => {
   const el = ev.target, a = el.dataset && el.dataset.act;
-  if (a === 'task' || a === 'res') { const code = el.dataset.code, m = code ? S.rooms : a === 'task' ? S.tasks : S.res, k = code || el.dataset.k; if (el.checked) { m[k] = 1; bump(a === 'task' ? 3 : 1); } else delete m[k]; save(); const y = window.scrollY; render(); window.scrollTo(0, y); }
+  if (a === 'task' || a === 'res') { const code = el.dataset.code, m = code ? S.rooms : a === 'task' ? S.tasks : S.res, k = code || el.dataset.k; if (el.checked) { m[k] = 1; bump(a === 'task' ? 3 : 1); if (code) logDay('r'); } else delete m[k]; save(); const y = window.scrollY; render(); window.scrollTo(0, y); }
   else if (a === 'rec') { if (el.checked) { S.rec[el.dataset.w] = 1; bump(1); } else delete S.rec[el.dataset.w]; save(); const y = window.scrollY; render(); window.scrollTo(0, y); }
+  else if (a === 'repText') { const w = el.dataset.w; S.rep[w] = Object.assign({}, S.rep[w], { text: el.value.slice(0, 6000) }); save(); }
   else if (a === 'impFile' && el.files && el.files[0]) { const f = new FileReader(); f.onload = () => offerImport(f.result); f.readAsText(el.files[0]); }
   else if (a === 'ans' && ES && !ES.result) { ES.ans[el.dataset.id] = +el.value; const t = document.querySelector('.timer span'); if (t) t.textContent = Object.keys(ES.ans).length + '/' + ES.ids.length + ' answered'; }
 });
 document.addEventListener('toggle', ev => { const d = ev.target; if (d.dataset && d.dataset.i !== undefined && d.dataset.w) { (OPEN[d.dataset.w] = OPEN[d.dataset.w] || {})[d.dataset.i] = d.open; } }, true);
 document.addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches && ev.target.matches('.cq input')) checkAnswer(+ev.target.dataset.w, +ev.target.dataset.i); });
 
+loadBank();
 render();
+timerPaint();
+initCaps();
 initRemote();
 if (window.THM_SYNC) { LIVE.at = window.THM_SYNC.at || 0; LIVE.ok = Date.now() - LIVE.at < 6 * 6e4; LIVE.checked = Date.now(); if (LIVE.ok) render(); }
 setInterval(pollThm, 60000);
