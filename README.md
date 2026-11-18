@@ -4,6 +4,7 @@ A personal learning system for becoming a junior SOC analyst in 12 weeks at abou
 
 ## What is in it
 
+- **TryHackMe profile, plan dates and downloads**: the sync panel shows level, rank, points, badges, streak and league from your public profile (read by `sync-thm.ps1` locally and by the scheduled sync in the hosted version). With a start date set, every week on the road shows its calendar dates, the planned week is marked, and the page says how far ahead or behind you are. Finished weeks fold away. In the Claude-hosted version, downloads go through Claude's download permission.
 - **Roadmap home page**: the page opens on the roadmap. One line runs through the 12 weeks and 4 stage exams; every week shows its real TryHackMe rooms as chips (done, next, to do) that open the room on TryHackMe. The top shows the next room to do and a TryHackMe sync panel (rooms done of 65, profile, last read, check now, manual sync). The old Today page is now Roadmap > Overview.
 - **4 stages of 3 weeks**: networks and frameworks; email, web and Windows; Linux, malware and SIEM; triage, cloud/AD and incident response.
 - **Each week is five steps**: learn (curated videos, reference pages and tools), labs, coach notes with a self-check, a 7-question quiz, and a hands-on challenge on real-looking evidence (logs, packet output, email headers, encoded PowerShell).

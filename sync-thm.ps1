@@ -18,7 +18,13 @@ function Sync-Thm {
     if ($codes.Count -eq 0) { throw 'no rooms returned' }
     $ms = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
     $list = ($codes | ForEach-Object { '"' + ($_ -replace '[^A-Za-z0-9_\-]', '') + '"' }) -join ','
-    $js = "window.THM_SYNC={user:`"$User`",at:$ms,live:$(if ($Loop) { 'true' } else { 'false' }),codes:[$list]};"
+    $pf = 'null'
+    try {
+      $p = (Invoke-RestMethod -Uri "https://tryhackme.com/api/v2/public-profile?username=$User" -TimeoutSec 15 -UserAgent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' -ErrorAction Stop).data
+      $league = ([string]$p.leagueTier) -replace '[^A-Za-z]', ''
+      $pf = "{level:$([int]$p.level),points:$([int]$p.totalPoints),rank:$([int]$p.rank),top:$([int]$p.topPercentage),badges:$([int]$p.badgesNumber),streak:$([int]$p.streak),best:$([int]$p.largestStreak),league:`"$league`",rooms:$([int]$p.completedRoomsNumber)}"
+    } catch { }
+    $js = "window.THM_SYNC={user:`"$User`",at:$ms,live:$(if ($Loop) { 'true' } else { 'false' }),codes:[$list],profile:$pf};"
     $tmp = Join-Path $dir 'thm.js.tmp'
     [IO.File]::WriteAllText($tmp, $js, (New-Object Text.UTF8Encoding($false)))
     Move-Item -Force $tmp (Join-Path $dir 'thm.js')

@@ -17,6 +17,9 @@ const openAll = p => p.evaluate(() => document.querySelectorAll('details').forEa
   ok('home is the roadmap with the next TryHackMe room', (await p.textContent('.rm-next h1')).trim() === 'MITRE' && /tryhackme\.com\/room\/mitre/.test(await p.getAttribute('.rm-next a.btn', 'href')));
   ok('roadmap shows 12 weeks, 4 exams and all rooms', await p.evaluate(() => document.querySelectorAll('.rd-stop:not(.exam)').length === 12 && document.querySelectorAll('.rd-stop.exam').length === 4 && document.querySelectorAll('.rm:not(.other)').length === 66));
   ok('roadmap marks synced rooms done and one next', await p.evaluate(() => document.querySelectorAll('.rm.done').length === 19 && document.querySelectorAll('.rm.nx').length === 1 && /^18$/.test(document.querySelector('.rm-count b').textContent)));
+  ok('sync panel shows the TryHackMe profile', /Level/.test(await p.textContent('.rm-prof')) && (await p.$$('.rm-prof span')).length === 6);
+  ok('roadmap asks for a start date, then shows dates and the plan marker', await (async () => { if (!(await p.$('.rm-plan #startDate'))) return false; await p.click('.rm-plan [data-act=setStart]'); return /behind|ahead|on schedule/.test(await p.textContent('.rm-plan')) && (await p.$$('.rd-stop .chip.warn')).length >= 1 && / to /.test(await p.textContent('#wk-3 .rd-title small')); })());
+  await p.evaluate(() => { S.start = null; save(); });
   await p.goto(U + '#today');
   ok('today shows real next rooms', (await p.$$eval('.today-rooms b', e => e.map(x => x.textContent))).join(',') === 'MITRE,Summit');
   ok('path rooms synced from snapshot', /18\/65/.test(await p.textContent('.card .chip.fill')));
@@ -64,9 +67,10 @@ const openAll = p => p.evaluate(() => document.querySelectorAll('details').forEa
     const sample = async () => ({ text: 'OK' }); sample.json = async pr => /Write 5 NEW/.test(pr) ? Array.from({ length: 5 }, (_, i) => ({ q: 'G' + i + '?', o: ['a', 'b', 'c', 'd'], a: i % 4, why: 'w' })) : { rubric: [20, 25, 25, 15, 15].map(m => ({ points: m, comment: 'ok' })), fixes: [] };
     const store = {}; const db = { doc: path => ({ get: async () => store[path] ? { exists: true, data: () => store[path] } : { exists: false }, set: async d => { store[path] = d; }, onSnapshot: n => { if (path === 'sync/thm') setTimeout(() => n({ exists: true, data: () => ({ user: 'vicuvi1', at: Date.now() + 1000, source: 'scheduled', codes: ['mitre'] }) }), 200); return () => {}; } }) };
     const mcp = { callTool: async (s, t, i) => { window.__calls.push([s, t, i]); return { payload: {} }; }, listTools: async n => ({ servers: [{ server: n, authStatus: 'connected', tools: [] }] }) };
-    window.claude = { use: async n => ({ sample, db, mcp, user: { id: async () => 'u1' } })[n] || null }; });
+    window.claude = { use: async n => ({ sample, db, mcp, user: { id: async () => 'u1' }, downloads: { save: async r => { window.__dl = r.filename; return { status: 'saved' }; } } })[n] || null }; });
   await p.goto(U + '#today'); await p.waitForSelector('[data-act=calAdd]'); await p.waitForTimeout(500);
   ok('cloud sync ticks a newly finished room', (await p.$$eval('.today-rooms b', e => e.map(x => x.textContent))).join(',') === 'Summit,Eviction');
+  await p.click('[data-act=exportJson]'); await p.waitForTimeout(100); ok('hosted download goes through the downloads permission', /\.json$/.test(await p.evaluate(() => window.__dl || '')));
   await p.click('[data-act=calAdd]'); await p.waitForFunction(() => /Done/.test(document.querySelector('#calMsg').textContent));
   await p.click('[data-act=todoAdd]'); await p.waitForFunction(() => /Done/.test(document.querySelector('#todoMsg').textContent));
   const calls = await p.evaluate(() => window.__calls);
