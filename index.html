@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SOC Analyst in 12 Weeks</title>
+<title>SOC Study Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -138,6 +138,59 @@ main{max-width:980px;margin:0 auto;padding:24px 20px 80px;display:flex;flex-dire
 .tl .stagehead{margin:14px 0 2px}
 .tl .stagehead::before{left:-34px;top:6px;width:22px;height:22px;border-radius:6px;background:var(--hero);border:0;content:attr(data-n);color:var(--hero-ink);font:600 .8rem var(--mono);display:grid;place-items:center}
 .stage-locked .wk{opacity:.55}
+.rm-top{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media(min-width:820px){.rm-top{grid-template-columns:minmax(0,1.8fr) minmax(0,1fr)}}
+.hero.rm-next{display:block}
+.rm-next h1{font-size:2.6rem;line-height:1.05;overflow-wrap:anywhere}
+.rm-next .btn:not(.ghost){background:#f2c230;color:#1c1500}
+.rm-next .btn{display:inline-flex;align-items:center;gap:8px;min-height:44px;box-sizing:border-box}
+.rm-next .btn svg{width:16px;height:16px}
+.rm-sync{display:flex;flex-direction:column;gap:12px}
+.rm-sync h2{margin:0}
+.rm-sync .btn{min-height:44px}
+.rm-count{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.rm-count b{font:700 2.8rem/1 var(--display);font-variant-numeric:tabular-nums}
+.rm-count span{color:var(--muted)}
+.rm-sync .meter{height:10px;border-radius:5px;flex:none}
+.rm-sync .meter i{background:var(--good)}
+.rm-sync .kv{grid-template-columns:auto 1fr;margin:0} .rm-sync .kv b{font:500 .85rem var(--mono);overflow-wrap:anywhere}
+.rm-legend{display:flex;gap:14px;flex-wrap:wrap;font:500 .75rem var(--mono);color:var(--muted)}
+.rm-legend span{display:inline-flex;align-items:center;gap:6px}
+.rm-legend i{width:12px;height:12px;border-radius:3px;box-sizing:border-box;background:var(--g0);border:1px solid var(--line)}
+.rm-legend i.d{background:var(--good);border-color:var(--good)} .rm-legend i.n{background:transparent;border:2px solid var(--g3)}
+.road{display:flex;flex-direction:column}
+.rd-stage{display:flex;gap:14px;align-items:flex-start;padding:10px 0 16px;scroll-margin-top:120px}
+.rd-stage .rd-rail::after{display:none}
+.rd-flag{width:44px;flex:none;display:flex;justify-content:center;color:var(--g3);padding-top:2px}
+.rd-flag svg{width:24px;height:24px}
+.rd-stage h2{margin:2px 0 4px} .rd-stage .lead{margin:0}
+.rd-stop{display:flex;gap:14px}
+.rd-rail{width:44px;flex:none;display:flex;flex-direction:column;align-items:center}
+.rd-rail::after{content:"";flex:1;width:2px;min-height:18px;background:var(--line)}
+.rd-stop.done .rd-rail::after{width:4px;background:var(--good)}
+.road>.rd-stop:last-child .rd-rail::after,.road>div:last-child>.rd-stop:last-child .rd-rail::after{display:none}
+.rd-node{width:44px;height:44px;flex:none;box-sizing:border-box;border-radius:50%;display:grid;place-items:center;font:500 .95rem var(--mono);text-decoration:none;background:var(--surface);border:2px solid var(--line);color:var(--muted)}
+.rd-node svg{width:20px;height:20px}
+.rd-stop.part .rd-node{border:3px solid var(--good);color:var(--ink)}
+.rd-stop.done .rd-node{background:var(--good);border-color:var(--good);color:var(--surface)}
+.rd-stop.cur .rd-node{box-shadow:0 0 0 4px var(--tint)}
+.rd-node:hover{border-color:var(--accent)}
+.rd-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;padding-bottom:26px}
+.rd-head{display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between;align-items:flex-start;min-height:44px}
+.rd-title{text-decoration:none;color:var(--ink)} .rd-title:hover b{color:var(--accent)}
+.rd-title b{display:block;font:700 1.3rem/1.2 var(--display)} .rd-title small{color:var(--muted);font-size:.82rem}
+.rd-head .side{display:flex;gap:10px;align-items:center;font:500 .8rem var(--mono);color:var(--muted)}
+.rd-rooms{display:flex;flex-wrap:wrap;gap:8px}
+.rm{display:inline-flex;align-items:center;gap:6px;min-height:44px;box-sizing:border-box;padding:0 13px;border-radius:7px;font-size:.88rem;text-decoration:none;background:var(--g0);border:1px solid var(--line);color:var(--ink)}
+.rm:hover{border-color:var(--accent)}
+.rm svg{width:14px;height:14px;flex:none}
+.rm.done{background:var(--good);border-color:var(--good);color:var(--surface);font-weight:500}
+.rm.nx{background:transparent;border:2px solid var(--g3);font-weight:600}
+.rm.other{background:transparent;border-style:dashed;color:var(--muted)}
+.rd-stop.exam .rd-node{border-style:dashed;color:var(--g3)}
+.rd-stop.exam .wk{box-shadow:none}
+.stage-locked .rd-body,.stage-locked .rd-node{opacity:.6}
+.rd-end{display:flex;gap:14px;align-items:center;font:700 1.2rem var(--display)}
 .wk{display:grid;grid-template-columns:1fr auto;gap:8px 16px;align-items:center;padding:14px 18px;background:var(--surface);border:1px solid var(--line);border-radius:10px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow)}
 .wk:hover{border-color:var(--accent)}
 .wk small{color:var(--muted);display:block}
@@ -302,7 +355,7 @@ footer{font-size:.82rem;color:var(--muted);display:flex;gap:12px;justify-content
 </head>
 <body>
 <div class="bar"><div class="bar-in">
-  <a class="brand" href="#today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5" stroke-linecap="round"/></svg>SOC Analyst <span>in 12 Weeks</span></a>
+  <a class="brand" href="#roadmap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5" stroke-linecap="round"/></svg>SOC Study <span>Center</span></a>
   <nav id="nav"></nav>
   <button class="timerbtn" id="timerBtn" data-act="timer">Start session</button>
   <button class="themebtn" data-act="theme" aria-label="Switch between light and dark theme" title="Light or dark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg></button>
@@ -359,7 +412,7 @@ function pollThm() {
     if (adoptThm(t)) { refreshThm(); const fresh = [...THMSET].filter(c => !before.has(c) && roomTitle(c));
       if (fresh.length) { bump(3 * fresh.length); logDay('r', fresh.length); LIVE.news = fresh.map(roomTitle); }
       save(); liveRender(); }
-    else if (pendingRender || was !== LIVE.ok || route().name === 'today') liveRender(); };
+    else if (pendingRender || was !== LIVE.ok || /^(today|roadmap)$/.test(route().name)) liveRender(); };
   s.onerror = () => { s.remove(); const was = LIVE.ok; LIVE.ok = false; LIVE.checked = Date.now(); if (was) liveRender(); };
   document.head.appendChild(s);
 }
@@ -548,8 +601,8 @@ const RTYPE = { video: 'Video', read: 'Read', tool: 'Tool', practice: 'Practice'
 const mins = m => m >= 60 ? (m / 60).toFixed(m % 60 ? 1 : 0) + ' h' : m + ' min';
 let OPEN = {}, LIBF = 'all';
 const GROUPS = [
-  ['Today', [['today', 'Overview'], ['session', "Today's session"]]],
-  ['Learn', [['roadmap', 'Roadmap'], ['library', 'Library'], ['cheatsheets', 'Cheat sheets']]],
+  ['Roadmap', [['roadmap', 'Roadmap'], ['today', 'Overview'], ['session', "Today's session"]]],
+  ['Learn', [['library', 'Library'], ['cheatsheets', 'Cheat sheets']]],
   ['Practice', [['sim', 'Simulator'], ['review', 'Review'], ['placement', 'Placement test']]],
   ['Progress', [['skills', 'Skills'], ['weekly', 'Weekly review'], ['check', 'System check']]],
 ];
@@ -637,6 +690,13 @@ function viewToday() {
   <footer><span>Quiz pass mark ${Math.round(QPASS * 100)}%. Exam pass mark ${Math.round(PASS * 100)}%. Review intervals 1, 3, 7, 14, 30 days.</span><span id="resetBox"><button class="btn ghost small" data-act="reset1">Reset all progress</button></span></footer>`;
 }
 
+function thmSyncBox(u) {
+  const api = p => 'https://tryhackme.com/api/v2/public-profile/completed-rooms?username=' + encodeURIComponent(u) + '&limit=100&page=' + p;
+  return `<details class="syncbox"><summary>Sync with TryHackMe</summary>
+      <p class="hint"><b>Live:</b> "Start SOC Analyst.bat" reads your public profile every 2 minutes in the background, and this page checks for the result every minute and whenever you switch back to it.</p>
+      <p class="hint"><b>Manual:</b> open <a href="${api(1)}" target="_blank" rel="noopener">your completed rooms, page 1</a> and <a href="${api(2)}" target="_blank" rel="noopener">page 2</a>, select all, copy, and paste each one here.</p>
+      <div class="row"><input id="thmPaste" class="codein" placeholder="paste the text from the TryHackMe page here" autocomplete="off" spellcheck="false"><button class="btn ghost" data-act="thmPaste">Sync</button></div><p class="hint" id="thmMsg"></p></details>`;
+}
 function thmCard(w) {
   const all = pathRooms(), done = all.filter(x => roomDone(x.t[3])).length, open = all.filter(x => !roomDone(x.t[3]) && unlocked(stageOf(x.w)));
   const today = open.slice(0, 2), locked = all.length - done - open.length;
@@ -647,21 +707,48 @@ function thmCard(w) {
     ${LIVE.ok ? '' : CLOUD.at ? `<p class="hint">A scheduled task reads your TryHackMe profile several times a day and updates this page by itself. For an instant update, use the manual sync below.</p>` : `<p class="hint">Live updates are off. Start the site with "Start SOC Analyst.bat" and finished rooms appear here within about 3 minutes, without reloading.</p>`}
     ${today.length ? `<ol class="today-rooms">${today.map(x => `<li><span><b>${esc(x.t[1])}</b><small>${esc(x.t[4])} &middot; week ${x.w} &middot; about ${x.t[2]} h</small></span><a class="btn small" href="${roomUrl(x.t[3])}" target="_blank" rel="noopener">Open room</a></li>`).join('')}</ol>
     <p class="hint">Two rooms is one 2-hour lab session. ${open.length - today.length} more room${open.length - today.length === 1 ? '' : 's'} open after these${locked ? ', ' + locked + ' in locked stages' : ''}.</p>` : `<p>${done === all.length ? 'Every room of the SOC Level 1 path is done.' : 'No open rooms in your unlocked stages. Pass the stage exam to unlock the next ones.'}</p>`}
-    <details class="syncbox"><summary>Sync with TryHackMe</summary>
-      <p class="hint"><b>Live:</b> "Start SOC Analyst.bat" reads your public profile every 2 minutes in the background, and this page checks for the result every minute and whenever you switch back to it.</p>
-      <p class="hint"><b>Manual:</b> open <a href="${api(1)}" target="_blank" rel="noopener">your completed rooms, page 1</a> and <a href="${api(2)}" target="_blank" rel="noopener">page 2</a>, select all, copy, and paste each one here.</p>
-      <div class="row"><input id="thmPaste" class="codein" placeholder="paste the text from the TryHackMe page here" autocomplete="off" spellcheck="false"><button class="btn ghost" data-act="thmPaste">Sync</button></div><p class="hint" id="thmMsg"></p></details></div>`;
+    ${thmSyncBox(u)}</div>`;
 }
+const RICON = {
+  out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/></svg>',
+  ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  flag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h12l-2.5 4L17 12H5"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.2 7.8-8 9-4.8-1.2-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>',
+};
 function viewRoadmap() {
-  const ww = workingWeek(), cst = [1, 2, 3, 4].find(s => !(S.ex[s] && S.ex[s].passed)) || 4;
-  const path = D.stages.map((s, si) => { const st = si + 1, done = S.ex[st] && S.ex[st].passed; return `<a href="#stage-${st}" data-act="jump" data-to="stage-${st}" class="${done ? 'done' : st === cst ? 'now' : unlocked(st) ? '' : 'lock'}"><small>Stage ${st} &middot; weeks ${s.weeks[0]} to ${s.weeks[2]}</small><b>${esc(s.name)}</b><small>${done ? 'Exam passed' : s.final ? 'Ends with the final exam' : 'Ends with exam ' + st}</small></a>`; }).join('<span></span>');
-  return `<section class="hero"><div><div class="eyebrow">12 weeks &middot; about 8 hours a week</div><h1>Roadmap</h1>
-    <p>Four stages of three weeks. Every week has the same five steps: learn, labs, recap, quiz, challenge. Each stage ends with a timed exam, and passing it unlocks the next stage.</p></div>${ring(overallPct(), 'overall')}</section>
-  <div class="path">${path}</div>
-  <div class="tl">` + D.stages.map((s, si) => { const st = si + 1, open = unlocked(st), fin = s.final, mins = fin ? 40 : 25, n = fin ? 30 : 20;
-    return `<div class="node stagehead" data-n="${st}" id="stage-${st}"><div class="eyebrow">Stage ${st}${open ? '' : ' &middot; locked until the stage ' + (st - 1) + ' exam is passed'}</div><h2>${esc(s.name)}</h2><p class="lead">${esc(s.blurb)}</p></div>
-    <div class="${open ? '' : 'stage-locked'}" style="display:contents">${s.weeks.map(w => { const W = D.weeks[w - 1], ss = stepState(w); return `<div class="node${weekDone(w) ? ' done' : w === ww && open ? ' cur' : ''}"><a class="wk" href="#week-${w}"><span><span class="eyebrow">Week ${w} &middot; ${hours(w)} h of labs</span><b style="display:block;font:600 1.15rem var(--display)">${esc(W.title)}</b><small>${esc(W.goal)}</small><span class="mini">${STEPS.map((x, i) => `<i class="${ss[i] ? 'on' : ''}">${x}</i>`).join('')}</span></span><span class="side">${meter(weekPct(w))}${weekChip(w)}</span></a></div>`; }).join('')}
-    <div class="node${S.ex[st] && S.ex[st].passed ? ' done' : ''}"><a class="wk exam" href="#exam-${st}"><span><span class="eyebrow">${fin ? 'Final test' : 'Checkpoint'}</span><b style="display:block;font:600 1.15rem var(--display)">${fin ? 'Final exam and capstone' : 'Stage ' + st + ' exam'}</b><small>${n} questions &middot; ${mins} minutes &middot; pass at ${Math.round(PASS * 100)}%${fin ? ' &middot; covers all 12 weeks' : ''}</small></span><span class="side">${examChip(st)}</span></a></div></div>`; }).join('') + `</div>`;
+  const ww = workingWeek(), all = pathRooms(), done = all.filter(x => roomDone(x.t[3])).length, pct = Math.round(done / all.length * 100);
+  const nx = all.find(x => !roomDone(x.t[3]) && unlocked(stageOf(x.w))), lockedNx = nx ? null : all.find(x => !roomDone(x.t[3]));
+  const u = (S.thm && S.thm.user) || 'vicuvi1';
+  const when = S.thm ? new Date(S.thm.at).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'never';
+  let next;
+  if (nx) { const left = all.filter(x => x.w === nx.w && !roomDone(x.t[3]));
+    next = `<div class="eyebrow">Next stop on your roadmap &middot; Week ${nx.w} &middot; ${esc(nx.t[4])}</div><h1>${esc(nx.t[1])}</h1>
+    <p>${left.length} room${left.length === 1 ? '' : 's'} left in week ${nx.w}: ${left.slice(0, 4).map(x => esc(x.t[1])).join(', ')}${left.length > 4 ? ' and ' + (left.length - 4) + ' more' : ''}. About ${nx.t[2]} h for this one.</p>
+    <div class="row"><a class="btn" href="${roomUrl(nx.t[3])}" target="_blank" rel="noopener">Open room on TryHackMe ${RICON.out}</a><a class="btn ghost" href="#week-${nx.w}">Study the lesson first</a><a class="btn ghost" href="#session">Today's session</a></div>`;
+  } else if (lockedNx) { const st = stageOf(lockedNx.w) - 1;
+    next = `<div class="eyebrow">Checkpoint on your roadmap</div><h1>Stage ${st} exam</h1><p>Every room in your unlocked stages is done. Pass the stage ${st} exam to open week ${lockedNx.w} and its rooms.</p>
+    <div class="row"><a class="btn" href="#exam-${st}">Go to the exam</a><a class="btn ghost" href="#today">Overview</a></div>`;
+  } else next = `<div class="eyebrow">SOC Level 1 path</div><h1>All ${all.length} rooms done</h1><p>Every room of the path is complete on TryHackMe. Finish the quizzes, challenges and exams that are still open.</p><div class="row"><a class="btn" href="#today">See what is left</a></div>`;
+  const news = LIVE.news.length ? `<p class="note livenote">Just completed on TryHackMe: <b>${LIVE.news.map(esc).join(', ')}</b>. <button class="btn ghost small" data-act="newsOk">OK</button></p>` : '';
+  const road = D.stages.map((s, si) => { const st = si + 1, open = unlocked(st), fin = s.final, passed = S.ex[st] && S.ex[st].passed;
+    return `<div class="rd-stage" id="stage-${st}"><span class="rd-flag">${RICON.flag}</span><div><div class="eyebrow">Stage ${st} &middot; weeks ${s.weeks[0]} to ${s.weeks[2]}${open ? '' : ' &middot; locked until the stage ' + (st - 1) + ' exam is passed'}</div><h2>${esc(s.name)}</h2><p class="lead">${esc(s.blurb)}</p></div></div>
+    <div class="${open ? '' : 'stage-locked'}">${s.weeks.map(w => { const W = D.weeks[w - 1], ss = stepState(w);
+      const rooms = W.tasks.map((t, i) => ({ t, i })).filter(x => x.t[3]), rd = rooms.filter(x => roomDone(x.t[3])).length, other = W.tasks.length - rooms.length;
+      const mods = [...new Set(rooms.map(x => x.t[4]))].join(' + ') || 'Own practice, no TryHackMe rooms';
+      const cls = weekDone(w) ? ' done' : rd || weekPct(w) > 0 ? ' part' : '';
+      return `<div class="rd-stop${cls}${w === ww && open ? ' cur' : ''}"><div class="rd-rail"><a class="rd-node" href="#week-${w}" aria-label="Open week ${w}">${w}</a></div>
+      <div class="rd-body"><div class="rd-head"><a class="rd-title" href="#week-${w}"><b>${esc(W.title)}</b><small>${esc(mods)}</small></a><span class="side">${rooms.length ? `<span>${rd} of ${rooms.length} rooms</span>` : ''}${weekChip(w)}</span></div>
+      <div class="rd-rooms">${rooms.map(x => { const d = roomDone(x.t[3]), n = nx && nx.t[3] === x.t[3]; return `<a class="rm${d ? ' done' : n ? ' nx' : ''}" href="${roomUrl(x.t[3])}" target="_blank" rel="noopener" title="${d ? 'Done on TryHackMe' : n ? 'Your next room' : 'To do'}: opens the room on TryHackMe">${d ? RICON.ok : ''}${esc(x.t[1])}</a>`; }).join('')}${other ? `<a class="rm other" href="#week-${w}">+ ${other} other task${other === 1 ? '' : 's'}</a>` : ''}</div>
+      <span class="mini">${STEPS.map((x, i) => `<i class="${ss[i] ? 'on' : ''}">${x}</i>`).join('')}</span></div></div>`; }).join('')}
+    <div class="rd-stop exam${passed ? ' done' : ''}"><div class="rd-rail"><a class="rd-node" href="#exam-${st}" aria-label="${fin ? 'Final exam' : 'Stage ' + st + ' exam'}">${RICON.flag}</a></div>
+      <div class="rd-body"><a class="wk exam" href="#exam-${st}"><span><span class="eyebrow">${fin ? 'Final test' : 'Checkpoint'}</span><b style="display:block;font:600 1.15rem var(--display)">${fin ? 'Final exam and capstone' : 'Stage ' + st + ' exam'}</b><small>${fin ? 30 : 20} questions &middot; ${fin ? 40 : 25} minutes &middot; pass at ${Math.round(PASS * 100)}%${fin ? ' &middot; covers all 12 weeks' : ''}</small></span><span class="side">${examChip(st)}</span></a></div></div></div>`; }).join('');
+  return `<div class="rm-top"><section class="hero rm-next">${next}</section>
+    <div class="card rm-sync"><div class="row between"><h2>TryHackMe sync</h2><button class="btn ghost small" data-act="thmCheck">Check now</button></div>
+      <div class="rm-count"><b>${done}</b><span>of ${all.length} SOC Level 1 rooms done</span></div>${meter(pct)}${news}
+      <div class="kv"><span>Profile</span><b><a href="https://tryhackme.com/p/${encodeURIComponent(u)}" target="_blank" rel="noopener">${esc(u)}</a></b><span>Last read</span><b>${when}</b><span>Status</span><b><span class="livedot${LIVE.ok || CLOUD.at ? ' on' : ''}"></span>${LIVE.ok ? 'Live' : CLOUD.at ? 'Synced automatically' : 'Not live'}</b></div>
+      ${thmSyncBox(u)}</div></div>
+  <div class="row between"><h2 style="margin:0">Your roadmap</h2><div class="rm-legend"><span><i class="d"></i>done on TryHackMe</span><span><i class="n"></i>next</span><span><i></i>to do</span><span>${overallPct()}% overall</span></div></div>
+  <div class="road">${road}<div class="rd-end"><span class="rd-flag">${RICON.shield}</span><span>${allDone() ? 'Programme complete: job-ready junior SOC analyst' : 'Finish line: job-ready junior SOC analyst'}</span></div></div>`;
 }
 
 function viewWeek(w) {
@@ -1191,11 +1278,11 @@ function offerImport(text) {
 
 /* ---------- router and events ---------- */
 function route() {
-  const h = (location.hash || '#today').slice(1); let m;
+  const h = (location.hash || '#roadmap').slice(1); let m;
   if ((m = /^week-(\d+)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 12) return { name: 'week', n: +m[1] };
   if ((m = /^exam-(\d)$/.exec(h)) && +m[1] >= 1 && +m[1] <= 4) return { name: 'exam', n: +m[1] };
-  if (h === 'roadmap' || h === 'review' || h === 'library' || h === 'cheatsheets' || h === 'skills' || h === 'weekly' || h === 'sim' || h === 'placement' || h === 'session' || h === 'check') return { name: h };
-  return { name: 'today' };
+  if (h === 'today' || h === 'review' || h === 'library' || h === 'cheatsheets' || h === 'skills' || h === 'weekly' || h === 'sim' || h === 'placement' || h === 'session' || h === 'check') return { name: h };
+  return { name: 'roadmap' };
 }
 function render() {
   const r = route();
@@ -1204,7 +1291,7 @@ function render() {
   if (PL && r.name !== 'placement') PL = null;
   QS = null; nav(r.name);
   $('#view').className = r.name === 'week' || (r.name === 'sim' && SIM && !SIM.result) ? 'wide' : '';
-  $('#view').innerHTML = r.name === 'week' ? viewWeek(r.n) : r.name === 'exam' ? viewExam(r.n) : r.name === 'roadmap' ? viewRoadmap() : r.name === 'library' ? viewLibrary() : r.name === 'cheatsheets' ? viewSheets() : r.name === 'skills' ? viewSkills() : r.name === 'weekly' ? viewWeekly() : r.name === 'sim' ? viewSim() : r.name === 'placement' ? viewPlacement() : r.name === 'session' ? viewSession() : r.name === 'check' ? viewCheck() : r.name === 'review' ? viewReview() : viewToday();
+  $('#view').innerHTML = r.name === 'week' ? viewWeek(r.n) : r.name === 'exam' ? viewExam(r.n) : r.name === 'roadmap' ? viewRoadmap() : r.name === 'library' ? viewLibrary() : r.name === 'cheatsheets' ? viewSheets() : r.name === 'skills' ? viewSkills() : r.name === 'weekly' ? viewWeekly() : r.name === 'sim' ? viewSim() : r.name === 'placement' ? viewPlacement() : r.name === 'session' ? viewSession() : r.name === 'check' ? viewCheck() : r.name === 'review' ? viewReview() : r.name === 'today' ? viewToday() : viewRoadmap();
 }
 window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); });
 

@@ -1,9 +1,10 @@
-# SOC Analyst in 12 Weeks
+# SOC Study Center (SOC Analyst in 12 Weeks)
 
 A personal learning system for becoming a junior SOC analyst in 12 weeks at about 8 hours a week. It sits on top of TryHackMe (SOC Level 1 path) and pwn.college: it says which labs to do each week, then tests whether the knowledge stuck.
 
 ## What is in it
 
+- **Roadmap home page**: the page opens on the roadmap. One line runs through the 12 weeks and 4 stage exams; every week shows its real TryHackMe rooms as chips (done, next, to do) that open the room on TryHackMe. The top shows the next room to do and a TryHackMe sync panel (rooms done of 65, profile, last read, check now, manual sync). The old Today page is now Roadmap > Overview.
 - **4 stages of 3 weeks**: networks and frameworks; email, web and Windows; Linux, malware and SIEM; triage, cloud/AD and incident response.
 - **Each week is five steps**: learn (curated videos, reference pages and tools), labs, coach notes with a self-check, a 7-question quiz, and a hands-on challenge on real-looking evidence (logs, packet output, email headers, encoded PowerShell).
 - **Library**: all 128 resources in one place, filterable by type.

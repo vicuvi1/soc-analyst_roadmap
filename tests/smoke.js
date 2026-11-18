@@ -14,6 +14,10 @@ const openAll = p => p.evaluate(() => document.querySelectorAll('details').forEa
 
   // --- plain file: core learning loop
   let p = await page(); await p.goto(U);
+  ok('home is the roadmap with the next TryHackMe room', (await p.textContent('.rm-next h1')).trim() === 'MITRE' && /tryhackme\.com\/room\/mitre/.test(await p.getAttribute('.rm-next a.btn', 'href')));
+  ok('roadmap shows 12 weeks, 4 exams and all rooms', await p.evaluate(() => document.querySelectorAll('.rd-stop:not(.exam)').length === 12 && document.querySelectorAll('.rd-stop.exam').length === 4 && document.querySelectorAll('.rm:not(.other)').length === 66));
+  ok('roadmap marks synced rooms done and one next', await p.evaluate(() => document.querySelectorAll('.rm.done').length === 19 && document.querySelectorAll('.rm.nx').length === 1 && /^18$/.test(document.querySelector('.rm-count b').textContent)));
+  await p.goto(U + '#today');
   ok('today shows real next rooms', (await p.$$eval('.today-rooms b', e => e.map(x => x.textContent))).join(',') === 'MITRE,Summit');
   ok('path rooms synced from snapshot', /18\/65/.test(await p.textContent('.card .chip.fill')));
   await p.goto(U + '#week-1'); await openAll(p);
@@ -51,7 +55,7 @@ const openAll = p => p.evaluate(() => document.querySelectorAll('details').forEa
 
   // --- transfer and backups
   p = await page(); await p.goto(U + '#week-1'); await openAll(p); await p.check('#r-1-0'); const code = await p.evaluate(() => toCode());
-  const q = await page(); await q.goto(U); await q.fill('#impCode', code); await q.click('[data-act=impCode]'); await q.click('[data-act=impYes]');
+  const q = await page(); await q.goto(U + '#today'); await q.fill('#impCode', code); await q.click('[data-act=impCode]'); await q.click('[data-act=impYes]');
   ok('progress code imports into a fresh browser', await q.evaluate(() => Object.keys(S.res).length === 1));
   await q.reload(); ok('daily backup is written', await q.evaluate(() => localBackups().length >= 1));
 
@@ -61,7 +65,7 @@ const openAll = p => p.evaluate(() => document.querySelectorAll('details').forEa
     const store = {}; const db = { doc: path => ({ get: async () => store[path] ? { exists: true, data: () => store[path] } : { exists: false }, set: async d => { store[path] = d; }, onSnapshot: n => { if (path === 'sync/thm') setTimeout(() => n({ exists: true, data: () => ({ user: 'vicuvi1', at: Date.now() + 1000, source: 'scheduled', codes: ['mitre'] }) }), 200); return () => {}; } }) };
     const mcp = { callTool: async (s, t, i) => { window.__calls.push([s, t, i]); return { payload: {} }; }, listTools: async n => ({ servers: [{ server: n, authStatus: 'connected', tools: [] }] }) };
     window.claude = { use: async n => ({ sample, db, mcp, user: { id: async () => 'u1' } })[n] || null }; });
-  await p.goto(U); await p.waitForSelector('[data-act=calAdd]'); await p.waitForTimeout(500);
+  await p.goto(U + '#today'); await p.waitForSelector('[data-act=calAdd]'); await p.waitForTimeout(500);
   ok('cloud sync ticks a newly finished room', (await p.$$eval('.today-rooms b', e => e.map(x => x.textContent))).join(',') === 'Summit,Eviction');
   await p.click('[data-act=calAdd]'); await p.waitForFunction(() => /Done/.test(document.querySelector('#calMsg').textContent));
   await p.click('[data-act=todoAdd]'); await p.waitForFunction(() => /Done/.test(document.querySelector('#todoMsg').textContent));
